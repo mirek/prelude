@@ -1,0 +1,38 @@
+{
+  "name": "@prelude/wait-group",
+  "version": "0.0.2",
+  "description": "WaitGroup module.",
+  "type": "module",
+  "main": "./cjs/index.js",
+  "files": [
+    "*"
+  ],
+  "scripts": {
+    "test": "make test",
+    "preversion": "make test",
+    "postversion": "make postversion"
+  },
+  "keywords": [
+    "prelude",
+    "std",
+    "lib",
+    "stdlib",
+    "library"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "MIT",
+  "module": "./mjs/index.js",
+  "exports": {
+    ".": {
+      "import": "./mjs/index.js",
+      "require": "./cjs/index.js"
+    },
+    "./*.js": {
+      "import": "./mjs/*.js",
+      "require": "./cjs/*.js"
+    },
+    "./*": {
+      "require": "./cjs/*.js"
+    }
+  }
+}

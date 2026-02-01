@@ -1,0 +1,44 @@
+{
+  "name": "@prelude/array",
+  "version": "3.0.0",
+  "description": "Array module.",
+  "type": "module",
+  "main": "./cjs/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "eslint src && jest --coverage",
+    "preversion": "make preversion",
+    "postversion": "make postversion"
+  },
+  "keywords": [
+    "prelude",
+    "std",
+    "lib",
+    "stdlib",
+    "library",
+    "cmp",
+    "compare",
+    "sort"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "MIT",
+  "dependencies": {
+    "@prelude/cmp": "workspace:*"
+  },
+  "module": "./mjs/index.js",
+  "exports": {
+    ".": {
+      "import": "./mjs/index.js",
+      "require": "./cjs/index.js"
+    },
+    "./*.js": {
+      "import": "./mjs/*.js",
+      "require": "./cjs/*.js"
+    },
+    "./*": {
+      "require": "./cjs/*.js"
+    }
+  }
+}

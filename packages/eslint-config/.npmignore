@@ -1,0 +1,4 @@
+.github
+.vscode
+eslint.config.js
+sonar-project.properties

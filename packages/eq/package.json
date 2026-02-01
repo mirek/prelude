@@ -1,0 +1,38 @@
+{
+  "name": "@prelude/eq",
+  "version": "0.0.5",
+  "description": "Eq module.",
+  "type": "module",
+  "main": "./cjs/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "make test",
+    "preversion": "make preversion",
+    "postversion": "make postversion"
+  },
+  "keywords": [
+    "prelude",
+    "std",
+    "lib",
+    "stdlib",
+    "library"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "MIT",
+  "module": "./mjs/index.js",
+  "exports": {
+    ".": {
+      "import": "./mjs/index.js",
+      "require": "./cjs/index.js"
+    },
+    "./*.js": {
+      "import": "./mjs/*.js",
+      "require": "./cjs/*.js"
+    },
+    "./*": {
+      "require": "./cjs/*.js"
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "@prelude/async-generator",
+  "version": "1.0.1",
+  "description": "Async generator module.",
+  "type": "module",
+  "module": "./mjs/index.js",
+  "main": "./cjs/index.js",
+  "exports": {
+    ".": {
+      "import": "./mjs/index.js",
+      "require": "./cjs/index.js"
+    },
+    "./*.js": {
+      "import": "./mjs/*.js",
+      "require": "./cjs/*.js"
+    },
+    "./*": {
+      "require": "./cjs/*.js"
+    }
+  },
+  "scripts": {
+    "test": "eslint src && jest --coverage",
+    "preversion": "make preversion",
+    "postversion": "make postversion"
+  },
+  "keywords": [
+    "prelude",
+    "std",
+    "lib",
+    "stdlib",
+    "library",
+    "cmp",
+    "compare",
+    "sort"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "MIT",
+  "dependencies": {
+    "@prelude/channel": "workspace:*",
+    "@prelude/emitter": "workspace:*"
+  }
+}

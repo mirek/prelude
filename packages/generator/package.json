@@ -1,0 +1,47 @@
+{
+  "name": "@prelude/generator",
+  "version": "9.0.0",
+  "description": "Generator module.",
+  "type": "module",
+  "module": "./mjs/index.js",
+  "main": "./cjs/index.js",
+  "exports": {
+    ".": {
+      "import": "./mjs/index.js",
+      "require": "./cjs/index.js"
+    },
+    "./*.js": {
+      "import": "./mjs/*.js",
+      "require": "./cjs/*.js"
+    },
+    "./*": {
+      "require": "./cjs/*.js"
+    }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest --coverage",
+    "preversion": "make preversion",
+    "postversion": "make postversion"
+  },
+  "keywords": [
+    "prelude",
+    "std",
+    "lib",
+    "stdlib",
+    "library",
+    "generators",
+    "functional",
+    "combinators"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "MIT",
+  "devDependencies": {
+    "@swc-node/register": "1.6.8"
+  },
+  "dependencies": {
+    "@prelude/cmp": "workspace:*"
+  }
+}

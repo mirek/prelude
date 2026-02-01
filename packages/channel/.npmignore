@@ -1,0 +1,7 @@
+.*
+*.test.*
+coverage
+jest.*
+Makefile
+test.*
+wip

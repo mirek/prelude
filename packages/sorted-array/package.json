@@ -1,0 +1,46 @@
+{
+  "name": "@prelude/sorted-array",
+  "version": "0.1.1",
+  "description": "Sorted array module.",
+  "type": "module",
+  "main": "./cjs/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "make test",
+    "preversion": "make test",
+    "postversion": "make postversion"
+  },
+  "keywords": [
+    "prelude",
+    "std",
+    "lib",
+    "stdlib",
+    "library",
+    "cmp",
+    "compare",
+    "sort",
+    "sorted",
+    "array"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "MIT",
+  "dependencies": {
+    "@prelude/cmp": "workspace:*"
+  },
+  "module": "./mjs/index.js",
+  "exports": {
+    ".": {
+      "import": "./mjs/index.js",
+      "require": "./cjs/index.js"
+    },
+    "./*.js": {
+      "import": "./mjs/*.js",
+      "require": "./cjs/*.js"
+    },
+    "./*": {
+      "require": "./cjs/*.js"
+    }
+  }
+}

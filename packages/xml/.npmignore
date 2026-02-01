@@ -1,0 +1,9 @@
+.github
+.vscode
+*.test.*
+jest.*
+Makefile
+tsconfig.json
+wip
+xmlconf
+src/wip

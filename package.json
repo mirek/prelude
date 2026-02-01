@@ -1,0 +1,28 @@
+{
+  "name": "@mirek/prelude",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "pnpm run -r test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "CC0-1.0",
+  "packageManager": "pnpm@10.28.1",
+  "devDependencies": {
+    "@prelude/eslint-config": "workspace:*",
+    "@swc/core": "^1.15.10",
+    "@swc/jest": "^0.2.39",
+    "@tsconfig/node24": "^24.0.4",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.0.10",
+    "eslint": "^9.39.2",
+    "jest": "^30.2.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

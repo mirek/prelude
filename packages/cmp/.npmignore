@@ -1,0 +1,7 @@
+.github
+.vscode
+*.sh
+*.test.*
+jest.*
+Makefile
+tsconfig.json

@@ -1,0 +1,61 @@
+{
+  "name": "@prelude/channel",
+  "version": "1.0.0",
+  "description": "Channel module.",
+  "type": "module",
+  "main": "./cjs/index.js",
+  "files": [
+    "*"
+  ],
+  "scripts": {
+    "test": "jest --coverage",
+    "preversion": "make preversion",
+    "postversion": "make postversion"
+  },
+  "keywords": [
+    "prelude",
+    "std",
+    "lib",
+    "stdlib",
+    "library",
+    "channel",
+    "go",
+    "golang",
+    "golike",
+    "concurrency",
+    "parallel",
+    "parallelism",
+    "async",
+    "asynchronous",
+    "promise",
+    "promises",
+    "future",
+    "futures",
+    "futurelike",
+    "gochannel",
+    "chan",
+    "csp"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "MIT",
+  "devDependencies": {
+    "@prelude/cmp": "workspace:*"
+  },
+  "dependencies": {
+    "@prelude/array": "workspace:*"
+  },
+  "module": "./mjs/index.js",
+  "exports": {
+    ".": {
+      "import": "./mjs/index.js",
+      "require": "./cjs/index.js"
+    },
+    "./*.js": {
+      "import": "./mjs/*.js",
+      "require": "./cjs/*.js"
+    },
+    "./*": {
+      "require": "./cjs/*.js"
+    }
+  }
+}

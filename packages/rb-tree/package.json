@@ -1,0 +1,48 @@
+{
+  "name": "@prelude/rb-tree",
+  "version": "0.3.0",
+  "description": "Red-black tree module.",
+  "type": "module",
+  "main": "./cjs/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "make test",
+    "preversion": "make test",
+    "postversion": "make postversion"
+  },
+  "keywords": [
+    "prelude",
+    "std",
+    "lib",
+    "stdlib",
+    "library",
+    "cmp",
+    "compare",
+    "sort"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "MIT",
+  "devDependencies": {
+    "@prelude/array": "workspace:*"
+  },
+  "dependencies": {
+    "@prelude/cmp": "workspace:*"
+  },
+  "module": "./mjs/index.js",
+  "exports": {
+    ".": {
+      "import": "./mjs/index.js",
+      "require": "./cjs/index.js"
+    },
+    "./bag": {
+      "import": "./mjs/bag.js",
+      "require": "./cjs/bag.js"
+    },
+    "./map": {
+      "import": "./mjs/map.js",
+      "require": "./cjs/map.js"
+    }
+  }
+}

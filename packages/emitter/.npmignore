@@ -1,0 +1,5 @@
+.github
+.vscode
+jest.*
+*.test.*
+coverage

@@ -1,0 +1,44 @@
+{
+  "name": "@prelude/progress",
+  "version": "0.0.1",
+  "description": "Progress module.",
+  "main": "./cjs/index.js",
+  "files": [
+    "*"
+  ],
+  "scripts": {
+    "test": "make test",
+    "preversion": "make test",
+    "postversion": "make postversion"
+  },
+  "keywords": [
+    "prelude",
+    "std",
+    "lib",
+    "stdlib",
+    "library",
+    "progress",
+    "tui",
+    "cli",
+    "multi",
+    "bar",
+    "spinner",
+    "ansi"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "MIT",
+  "module": "./mjs/index.js",
+  "exports": {
+    ".": {
+      "import": "./mjs/index.js",
+      "require": "./cjs/index.js"
+    },
+    "./*.js": {
+      "import": "./mjs/*.js",
+      "require": "./cjs/*.js"
+    },
+    "./*": {
+      "require": "./cjs/*.js"
+    }
+  }
+}

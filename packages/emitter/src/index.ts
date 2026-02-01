@@ -1,0 +1,7 @@
+export { default } from './emitter.js'
+export { default as Class } from './emitter.js'
+export { Interface as t } from './interface.js'
+export * from './after.js'
+export * from './emitter.js'
+export * from './interface.js'
+export * from './prelude.js'
