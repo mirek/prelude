@@ -8,7 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "eslint src && jest --coverage",
+    "test": "eslint src && npx tsx --test src/**/*.test.ts --coverage",
     "preversion": "make preversion",
     "postversion": "make postversion"
   },
@@ -26,7 +26,6 @@
   "author": "Mirek Rusin (https://github.com/mirek)",
   "license": "MIT",
   "devDependencies": {
-    "@jest/globals": "^29.7.0",
     "@prelude/refute": "workspace:*"
   },
   "module": "./mjs/index.js",

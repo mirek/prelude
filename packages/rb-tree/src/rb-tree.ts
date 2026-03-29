@@ -43,7 +43,7 @@ const get_ =
     switch (cmp_) {
       case Cmp.asc:
         return get_(_.l, key, cmp)
-      case Cmp.equal:
+      case Cmp.eq:
         return [ _.v, _.n ]
       case Cmp.dsc:
         return get_(_.r, key, cmp)
@@ -140,7 +140,7 @@ export const countLeft_ =
     switch (cmp_) {
       case Cmp.asc:
         return countLeft_(_.l, key, cmp, inclusive)
-      case Cmp.equal:
+      case Cmp.eq:
         return (_.l?.s ?? 0) + (inclusive ? _.n : 0)
       case Cmp.dsc:
         return _.s - (_.r?.s ?? 0) + countLeft_(_.r, key, cmp, inclusive)

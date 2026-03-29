@@ -58,7 +58,7 @@ export const diff =
           rhsValues,
           sort(rhsCmp)
         )
-      return diff(rhsValues_, cmp, { sortLhs, sortRhs: false, direction })
+      return diff(rhsValues_, cmp, { comparableLhs, comparableRhs, sortLhs, sortRhs: false, direction })
     }
     if (sortLhs) {
       const lhsCmp =
@@ -67,6 +67,8 @@ export const diff =
       return pipe0(
         sort(lhsCmp),
         diff(rhsValues, cmp, {
+          comparableLhs,
+          comparableRhs,
           sortLhs: false,
           sortRhs,
           direction

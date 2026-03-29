@@ -15,7 +15,7 @@ build: build-cjs build-mjs
 rebuild: clean build
 
 test:
-	NODE_OPTIONS="--no-warnings --experimental-vm-modules" pnpm jest
+	NODE_OPTIONS="--no-warnings --experimental-vm-modules" npx tsx --test src/**/*.test.ts
 
 update:
 	pnpm npm-check --update --save-exact

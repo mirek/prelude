@@ -38,8 +38,8 @@ test('select', async () => {
     }
   }
 
-  await sleep(2 * 1000)
+  await sleep(3 * 1000)
 
   expect(results.length).toEqual(100)
 
-})
+}, 10_000)

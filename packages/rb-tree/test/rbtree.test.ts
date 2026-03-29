@@ -1,8 +1,11 @@
-import * as RbTree from '../cjs/rb-tree.js'
+import * as RbTree from '../src/rb-tree.js'
 import * as Arrays from '@prelude/array'
 
+const slow = process.env.SLOW_TESTS ? describe : describe.skip
+const slowTest = process.env.SLOW_TESTS ? test : test.skip
+
 test('basic values', () => {
-  const tree = RbTree.of(RbTree.Cmp.strings, (_: string) => _)
+  const tree = RbTree.of(RbTree.Cmp.string, (_: string) => _)
   RbTree.insert(tree, 'foo')
   RbTree.insert(tree, 'bar')
   RbTree.insert(tree, 'baz')
@@ -20,7 +23,7 @@ test('basic values', () => {
 
 test('complex elements', () => {
   type E = { key: string, value: unknown }
-  const tree = RbTree.of(RbTree.Cmp.strings, (_: E) => _.key)
+  const tree = RbTree.of(RbTree.Cmp.string, (_: E) => _.key)
   RbTree.insert(tree, { key: 'foo', value: 'FOO' })
   expect(RbTree.has(tree, 'foo')).toBe(true)
   expect(RbTree.has(tree, 'bar')).toBe(false)
@@ -28,7 +31,7 @@ test('complex elements', () => {
 })
 
 test('random numbers', () => {
-  const rb = RbTree.of(RbTree.Cmp.numbers, (_: number) => _)
+  const rb = RbTree.of(RbTree.Cmp.number, (_: number) => _)
   for (let i = 0; i < 100; i++) {
     RbTree.insert(rb, Math.random())
   }
@@ -39,10 +42,10 @@ test('random numbers', () => {
   }
 })
 
-test('permutations', () => {
+slowTest('permutations', () => {
   const n = 9
   for (const values of Arrays.permutations(Arrays.indices(n))) {
-    const rb = RbTree.of(RbTree.Cmp.numbers, (_: number) => _)
+    const rb = RbTree.of(RbTree.Cmp.number, (_: number) => _)
     for (const value of values) {
       RbTree.insert(rb, value)
     }
@@ -51,10 +54,10 @@ test('permutations', () => {
   }
 })
 
-describe('pop', () => {
+slow('pop', () => {
 
   const n = 1_000
-  const rb = RbTree.of(RbTree.Cmp.numbers, (_: number) => _)
+  const rb = RbTree.of(RbTree.Cmp.number, (_: number) => _)
   const xs: number[] = []
 
   test(`insert ${n}`, () => {
@@ -88,9 +91,9 @@ describe('pop', () => {
   })
 })
 
-describe('deletes', () => {
+slow('deletes', () => {
   const n = 1_000
-  const rb = RbTree.of(RbTree.Cmp.numbers, (_: number) => _)
+  const rb = RbTree.of(RbTree.Cmp.number, (_: number) => _)
   const xs: number[] = []
 
   test(`insert ${n}`, () => {
@@ -117,10 +120,10 @@ describe('deletes', () => {
 
 })
 
-describe('range count', () => {
+slow('range count', () => {
 
   const n = 10_000
-  const rb = RbTree.of(RbTree.Cmp.numbers, (_: number) => _)
+  const rb = RbTree.of(RbTree.Cmp.number, (_: number) => _)
   const xs = Arrays.of(n, _ => _ + 1)
 
   test('insert', () => {

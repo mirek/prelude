@@ -1,7 +1,7 @@
-import * as Bag from '../cjs/bag.js'
+import * as Bag from '../src/bag.js'
 
 test('simple', () => {
-  const bag = Bag.of(Bag.Cmp.strings)
+  const bag = Bag.of(Bag.Cmp.string)
   Bag.add(bag, 'foo')
   Bag.add(bag, 'bar')
   Bag.add(bag, 'bar')

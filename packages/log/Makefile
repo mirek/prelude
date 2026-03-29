@@ -15,7 +15,7 @@ build: build-cjs build-mjs
 rebuild: clean build
 
 test: rebuild
-	@pnpm jest
+	npx tsx --test src/**/*.test.ts
 
 update:
 	@pnpm npm-check --update --save-exact

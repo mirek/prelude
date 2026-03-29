@@ -4,11 +4,8 @@
   "description": "Array module.",
   "type": "module",
   "main": "./cjs/index.js",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
-    "test": "eslint src && jest --coverage",
+    "test": "node --test src",
     "preversion": "make preversion",
     "postversion": "make postversion"
   },

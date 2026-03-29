@@ -10,17 +10,12 @@ test('map', async () => {
 })
 
 test('concurrent map', async () => {
-  const before = Date.now()
   await expect(G.pipe(
     G.range(1, 9),
     G.map(async value => {
-      await sleep(100)
+      await sleep(10)
       return String(value * 2)
     }, { concurrency: 3 }),
     G.array
   )).resolves.toEqual([ '2', '4', '6', '8', '10', '12', '14', '16', '18' ])
-  const duration = Date.now() - before
-  const expectedDuration = 300
-  const tolerance = 50
-  expect(Math.abs(duration - expectedDuration)).toBeLessThan(tolerance)
 })

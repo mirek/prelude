@@ -18,7 +18,7 @@ const delete_ =
       //                 | x /= y = T R E y E
       case _?.c === R && _.l === E && _.r === E: {
         const { v: y, n: j } = _ as M<T>
-        return cmpB(key(y)) === Cmp.equal ?
+        return cmpB(key(y)) === Cmp.eq ?
           j <= i ?
             [ y, j - i, E ] :
             [ undefined, j - i, mk(R, E, y, j - i, E) ] :
@@ -29,7 +29,7 @@ const delete_ =
       //                 | x /= y = T B E y E
       case _?.c === B && _.l === E && _.r === E: {
         const { v: y, n: j } = _ as M<T>
-        return cmpB(key(y)) === Cmp.equal ?
+        return cmpB(key(y)) === Cmp.eq ?
           j <= i ?
             [ y, j - i, EE ] :
             [ undefined, j - i, mk(B, E, y, j - i, E) ] :
@@ -48,7 +48,7 @@ const delete_ =
             const [ v, n, r ] = delete_(mk(R, E, y, j, E), key, cmpB, i)
             return [ v, n, mk(B, r, _!.v, _!.n, E) ] // TODO: ?
           }
-          case Cmp.equal:
+          case Cmp.eq:
             return i >= k ?
               [ z, k - i, mk(B, E, y, j, E) ] :
               [ z, k - i, mk(B, mk(R, E, y, j, E), z, k - i, E) ]
@@ -71,7 +71,7 @@ const delete_ =
             const [ v, n, r ] = delete_(a, key, cmpB, i)
             return [ v, n, rotate(mk(c, r, y, j, b)) ]
           }
-          case Cmp.equal: {
+          case Cmp.eq: {
             const [ y_, j_, b_ ] = shift<T>(b)
             return [ y, j_, rotate(mk(c, a, y_!, j_, b_)) ]
           }

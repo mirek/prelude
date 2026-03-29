@@ -1,5 +1,11 @@
 import { Channel, ReadAttempt, WriteAttempt, Attempt, Attempted, Thunk } from './channel.js'
 
+/**
+ * Selects from multiple attempts asynchronously.
+ * @typeparam Attempts - Tuple of attempt types.
+ * @param attempts - Variadic attempts to select from.
+ * @returns An async generator that yields selected values.
+ */
 export async function* select<Attempts extends Attempt[]>(
   ...attempts: Attempts
 ): AsyncGenerator<Attempted<Attempts[number]>> {
@@ -12,6 +18,18 @@ export async function* select<Attempts extends Attempt[]>(
   }
 }
 
+/**
+ * Performs a single selection attempt.
+ * @typeparam Attempts - Tuple of attempt types.
+ * @param attempts - Variadic attempts to select from.
+ * @returns A promise that resolves with the selected value or error.
+ */
+/**
+ * Performs an asynchronous selection.
+ * @typeparam Attempts - Tuple of attempt types.
+ * @param attempts - Variadic attempts to select from.
+ * @returns A promise that resolves with the selected value or error.
+ */
 export async function selectNext<Attempts extends Attempt[]>(
   ...attempts: Attempts
 ): Promise<IteratorResult<Attempted<Attempts[number]>>> {
@@ -44,6 +62,12 @@ export function selectAsync<Attempts extends Attempt[]>(
           resolve(attempt.perform(result) as IteratorResult<Attempted<Attempts[number]>>)
         }))
       } else {
+/**
+ * Performs a synchronous selection attempt.
+ * @typeparam Attempts - Tuple of attempt types.
+ * @param attempts - Variadic attempts to select from.
+ * @returns The selected value or undefined if no immediate selection possible.
+ */
         throw new Error('Invalid attempt.')
       }
     }

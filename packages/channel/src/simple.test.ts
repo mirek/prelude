@@ -29,13 +29,10 @@ test('simple', async () => {
 })
 
 test('delayed receive', async () => {
-
   const delayedNumber =
     (value: number) => {
       const ch = Ch.of<number>()
-      setTimeout(() => {
-        ch.write(value)
-      }, Math.random() * 100)
+      Promise.resolve().then(() => ch.write(value))
       return ch
     }
 
@@ -47,19 +44,22 @@ test('delayed receive', async () => {
 
 test('two delayed writes, two reads', async () => {
   const a = Ch.of<number>()
-  afterRandom(1000, () => a.write(3))
-  afterRandom(1000, () => a.write(5))
+  // Use immediate writes instead of random delays to avoid timing issues
+  Promise.resolve().then(() => a.write(3))
+  Promise.resolve().then(() => a.write(5))
   expect(await a.read() + await a.read()).toEqual(8)
 })
 
 test('async iterable consumer', async () => {
   const ch = Ch.of<number>()
-  sleep(100).then(() => ch.write(3))
-  sleep(200).then(() => ch.write(5))
-  sleep(300).then(() => {
-    ch.write(7)
-    ch.closeWriting()
-  })
+  // Use promise chain to ensure order without timing dependencies
+  Promise.resolve()
+    .then(() => ch.write(3))
+    .then(() => ch.write(5))
+    .then(() => {
+      ch.write(7)
+      ch.closeWriting()
+    })
   const values: number[] = []
   for await (const value of ch) {
     values.push(value)
@@ -90,7 +90,7 @@ test('concurrent map', async () => {
   }
 
   const f = async (value: number) => {
-    await sleep(100)
+    await sleep(10)
     return value * 2
   }
 

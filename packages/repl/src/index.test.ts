@@ -14,7 +14,7 @@ Please execute those two for me:
 and this:
 
 \`\`\`!js
-new Promise(resolve => setTimeout(() => resolve(42), 1_000))
+new Promise(resolve => setTimeout(() => resolve(42), 10))
 \`\`\`
 
 `

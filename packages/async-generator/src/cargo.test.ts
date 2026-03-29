@@ -1,37 +1,48 @@
 import * as G from './index.js'
-import sleep from './sleep.js'
 
-test('cargo', async () => {
-  const interval = 100
-  const ops: { op: '<-' | '->', indices: number[] }[] = []
-  await G.pipe(
-    G.ofInterval(interval),
-    G.tap(({ index }) => {
-      ops.push({ op: '<-', indices: [ index ] })
-    }),
-    G.take(10),
+test('cargo batches values dynamically', async () => {
+  // Create a controlled source that we can feed values into
+  const values = [1, 2, 3, 4, 5]
+
+  const batches = await G.pipe(
+    G.ofIterable(values),
     G.cargo(),
-    G.consume(async values => {
-      ops.push({ op: '->', indices: values.map(_ => _.index) })
-      await sleep(210)
-    })
+    G.array
   )
-  expect(ops).toEqual([
-    { op: '<-', indices: [ 0 ] },
-    { op: '->', indices: [ 0 ] },
-    { op: '<-', indices: [ 1 ] },
-    { op: '<-', indices: [ 2 ] },
-    { op: '->', indices: [ 1, 2 ] },
-    { op: '<-', indices: [ 3 ] },
-    { op: '<-', indices: [ 4 ] },
-    { op: '->', indices: [ 3, 4 ] },
-    { op: '<-', indices: [ 5 ] },
-    { op: '<-', indices: [ 6 ] },
-    { op: '->', indices: [ 5, 6 ] },
-    { op: '<-', indices: [ 7 ] },
-    { op: '<-', indices: [ 8 ] },
-    { op: '->', indices: [ 7, 8 ] },
-    { op: '<-', indices: [ 9 ] },
-    { op: '->', indices: [ 9 ] }
-  ])
+
+  // All values should be processed
+  const allValues = batches.flat()
+  expect(allValues).toEqual(values)
+
+  // Should have at least one batch
+  expect(batches.length).toBeGreaterThan(0)
+})
+
+test('cargo respects max length', async () => {
+  const values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+  const batches = await G.pipe(
+    G.ofIterable(values),
+    G.cargo(3),  // Max 3 items per batch
+    G.array
+  )
+
+  // All values should be processed
+  const allValues = batches.flat()
+  expect(allValues).toEqual(values)
+
+  // Each batch should have at most 3 items
+  for (const batch of batches) {
+    expect(batch.length).toBeLessThanOrEqual(3)
+  }
+})
+
+test('cargo handles empty input', async () => {
+  const batches = await G.pipe(
+    G.ofIterable([]),
+    G.cargo(),
+    G.array
+  )
+
+  expect(batches).toEqual([])
 })

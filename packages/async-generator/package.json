@@ -19,7 +19,7 @@
     }
   },
   "scripts": {
-    "test": "eslint src && jest --coverage",
+    "test": "eslint src && npx tsx --test src/**/*.test.ts --coverage",
     "preversion": "make preversion",
     "postversion": "make postversion"
   },

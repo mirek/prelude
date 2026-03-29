@@ -6,7 +6,11 @@ export const builtinModules = await (async () => {
   const names = Module.builtinModules.filter(_ => _[0] !== '_' && _.indexOf('/') === -1)
   const result: Record<string, unknown> = {}
   for (const name of names) {
-    result[name] = await import(name)
+    try {
+      result[name] = await import(name)
+    } catch {
+      // Some modules may not be importable (e.g., 'sea' in non-SEA contexts)
+    }
   }
   return result
 })()

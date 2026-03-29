@@ -1,5 +1,5 @@
 test:
-	pnpm exec jest
+	npx tsx --test src/**/*.test.ts
 
 clean:
 	rm -Rf cjs mjs test/*.js

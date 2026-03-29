@@ -22,7 +22,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "jest --coverage",
+    "test": "npx tsx --test src/**/*.test.ts --coverage",
     "preversion": "make preversion",
     "postversion": "make postversion"
   },
@@ -39,7 +39,7 @@
   "author": "Mirek Rusin (https://github.com/mirek)",
   "license": "MIT",
   "devDependencies": {
-    "@swc-node/register": "1.6.8"
+    "@swc-node/register": "1.11.1"
   },
   "dependencies": {
     "@prelude/cmp": "workspace:*"

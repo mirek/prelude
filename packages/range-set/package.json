@@ -6,7 +6,7 @@
   "main": "./cjs/index.js",
   "module": "./mjs/index.js",
   "scripts": {
-    "test": "NODE_OPTIONS='--no-warnings --experimental-vm-modules' pnpm jest",
+    "test": "NODE_OPTIONS='--no-warnings --experimental-vm-modules' pnpm npx tsx --test src/**/*.test.ts",
     "preversion": "make preversion",
     "postversion": "make postversion"
   },
@@ -30,12 +30,11 @@
   "author": "Mirek Rusin (https://github.com/mirek)",
   "license": "CC0",
   "devDependencies": {
-    "@babel/core": "^7.27.4",
-    "@babel/plugin-proposal-decorators": "^7.27.1",
-    "@babel/preset-env": "^7.27.2",
-    "@babel/preset-typescript": "^7.27.1",
-    "@babel/types": "^7.27.6",
-    "@jest/globals": "30.0.0-beta.3",
+    "@babel/core": "^7.29.0",
+    "@babel/plugin-proposal-decorators": "^7.29.0",
+    "@babel/preset-env": "^7.29.0",
+    "@babel/preset-typescript": "^7.28.5",
+    "@babel/types": "^7.29.0",
     "@types/babel__core": "^7.20.5"
   },
   "exports": {

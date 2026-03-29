@@ -1,7 +1,7 @@
 test:
 	pnpm tsc
 	pnpm eslint src
-	pnpm jest --coverage
+	npx tsx --test src/**/*.test.ts
 
 clean:
 	rm -Rf cjs mjs test/*.js

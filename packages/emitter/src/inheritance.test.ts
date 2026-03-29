@@ -28,7 +28,7 @@ class MyClient extends MyWebsocket<MyClientEvents> {
 
 test('should pass', async () => {
   const client: Emitter.Interface<MyClientEvents> = new MyClient()
-  Emitter.after(1_000, () => {
+  Emitter.after(10, () => {
     client.emit('message', 'did-login')
   })
   await expect(client.eventuallyIf('message', message => message.startsWith('did'))).resolves.toEqual([ 'did-login' ])

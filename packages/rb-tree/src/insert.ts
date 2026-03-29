@@ -24,9 +24,9 @@ const insert =
         return balance(mk(c, insert(a, key, cmp, x, i, merge), y, j, b))
 
       // | x == y = T color a y b
-      case Cmp.equal: {
+      case Cmp.eq: {
         const v = merge(x, y) // TODO: merge on number of elements
-        if (cmp(key(y), key(v)) !== Cmp.equal) {
+        if (cmp(key(y), key(v)) !== Cmp.eq) {
           throw new Error(`Merge can't produce non equal value, ${y} != ${v}.`)
         }
         return mk(c, a, v, i + j, b)

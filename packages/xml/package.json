@@ -21,9 +21,6 @@
   ],
   "author": "Mirek Rusin (https://github.com/mirek)",
   "license": "MIT",
-  "devDependencies": {
-    "@jest/globals": "^29.7.0"
-  },
   "module": "./mjs/index.js",
   "exports": {
     ".": {

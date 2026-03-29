@@ -1,7 +1,7 @@
-import * as Map_ from '../cjs/map.js'
+import * as Map_ from '../src/map.js'
 
 test('simple', () => {
-  const map = Map_.of<string, number>(Map_.Cmp.strings)
+  const map = Map_.of<string, number>(Map_.Cmp.string)
   expect(Map_.has(map, 'one')).toBe(false)
   expect(() => Map_.get(map, 'one')).toThrow('Key \'one\' not found.')
   expect(Map_.maybeGet(map, 'one')).toBe(undefined)
