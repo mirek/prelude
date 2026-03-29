@@ -25,7 +25,7 @@
     "array"
   ],
   "author": "Mirek Rusin (https://github.com/mirek)",
-  "license": "MIT",
+  "license": "CC0-1.0",
   "dependencies": {
     "@prelude/cmp": "workspace:*"
   },

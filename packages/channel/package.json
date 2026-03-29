@@ -37,7 +37,7 @@
     "csp"
   ],
   "author": "Mirek Rusin (https://github.com/mirek)",
-  "license": "MIT",
+  "license": "CC0-1.0",
   "devDependencies": {
     "@prelude/cmp": "workspace:*"
   },

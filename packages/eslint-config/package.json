@@ -14,7 +14,7 @@
     "eslintconfig"
   ],
   "author": "Mirek Rusin (https://github.com/mirek)",
-  "license": "MIT",
+  "license": "CC0-1.0",
   "dependencies": {
     "@eslint/compat": "^2.0.3",
     "@eslint/js": "^10.0.1",

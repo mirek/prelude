@@ -43,7 +43,7 @@
     "winston"
   ],
   "author": "Mirek Rusin (https://github.com/mirek)",
-  "license": "MIT",
+  "license": "CC0-1.0",
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "7.29.0",
     "@babel/preset-env": "7.29.0",
