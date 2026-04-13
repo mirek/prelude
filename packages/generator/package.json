@@ -4,25 +4,19 @@
   "description": "Generator module.",
   "type": "module",
   "module": "./mjs/index.js",
-  "main": "./cjs/index.js",
   "exports": {
     ".": {
-      "import": "./mjs/index.js",
-      "require": "./cjs/index.js"
+      "import": "./mjs/index.js"
     },
     "./*.js": {
-      "import": "./mjs/*.js",
-      "require": "./cjs/*.js"
-    },
-    "./*": {
-      "require": "./cjs/*.js"
+      "import": "./mjs/*.js"
     }
   },
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "npx tsx --test src/**/*.test.ts --coverage",
+    "test": "pnpm tsx --test src/**/*.test.ts --coverage",
     "preversion": "make preversion",
     "postversion": "make postversion"
   },
@@ -39,7 +33,8 @@
   "author": "Mirek Rusin (https://github.com/mirek)",
   "license": "CC0-1.0",
   "devDependencies": {
-    "@swc-node/register": "1.11.1"
+    "@swc-node/register": "1.11.1",
+    "@prelude/tsconfig": "workspace:*"
   },
   "dependencies": {
     "@prelude/cmp": "workspace:*"

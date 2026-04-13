@@ -1,6 +1,8 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('pipe', () => {
+await test('pipe', () => {
   const double = G.map<number, number>(_ => _ * 2)
   const itemize: <T>(g: Iterable<T>) => Generator<{ item: T }> =
     G.map(_ => ({ item: _ }))
@@ -10,14 +12,14 @@ test('pipe', () => {
     itemize,
     G.array
   )
-  expect(xs).toEqual([
+  assert.deepEqual(xs, [
     { item: 2 },
     { item: 4 },
     { item: 6 }
   ])
 })
 
-test('decorate', () => {
+await test('decorate', () => {
 
   const withHex =
     function* <T extends { value: number }>(g: Iterable<T>): Generator<T & { hex: string }> {
@@ -40,7 +42,7 @@ test('decorate', () => {
   ]
   const values = G.pipe(input, withHex, withEven, G.array)
 
-  expect(values).toEqual([
+  assert.deepEqual(values, [
     { value: 1, hex: '1', even: false },
     { value: 17, hex: '11', even: false },
     { value: 10, hex: 'a', even: true, test: 'yes' }

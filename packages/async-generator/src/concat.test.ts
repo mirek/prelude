@@ -1,12 +1,14 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('concat', async () => {
-  await expect(G.pipe(
+await test('concat', async () => {
+  assert.deepEqual(await G.pipe(
     G.concat(
       G.ofIterable([ 1, 2, 3 ]),
       G.ofIterable([ 4, 5, 6 ]),
       G.ofIterable([ 7 ])
     ),
     G.array
-  )).resolves.toEqual([ 1, 2, 3, 4, 5, 6, 7 ])
+  ), [ 1, 2, 3, 4, 5, 6, 7 ])
 })

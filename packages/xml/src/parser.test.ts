@@ -1,42 +1,43 @@
-import { test, expect } from '@jest/globals'
 import * as P from '@prelude/parser'
 import * as Xml from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('end', () => {
-  expect(P.parse(Xml.Parser.endtag, '</root>')).toEqual('root')
+await test('end', () => {
+  assert.deepEqual(P.parse(Xml.Parser.endtag, '</root>'), 'root')
 })
 
-test.skip('element', () => {
-  expect(P.parse(Xml.Parser.element, '<foo/>')).toEqual({
+await test.skip('element', () => {
+  assert.deepEqual(P.parse(Xml.Parser.element, '<foo/>'), {
     type: 'Element',
     name: 'foo',
     attributes: []
   })
-  expect(P.parse(Xml.Parser.element, '<foo bar="baz"/>')).toEqual({
+  assert.deepEqual(P.parse(Xml.Parser.element, '<foo bar="baz"/>'), {
     type: 'element',
     name: 'foo',
     attributes: { bar: 'baz' },
     content: []
   })
-  expect(P.parse(Xml.Parser.element, '<foo></foo>')).toEqual({
+  assert.deepEqual(P.parse(Xml.Parser.element, '<foo></foo>'), {
     type: 'element',
     name: 'foo',
     attributes: {},
     content: []
   })
-  expect(P.parse(Xml.Parser.element, '<foo>bar</foo>')).toEqual({
+  assert.deepEqual(P.parse(Xml.Parser.element, '<foo>bar</foo>'), {
     type: 'element',
     name: 'foo',
     attributes: {},
     content: [ { type: 'text', value: 'bar' } ]
   })
-  expect(P.parse(Xml.Parser.element, '<foo><bar/></foo>')).toEqual({
+  assert.deepEqual(P.parse(Xml.Parser.element, '<foo><bar/></foo>'), {
     type: 'element',
     name: 'foo',
     attributes: {},
     content: [ { type: 'element', name: 'bar', attributes: {}, content: [] } ]
   })
-  expect(P.parse(Xml.Parser.element, '<root>hello<foo />world</root>')).toEqual({
+  assert.deepEqual(P.parse(Xml.Parser.element, '<root>hello<foo />world</root>'), {
     type: 'element',
     name: 'root',
     attributes: {},
@@ -46,7 +47,7 @@ test.skip('element', () => {
       { type: 'text', value: 'world' }
     ]
   })
-  expect(P.parse(Xml.Parser.element, '<root>hello<foo />world<!--foo--><b>!</b></root>')).toEqual({
+  assert.deepEqual(P.parse(Xml.Parser.element, '<root>hello<foo />world<!--foo--><b>!</b></root>'), {
     type: 'Element',
     name: 'root',
     attributes: {},
@@ -62,20 +63,20 @@ test.skip('element', () => {
   })
 })
 
-test('doctype', () => {
+await test('doctype', () => {
   // expect(P.parse(Xml.Parser.doctype, '<!DOCTYPE html>')).toEqual({
   //   type: 'Doctype',
   //   name: 'html'
   // })
-  expect(P.parse(Xml.Parser.doctype, '<!DOCTYPE html [<!ENTITY foo "bar">]>')).toEqual({
+  assert.deepEqual(P.parse(Xml.Parser.doctype, '<!DOCTYPE html [<!ENTITY foo "bar">]>'), {
     type: 'Doctype',
     value: ' html [<!ENTITY foo "bar">'
   })
-  expect(P.parse(Xml.Parser.doctype, `<!DOCTYPE doc [
+  assert.deepEqual(P.parse(Xml.Parser.doctype, `<!DOCTYPE doc [
 <!ELEMENT doc (#PCDATA)>
 <!ENTITY e1 "&e2;">
 <!ENTITY e2 "v">
-]>`)).toEqual({
+]>`), {
     type: 'Doctype',
     value: ` doc [
 <!ELEMENT doc (#PCDATA)>
@@ -85,8 +86,8 @@ test('doctype', () => {
   })
 })
 
-test('empty document', () => {
-  expect(P.parse(Xml.Parser.document, '<root></root>')).toEqual({
+await test('empty document', () => {
+  assert.deepEqual(P.parse(Xml.Parser.document, '<root></root>'), {
     type: 'Document',
     prelude: [],
     root: {
@@ -98,8 +99,8 @@ test('empty document', () => {
   })
 })
 
-test('document with doctype', () => {
-  expect(P.parse(Xml.Parser.document, '<!DOCTYPE doc [<!ELEMENT doc (#PCDATA)>]>\n<doc></doc>')).toEqual({
+await test('document with doctype', () => {
+  assert.deepEqual(P.parse(Xml.Parser.document, '<!DOCTYPE doc [<!ELEMENT doc (#PCDATA)>]>\n<doc></doc>'), {
     type: 'Document',
     prelude: [
       {

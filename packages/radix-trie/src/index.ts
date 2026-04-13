@@ -79,7 +79,7 @@ export const insert =
       const suffix = edge.P.slice(n)
       const suffixChar = suffix[0]
 
-      edge.N = { [suffixChar]: { P: suffix, N: edge.N, E: edge.E } }
+      edge.N = { [suffixChar]: edge.N === undefined ? { P: suffix, E: edge.E } : { P: suffix, N: edge.N, E: edge.E } }
       edge.P = prefix
 
       // If the prefix being created is the same as the value being inserted, then mark it as an end of string.

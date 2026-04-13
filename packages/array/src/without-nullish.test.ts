@@ -1,5 +1,7 @@
 import * as A from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('withoutNullish', () => {
-  expect(A.withoutNullish([ 1, null, 3, undefined, 5 ])).toEqual([ 1, 3, 5 ])
+await test('withoutNullish', () => {
+  assert.deepEqual(A.withoutNullish([ 1, null, 3, undefined, 5 ]), [ 1, 3, 5 ])
 })

@@ -1,10 +1,12 @@
 import * as A from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('at', () => {
-  expect(A.at([ 1, 2, 3 ], 0)).toBe(1)
-  expect(A.at([ 1, 2, 3 ], 1)).toBe(2)
-  expect(A.at([ 1, 2, 3 ], 2)).toBe(3)
-  expect(() => A.at([ 1, 2, 3 ], 3)).toThrow()
-  expect(() => A.at([ 1, 2, 3 ], -1)).toThrow()
-  expect(() => A.at([ 1, 2, 3 ], 0.5)).toThrow()
+await test('at', () => {
+  assert.equal(A.at([ 1, 2, 3 ], 0), 1)
+  assert.equal(A.at([ 1, 2, 3 ], 1), 2)
+  assert.equal(A.at([ 1, 2, 3 ], 2), 3)
+  assert.throws(() => A.at([ 1, 2, 3 ], 3))
+  assert.throws(() => A.at([ 1, 2, 3 ], -1))
+  assert.throws(() => A.at([ 1, 2, 3 ], 0.5))
 })

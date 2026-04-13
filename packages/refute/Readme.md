@@ -1,5 +1,5 @@
 ![@prelude/refute](https://shields.io/npm/v/@prelude/refute)
-![esm cjs](https://img.shields.io/badge/module-esm%20cjs-f39f37)
+![esm](https://img.shields.io/badge/module-esm-f39f37)
 [![deno](https://img.shields.io/badge/deno-f39f37)](https://raw.githubusercontent.com/preludejs/refute/master/esm/index.js)
 
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=preludejs_refute&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=preludejs_refute)

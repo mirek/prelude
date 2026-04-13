@@ -1,4 +1,4 @@
-import levenshtein from '../distance/levenshtein'
+import levenshtein from '../distance/levenshtein.js'
 
 /**
  * Calculate the similarity score between a query and source lines at a given source line index.

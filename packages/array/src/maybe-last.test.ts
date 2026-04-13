@@ -1,6 +1,8 @@
 import * as A from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('maybeLast', () => {
-  expect(A.maybeLast([ 7, 3, 5 ])).toBe(5)
-  expect(A.maybeLast([])).toBe(undefined)
+await test('maybeLast', () => {
+  assert.equal(A.maybeLast([ 7, 3, 5 ]), 5)
+  assert.equal(A.maybeLast([]), undefined)
 })

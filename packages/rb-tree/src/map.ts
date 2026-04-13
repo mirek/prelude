@@ -8,7 +8,8 @@ type Map_<K, V> = {
   tree: RbTree.t<E<K, V>, K>
 }
 
-export { Map_ as Map, Map_ as t, Cmp }
+export type { Map_ as Map, Map_ as t }
+export { Cmp }
 
 export const of =
   <K, V>(cmp: Cmp.t<K>): Map_<K, V> => ({

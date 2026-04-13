@@ -1,24 +1,19 @@
 clean:
-	@rm -Rf cjs mjs test/*.js
-
-build-cjs:
-	@rm -Rf cjs
-	@npx tsc -m commonjs -d --outDir cjs
-	@echo '{"type":"commonjs"}' > cjs/package.json
+	@rm -Rf mjs test/*.js
 
 build-mjs:
 	@rm -Rf mjs
-	@npx tsc -d --outDir mjs
+	@pnpm tsc -p tsconfig.lib.json -d --sourceMap --outDir mjs --rootDir src
 
-build: build-cjs build-mjs
+build: build-mjs
 
 rebuild: clean build
 
 test: rebuild
-	npx tsx --test src/**/*.test.ts
+	pnpm tsx --test src/**/*.test.ts
 
 update:
-	@npx npm-check --update --save-exact
+	@pnpm npm-check --update --save-exact
 
 postversion:
 	@git push

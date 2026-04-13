@@ -1,13 +1,14 @@
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('line', () => {
+await test('line', () => {
   const parser = P.parser(P.star(P.line))
-  expect(parser('hello\nworld\n')).toEqual([
+  assert.deepEqual(parser('hello\nworld\n'), [
     'hello',
     'world'
   ])
-  expect(parser('hello\r\nworld\n')).toEqual([
+  assert.deepEqual(parser('hello\r\nworld\n'), [
     'hello',
     'world'
   ])

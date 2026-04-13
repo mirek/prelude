@@ -6,6 +6,6 @@ const is =
     (value: unknown) =>
       Object.is(value, a) ?
         ok(value as T) :
-        fail(value, `expected ${a}`)
+        fail(value, `expected ${String(a)}`)
 
 export default is

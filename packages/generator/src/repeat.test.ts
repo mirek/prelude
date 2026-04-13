@@ -1,16 +1,18 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('repeat', () => {
-  expect(G.array(G.pipe(
+await test('repeat', () => {
+  assert.deepEqual(G.array(G.pipe(
     G.repeat(3, Math.random),
     G.map(_ => typeof _)
-  ))).toEqual([
+  )), [
     'number', 'number', 'number'
   ])
 })
 
-test('distinct', () => {
+await test('distinct', () => {
   const _s = G.array(G.repeat(2, () => ({})))
-  expect(_s).toHaveLength(2)
-  expect(_s[0]).not.toBe(_s[1])
+  assert.equal((_s).length, 2)
+  assert.notEqual(_s[0], _s[1])
 })

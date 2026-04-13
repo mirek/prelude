@@ -1,8 +1,10 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('ofIterable', async () => {
-  await expect(G.pipe(
+await test('ofIterable', async () => {
+  assert.deepEqual(await G.pipe(
     G.ofIterable([ 1, 2, 3 ]),
     G.array
-  )).resolves.toEqual([ 1, 2, 3 ])
+  ), [ 1, 2, 3 ])
 })

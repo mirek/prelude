@@ -1,9 +1,10 @@
-import { test, expect } from '@jest/globals'
 import * as RangeSet from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
 const r = RangeSet.Range.of
 
-test('difference (closed, sum)', () => {
+await test('difference (closed, sum)', () => {
   // i: 0 1 2 3
   // a: - - - -
   let a = {
@@ -17,17 +18,17 @@ test('difference (closed, sum)', () => {
   // b: - 1 1 1
   // r: - - - -
   a = RangeSet.difference(a, { ranges: [r(1, 3, 1)] })
-  expect(a.ranges).toEqual([])
+  assert.deepEqual(a.ranges, [])
 
   // i: 0 1 2 3
   // a: - - - -
   // b: - - - -
   // r: - - - -
   a = RangeSet.difference(a, { ranges: [] })
-  expect(a.ranges).toEqual([])
+  assert.deepEqual(a.ranges, [])
 })
 
-test('difference (closed, sum) - basic subtraction', () => {
+await test('difference (closed, sum) - basic subtraction', () => {
   // i: 0 1 2 3 4 5
   // a: - - - - - -
   let a = {
@@ -41,17 +42,17 @@ test('difference (closed, sum) - basic subtraction', () => {
   // b: - 3 3 3 3 -
   // r: - 3 3 3 3 -
   a = RangeSet.union(a, { ranges: [r(1, 4, 3)] })
-  expect(a.ranges).toEqual([r(1, 4, 3)])
+  assert.deepEqual(a.ranges, [r(1, 4, 3)])
 
   // i: 0 1 2 3 4 5
   // a: - 3 3 3 3 -
   // b: - - 2 2 - -
   // r: - 3 - - 3 -
   a = RangeSet.difference(a, { ranges: [r(2, 3, 2)] })
-  expect(a.ranges).toEqual([r(1, 1, 3), r(4, 4, 3)])
+  assert.deepEqual(a.ranges, [r(1, 1, 3), r(4, 4, 3)])
 })
 
-test('difference (closed, sum) - no overlap', () => {
+await test('difference (closed, sum) - no overlap', () => {
   // i: 0 1 2 3 4 5
   // a: - - - - - -
   let a = {
@@ -65,17 +66,17 @@ test('difference (closed, sum) - no overlap', () => {
   // b: - 5 5 - - -
   // r: - 5 5 - - -
   a = RangeSet.union(a, { ranges: [r(1, 2, 5)] })
-  expect(a.ranges).toEqual([r(1, 2, 5)])
+  assert.deepEqual(a.ranges, [r(1, 2, 5)])
 
   // i: 0 1 2 3 4 5
   // a: - 5 5 - - -
   // b: - - - - 7 7
   // r: - 5 5 - - -
   a = RangeSet.difference(a, { ranges: [r(4, 5, 7)] })
-  expect(a.ranges).toEqual([r(1, 2, 5)])
+  assert.deepEqual(a.ranges, [r(1, 2, 5)])
 })
 
-test('difference (closed, sum) - complete removal', () => {
+await test('difference (closed, sum) - complete removal', () => {
   // i: 0 1 2 3 4 5
   // a: - - - - - -
   let a = {
@@ -89,17 +90,17 @@ test('difference (closed, sum) - complete removal', () => {
   // b: - 4 4 4 - -
   // r: - 4 4 4 - -
   a = RangeSet.union(a, { ranges: [r(1, 3, 4)] })
-  expect(a.ranges).toEqual([r(1, 3, 4)])
+  assert.deepEqual(a.ranges, [r(1, 3, 4)])
 
   // i: 0 1 2 3 4 5
   // a: - 4 4 4 - -
   // b: - 2 2 2 - -
   // r: - - - - - -
   a = RangeSet.difference(a, { ranges: [r(1, 3, 2)] })
-  expect(a.ranges).toEqual([])
+  assert.deepEqual(a.ranges, [])
 })
 
-test('difference (closed, sum) - partial removal at start', () => {
+await test('difference (closed, sum) - partial removal at start', () => {
   // i: 0 1 2 3 4 5
   // a: - - - - - -
   let a = {
@@ -113,17 +114,17 @@ test('difference (closed, sum) - partial removal at start', () => {
   // b: - - 5 5 5 -
   // r: - - 5 5 5 -
   a = RangeSet.union(a, { ranges: [r(2, 4, 5)] })
-  expect(a.ranges).toEqual([r(2, 4, 5)])
+  assert.deepEqual(a.ranges, [r(2, 4, 5)])
 
   // i: 0 1 2 3 4 5
   // a: - - 5 5 5 -
   // b: - 2 2 2 - -
   // r: - - - - 5 -
   a = RangeSet.difference(a, { ranges: [r(1, 3, 2)] })
-  expect(a.ranges).toEqual([r(4, 4, 5)])
+  assert.deepEqual(a.ranges, [r(4, 4, 5)])
 })
 
-test('difference (closed, sum) - partial removal at end', () => {
+await test('difference (closed, sum) - partial removal at end', () => {
   // i: 0 1 2 3 4 5
   // a: - - - - - -
   let a = {
@@ -137,17 +138,17 @@ test('difference (closed, sum) - partial removal at end', () => {
   // b: - 6 6 6 - -
   // r: - 6 6 6 - -
   a = RangeSet.union(a, { ranges: [r(1, 3, 6)] })
-  expect(a.ranges).toEqual([r(1, 3, 6)])
+  assert.deepEqual(a.ranges, [r(1, 3, 6)])
 
   // i: 0 1 2 3 4 5
   // a: - 6 6 6 - -
   // b: - - - 2 2 2
   // r: - 6 6 - - -
   a = RangeSet.difference(a, { ranges: [r(3, 5, 2)] })
-  expect(a.ranges).toEqual([r(1, 2, 6)])
+  assert.deepEqual(a.ranges, [r(1, 2, 6)])
 })
 
-test('difference (closed, sum) - multiple holes', () => {
+await test('difference (closed, sum) - multiple holes', () => {
   // i: 0 1 2 3 4 5 6 7
   // a: - - - - - - - -
   let a = {
@@ -161,17 +162,17 @@ test('difference (closed, sum) - multiple holes', () => {
   // b: - 1 1 1 1 1 1 -
   // r: - 1 1 1 1 1 1 -
   a = RangeSet.union(a, { ranges: [r(1, 6, 1)] })
-  expect(a.ranges).toEqual([r(1, 6, 1)])
+  assert.deepEqual(a.ranges, [r(1, 6, 1)])
 
   // i: 0 1 2 3 4 5 6 7
   // a: - 1 1 1 1 1 1 -
   // b: - - 2 - - 3 - -
   // r: - 1 - 1 1 - 1 -
   a = RangeSet.difference(a, { ranges: [r(2, 2, 2), r(5, 5, 3)] })
-  expect(a.ranges).toEqual([r(1, 1, 1), r(3, 4, 1), r(6, 6, 1)])
+  assert.deepEqual(a.ranges, [r(1, 1, 1), r(3, 4, 1), r(6, 6, 1)])
 })
 
-test('difference (closed, sum) - single point ranges', () => {
+await test('difference (closed, sum) - single point ranges', () => {
   // i: 0 1 2 3 4 5
   // a: - - - - - -
   let a = {
@@ -185,17 +186,17 @@ test('difference (closed, sum) - single point ranges', () => {
   // b: - 9 - - - -
   // r: - 9 - - - -
   a = RangeSet.union(a, { ranges: [r(1, 1, 9)] })
-  expect(a.ranges).toEqual([r(1, 1, 9)])
+  assert.deepEqual(a.ranges, [r(1, 1, 9)])
 
   // i: 0 1 2 3 4 5
   // a: - 9 - - - -
   // b: - 4 - - - -
   // r: - - - - - -
   a = RangeSet.difference(a, { ranges: [r(1, 1, 4)] })
-  expect(a.ranges).toEqual([])
+  assert.deepEqual(a.ranges, [])
 })
 
-test('difference (closed, sum) - single point no overlap', () => {
+await test('difference (closed, sum) - single point no overlap', () => {
   // i: 0 1 2 3 4 5
   // a: - - - - - -
   let a = {
@@ -209,17 +210,17 @@ test('difference (closed, sum) - single point no overlap', () => {
   // b: - 7 - - - -
   // r: - 7 - - - -
   a = RangeSet.union(a, { ranges: [r(1, 1, 7)] })
-  expect(a.ranges).toEqual([r(1, 1, 7)])
+  assert.deepEqual(a.ranges, [r(1, 1, 7)])
 
   // i: 0 1 2 3 4 5
   // a: - 7 - - - -
   // b: - - - 5 - -
   // r: - 7 - - - -
   a = RangeSet.difference(a, { ranges: [r(3, 3, 5)] })
-  expect(a.ranges).toEqual([r(1, 1, 7)])
+  assert.deepEqual(a.ranges, [r(1, 1, 7)])
 })
 
-test('difference (closed, sum) - range with single point removal', () => {
+await test('difference (closed, sum) - range with single point removal', () => {
   // i: 0 1 2 3 4 5
   // a: - - - - - -
   let a = {
@@ -233,17 +234,17 @@ test('difference (closed, sum) - range with single point removal', () => {
   // b: - 3 3 3 3 -
   // r: - 3 3 3 3 -
   a = RangeSet.union(a, { ranges: [r(1, 4, 3)] })
-  expect(a.ranges).toEqual([r(1, 4, 3)])
+  assert.deepEqual(a.ranges, [r(1, 4, 3)])
 
   // i: 0 1 2 3 4 5
   // a: - 3 3 3 3 -
   // b: - - - 8 - -
   // r: - 3 3 - 3 -
   a = RangeSet.difference(a, { ranges: [r(3, 3, 8)] })
-  expect(a.ranges).toEqual([r(1, 2, 3), r(4, 4, 3)])
+  assert.deepEqual(a.ranges, [r(1, 2, 3), r(4, 4, 3)])
 })
 
-test('difference (closed, sum) - empty sets', () => {
+await test('difference (closed, sum) - empty sets', () => {
   // i: 0 1 2 3
   // a: - - - -
   let a = {
@@ -257,10 +258,10 @@ test('difference (closed, sum) - empty sets', () => {
   // b: - - - -
   // r: - - - -
   a = RangeSet.difference(a, { ranges: [] })
-  expect(a.ranges).toEqual([])
+  assert.deepEqual(a.ranges, [])
 })
 
-test('difference (closed, sum) - subtract from empty', () => {
+await test('difference (closed, sum) - subtract from empty', () => {
   // i: 0 1 2 3 4 5
   // a: - - - - - -
   let a = {
@@ -274,10 +275,10 @@ test('difference (closed, sum) - subtract from empty', () => {
   // b: - 2 2 2 - -
   // r: - - - - - -
   a = RangeSet.difference(a, { ranges: [r(1, 3, 2)] })
-  expect(a.ranges).toEqual([])
+  assert.deepEqual(a.ranges, [])
 })
 
-test('difference (closed, sum) - subtract empty', () => {
+await test('difference (closed, sum) - subtract empty', () => {
   // i: 0 1 2 3 4 5
   // a: - - - - - -
   let a = {
@@ -291,17 +292,17 @@ test('difference (closed, sum) - subtract empty', () => {
   // b: - 5 5 5 - -
   // r: - 5 5 5 - -
   a = RangeSet.union(a, { ranges: [r(1, 3, 5)] })
-  expect(a.ranges).toEqual([r(1, 3, 5)])
+  assert.deepEqual(a.ranges, [r(1, 3, 5)])
 
   // i: 0 1 2 3 4 5
   // a: - 5 5 5 - -
   // b: - - - - - -
   // r: - 5 5 5 - -
   a = RangeSet.difference(a, { ranges: [] })
-  expect(a.ranges).toEqual([r(1, 3, 5)])
+  assert.deepEqual(a.ranges, [r(1, 3, 5)])
 })
 
-test('difference (closed, sum) - overlapping removals', () => {
+await test('difference (closed, sum) - overlapping removals', () => {
   // i: 0 1 2 3 4 5 6 7 8 9
   // a: - - - - - - - - - -
   let a = {
@@ -315,17 +316,17 @@ test('difference (closed, sum) - overlapping removals', () => {
   // b: - 1 1 1 1 1 1 1 1 -
   // r: - 1 1 1 1 1 1 1 1 -
   a = RangeSet.union(a, { ranges: [r(1, 8, 1)] })
-  expect(a.ranges).toEqual([r(1, 8, 1)])
+  assert.deepEqual(a.ranges, [r(1, 8, 1)])
 
   // i: 0 1 2 3 4 5 6 7 8 9
   // a: - 1 1 1 1 1 1 1 1 -
   // b: - - 2 2 2 - - 3 3 3
   // r: - 1 - - - 1 1 - - -
   a = RangeSet.difference(a, { ranges: [r(2, 4, 2), r(7, 9, 3)] })
-  expect(a.ranges).toEqual([r(1, 1, 1), r(5, 6, 1)])
+  assert.deepEqual(a.ranges, [r(1, 1, 1), r(5, 6, 1)])
 })
 
-test('difference (closed, sum) - adjacent removals', () => {
+await test('difference (closed, sum) - adjacent removals', () => {
   // i: 0 1 2 3 4 5 6 7
   // a: - - - - - - - -
   let a = {
@@ -339,17 +340,17 @@ test('difference (closed, sum) - adjacent removals', () => {
   // b: - 4 4 4 4 4 4 -
   // r: - 4 4 4 4 4 4 -
   a = RangeSet.union(a, { ranges: [r(1, 6, 4)] })
-  expect(a.ranges).toEqual([r(1, 6, 4)])
+  assert.deepEqual(a.ranges, [r(1, 6, 4)])
 
   // i: 0 1 2 3 4 5 6 7
   // a: - 4 4 4 4 4 4 -
   // b: - - 1 1 2 2 - -
   // r: - 4 - - - - 4 -
   a = RangeSet.difference(a, { ranges: [r(2, 3, 1), r(4, 5, 2)] })
-  expect(a.ranges).toEqual([r(1, 1, 4), r(6, 6, 4)])
+  assert.deepEqual(a.ranges, [r(1, 1, 4), r(6, 6, 4)])
 })
 
-test('difference (closed, min)', () => {
+await test('difference (closed, min)', () => {
   // i: 0 1 2 3 4 5
   // a: - - - - - -
   let a = {
@@ -363,12 +364,12 @@ test('difference (closed, min)', () => {
   // b: - 8 8 8 - -
   // r: - 8 8 8 - -
   a = RangeSet.union(a, { ranges: [r(1, 3, 8)] })
-  expect(a.ranges).toEqual([r(1, 3, 8)])
+  assert.deepEqual(a.ranges, [r(1, 3, 8)])
 
   // i: 0 1 2 3 4 5
   // a: - 8 8 8 - -
   // b: - - 5 5 5 -
   // r: - 8 - - - -
   a = RangeSet.difference(a, { ranges: [r(2, 4, 5)] })
-  expect(a.ranges).toEqual([r(1, 1, 8)])
+  assert.deepEqual(a.ranges, [r(1, 1, 8)])
 })

@@ -1,0 +1,11 @@
+{
+  "extends": "@prelude/tsconfig/backend.json",
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/**/*.test.ts",
+    "test",
+    "node_modules"
+  ]
+}

@@ -1,15 +1,17 @@
 import * as Cmp from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('length', () => {
+await test('length', () => {
   const a = [ 1, 2, 3 ]
   const b = [ 1, 2 ]
-  expect(Cmp.length(a, b)).toBe(Cmp.dsc)
-  expect(Cmp.length(b, a)).toBe(Cmp.asc)
+  assert.equal(Cmp.length(a, b), Cmp.dsc)
+  assert.equal(Cmp.length(b, a), Cmp.asc)
 })
 
-test('equal', () => {
+await test('equal', () => {
   const a = [ 1, 2, 3 ]
   const b = [ 1, 2, 3 ]
-  expect(Cmp.length(a, b)).toBe(Cmp.eq)
-  expect(Cmp.length(b, a)).toBe(Cmp.eq)
+  assert.equal(Cmp.length(a, b), Cmp.eq)
+  assert.equal(Cmp.length(b, a), Cmp.eq)
 })

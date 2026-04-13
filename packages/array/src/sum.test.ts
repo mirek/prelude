@@ -1,6 +1,8 @@
 import * as A from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('sum', () => {
-  expect(A.sum([])).toBe(0)
-  expect(A.sum([ 1, 2, 3 ])).toBe(6)
+await test('sum', () => {
+  assert.equal(A.sum([]), 0)
+  assert.equal(A.sum([ 1, 2, 3 ]), 6)
 })

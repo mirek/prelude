@@ -1,33 +1,35 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
 const rotate =
   (n: number, xs = [ 1, 2, 3 ]) =>
     G.pipe(G.of(xs), G.rotate(n), G.array)
 
-test('simple', () => {
-  expect(rotate(1)).toEqual([ 2, 3, 1 ])
+await test('simple', () => {
+  assert.deepEqual(rotate(1), [ 2, 3, 1 ])
 })
 
-test('larger', () => {
-  expect(rotate(0)).toEqual([ 1, 2, 3 ])
-  expect(rotate(1)).toEqual([ 2, 3, 1 ])
-  expect(rotate(2)).toEqual([ 3, 1, 2 ])
-  expect(rotate(3)).toEqual([ 1, 2, 3 ])
-  expect(rotate(4)).toEqual([ 2, 3, 1 ])
-  expect(rotate(5)).toEqual([ 3, 1, 2 ])
-  expect(rotate(6)).toEqual([ 1, 2, 3 ])
-  expect(rotate(7)).toEqual([ 2, 3, 1 ])
+await test('larger', () => {
+  assert.deepEqual(rotate(0), [ 1, 2, 3 ])
+  assert.deepEqual(rotate(1), [ 2, 3, 1 ])
+  assert.deepEqual(rotate(2), [ 3, 1, 2 ])
+  assert.deepEqual(rotate(3), [ 1, 2, 3 ])
+  assert.deepEqual(rotate(4), [ 2, 3, 1 ])
+  assert.deepEqual(rotate(5), [ 3, 1, 2 ])
+  assert.deepEqual(rotate(6), [ 1, 2, 3 ])
+  assert.deepEqual(rotate(7), [ 2, 3, 1 ])
 })
 
-test('empty', () => {
-  expect(rotate(0, [])).toEqual([])
-  expect(rotate(1, [])).toEqual([])
-  expect(rotate(2, [])).toEqual([])
+await test('empty', () => {
+  assert.deepEqual(rotate(0, []), [])
+  assert.deepEqual(rotate(1, []), [])
+  assert.deepEqual(rotate(2, []), [])
 })
 
-test('negative', () => {
-  expect(rotate(-1)).toEqual([ 3, 1, 2 ])
-  expect(rotate(-2)).toEqual([ 2, 3, 1 ])
-  expect(rotate(-3)).toEqual([ 1, 2, 3 ])
-  expect(rotate(-4)).toEqual([ 3, 1, 2 ])
+await test('negative', () => {
+  assert.deepEqual(rotate(-1), [ 3, 1, 2 ])
+  assert.deepEqual(rotate(-2), [ 2, 3, 1 ])
+  assert.deepEqual(rotate(-3), [ 1, 2, 3 ])
+  assert.deepEqual(rotate(-4), [ 3, 1, 2 ])
 })

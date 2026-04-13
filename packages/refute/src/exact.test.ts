@@ -1,15 +1,15 @@
 import * as $ from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('exact', () => {
-  expect($.exact({})(null)).toEqual($.fail(null, 'expected object'))
+await test('exact', () => {
+  assert.deepEqual($.exact({})(null), $.fail(null, 'expected object'))
 })
 
-test('single extra key', () => {
-  expect($.safeReason($.exact({ foo: 'FOO', bar: 'BAR' }))({ foo: 'FOO', bar: 'BAR', baz: 'BAZ' }))
-    .toEqual('Invalid value has unexpected extra key baz.')
+await test('single extra key', () => {
+  assert.deepEqual($.safeReason($.exact({ foo: 'FOO', bar: 'BAR' }))({ foo: 'FOO', bar: 'BAR', baz: 'BAZ' }), 'Invalid value has unexpected extra key baz.')
 })
 
-test('multiple extra keys', () => {
-  expect($.safeReason($.exact({ foo: 'FOO', bar: 'BAR' }))({ foo: 'FOO', bar: 'BAR', baz: 'BAZ', aux: 'AUX' }))
-    .toEqual('Invalid value has unexpected extra keys baz, aux.')
+await test('multiple extra keys', () => {
+  assert.deepEqual($.safeReason($.exact({ foo: 'FOO', bar: 'BAR' }))({ foo: 'FOO', bar: 'BAR', baz: 'BAZ', aux: 'AUX' }), 'Invalid value has unexpected extra keys baz, aux.')
 })

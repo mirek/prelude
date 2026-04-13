@@ -1,30 +1,32 @@
 import * as Cmp from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('same', () => {
-  expect(Cmp.array(Cmp.number)(
+await test('same', () => {
+  assert.equal(Cmp.array(Cmp.number)(
     [ 3, 5, 4 ],
     [ 3, 5, 4 ]
-  )).toBe(Cmp.eq)
+  ), Cmp.eq)
 })
 
-test('asc', () => {
-  expect(Cmp.array(Cmp.number)(
+await test('asc', () => {
+  assert.equal(Cmp.array(Cmp.number)(
     [ 3, 5, 4 ],
     [ 3, 6, 4 ]
-  )).toBe(Cmp.asc)
-  expect(Cmp.array(Cmp.number)(
+  ), Cmp.asc)
+  assert.equal(Cmp.array(Cmp.number)(
     [ 3, 5, 4 ],
     [ 3, 5, 4, 1 ]
-  )).toBe(Cmp.asc)
+  ), Cmp.asc)
 })
 
-test('dsc', () => {
-  expect(Cmp.array(Cmp.number)(
+await test('dsc', () => {
+  assert.equal(Cmp.array(Cmp.number)(
     [ 3, 6, 4 ],
     [ 3, 5, 4 ]
-  )).toBe(Cmp.dsc)
-  expect(Cmp.array(Cmp.number)(
+  ), Cmp.dsc)
+  assert.equal(Cmp.array(Cmp.number)(
     [ 3, 5, 4, 1 ],
     [ 3, 5, 4 ]
-  )).toBe(Cmp.dsc)
+  ), Cmp.dsc)
 })

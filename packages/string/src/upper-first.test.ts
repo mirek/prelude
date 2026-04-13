@@ -1,8 +1,10 @@
 import * as S from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('upperFirst', () => {
-  expect(S.upperFirst('')).toEqual('')
-  expect(S.upperFirst('abc def')).toEqual('Abc def')
-  expect(S.upperFirst('Abc def')).toEqual('Abc def')
-  expect(S.upperFirst('åbc def')).toEqual('Åbc def')
+await test('upperFirst', () => {
+  assert.deepEqual(S.upperFirst(''), '')
+  assert.deepEqual(S.upperFirst('abc def'), 'Abc def')
+  assert.deepEqual(S.upperFirst('Abc def'), 'Abc def')
+  assert.deepEqual(S.upperFirst('åbc def'), 'Åbc def')
 })

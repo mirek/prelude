@@ -1,13 +1,15 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('cycle', () => {
-  expect(G.array(G.pipe(G.cycle([ 1, 2, 3 ]), G.take(7)))).toEqual([
+await test('cycle', () => {
+  assert.deepEqual(G.array(G.pipe(G.cycle([ 1, 2, 3 ]), G.take(7))), [
     1, 2, 3,
     1, 2, 3,
     1
   ])
 })
 
-test('empty', () => {
-  expect(G.array(G.cycle([]))).toEqual([])
+await test('empty', () => {
+  assert.deepEqual(G.array(G.cycle([])), [])
 })

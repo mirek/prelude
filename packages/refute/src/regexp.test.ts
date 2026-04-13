@@ -1,5 +1,7 @@
 import * as $ from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('regexp', () => {
-  expect($.regexp(/^foo/dy)('foo')).toEqual($.ok('foo'))
+await test('regexp', () => {
+  assert.deepEqual($.regexp(/^foo/dy)('foo'), $.ok('foo'))
 })

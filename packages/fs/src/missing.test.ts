@@ -1,6 +1,8 @@
 import * as Fs from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('missing', async () => {
-  expect(Fs.missing('foo')).resolves.toBe(true)
-  expect(Fs.missing('package.json')).resolves.toBe(false)
+await test('missing', async () => {
+  assert.equal(await Fs.missing('foo'), true)
+  assert.equal(await Fs.missing('package.json'), false)
 })

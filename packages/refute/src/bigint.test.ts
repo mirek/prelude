@@ -1,6 +1,8 @@
 import * as $ from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('bigint', () => {
-  expect($.bigint(0n)).toEqual($.ok(0n))
-  expect($.bigint(1)).toEqual($.fail(1, 'expected bigint'))
+await test('bigint', () => {
+  assert.deepEqual($.bigint(0n), $.ok(0n))
+  assert.deepEqual($.bigint(1), $.fail(1, 'expected bigint'))
 })

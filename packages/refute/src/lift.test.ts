@@ -1,6 +1,8 @@
 import * as $ from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('lift', () => {
+await test('lift', () => {
 
   const refute = $.object({
     str: 'a' as const,
@@ -9,10 +11,10 @@ test('lift', () => {
     f: false as const
   })
 
-  expect($.reason(refute)({})).toEqual('Invalid value at key str, expected a, got undefined.')
-  expect($.reason(refute)({ str: 'a' })).toEqual('Invalid value at key one, expected 1, got undefined.')
-  expect($.reason(refute)({ str: 'a', one: 1 })).toEqual('Invalid value at key t, expected true, got undefined.')
-  expect($.reason(refute)({ str: 'a', one: 1, t: true })).toEqual('Invalid value at key f, expected false, got undefined.')
-  expect($.reason(refute)({ str: 'a', one: 1, t: true, f: false })).toEqual(undefined)
+  assert.deepEqual($.reason(refute)({}), 'Invalid value at key str, expected a, got undefined.')
+  assert.deepEqual($.reason(refute)({ str: 'a' }), 'Invalid value at key one, expected 1, got undefined.')
+  assert.deepEqual($.reason(refute)({ str: 'a', one: 1 }), 'Invalid value at key t, expected true, got undefined.')
+  assert.deepEqual($.reason(refute)({ str: 'a', one: 1, t: true }), 'Invalid value at key f, expected false, got undefined.')
+  assert.deepEqual($.reason(refute)({ str: 'a', one: 1, t: true, f: false }), undefined)
 
 })

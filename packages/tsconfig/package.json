@@ -1,0 +1,18 @@
+{
+  "name": "@prelude/tsconfig",
+  "version": "0.0.1",
+  "description": "Shared TypeScript configurations for the prelude monorepo.",
+  "license": "CC0-1.0",
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "files": [
+    "base.json",
+    "isomorphic.json",
+    "backend.json",
+    "javascript-backend.json",
+    "test.json",
+    "types/"
+  ],
+  "devDependencies": {
+    "@types/node": "^25.6.0"
+  }
+}

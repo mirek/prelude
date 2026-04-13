@@ -2,7 +2,7 @@
   "name": "@prelude/progress",
   "version": "0.0.1",
   "description": "Progress module.",
-  "main": "./cjs/index.js",
+  "type": "module",
   "files": [
     "*"
   ],
@@ -30,15 +30,13 @@
   "module": "./mjs/index.js",
   "exports": {
     ".": {
-      "import": "./mjs/index.js",
-      "require": "./cjs/index.js"
+      "import": "./mjs/index.js"
     },
     "./*.js": {
-      "import": "./mjs/*.js",
-      "require": "./cjs/*.js"
-    },
-    "./*": {
-      "require": "./cjs/*.js"
+      "import": "./mjs/*.js"
     }
+  },
+  "devDependencies": {
+    "@prelude/tsconfig": "workspace:*"
   }
 }

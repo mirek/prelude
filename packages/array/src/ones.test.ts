@@ -1,5 +1,7 @@
 import * as A from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('ones', () => {
-  expect(A.ones(3)).toEqual([ 1, 1, 1 ])
+await test('ones', () => {
+  assert.deepEqual(A.ones(3), [ 1, 1, 1 ])
 })

@@ -27,7 +27,7 @@ export const get =
  * @returns Negative number if element has been deleted, positive if it hasn't been deleted, -0 if didn't exist.
  */
 export const remove =
-  <T>(bag: Bag<T>, key: T, n = 1): -0 | number =>
+  <T>(bag: Bag<T>, key: T, n = 1): number =>
     RbTree.delete(bag.tree, key, n)[1]
 
 /** @returns shifted value with count. */

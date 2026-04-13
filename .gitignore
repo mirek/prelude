@@ -1,8 +1,10 @@
 *.js
+*.tsbuildinfo
+.DS_Store
 .vscode/configurationCache.log
 .vscode/dryrun.log
 .vscode/targets.log
-cjs
 coverage
+dts
 mjs
 node_modules

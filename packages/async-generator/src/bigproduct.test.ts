@@ -1,8 +1,10 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('bigproduct', async () => {
-  await expect(G.pipe(
+await test('bigproduct', async () => {
+  assert.equal(await G.pipe(
     G.ofIterable([ 1n, 3n, 5n ]),
     G.bigproduct
-  )).resolves.toBe(15n)
+  ), 15n)
 })

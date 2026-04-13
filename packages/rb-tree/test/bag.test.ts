@@ -1,18 +1,20 @@
 import * as Bag from '../src/bag.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('simple', () => {
+await test('simple', () => {
   const bag = Bag.of(Bag.Cmp.string)
   Bag.add(bag, 'foo')
   Bag.add(bag, 'bar')
   Bag.add(bag, 'bar')
   Bag.add(bag, 'bar')
-  expect(Bag.get(bag, 'foo')).toBe(1)
-  expect(Bag.get(bag, 'bar')).toBe(3)
-  expect(Bag.get(bag, 'baz')).toBe(-0)
+  assert.equal(Bag.get(bag, 'foo'), 1)
+  assert.equal(Bag.get(bag, 'bar'), 3)
+  assert.equal(Bag.get(bag, 'baz'), -0)
   Bag.add(bag, 'bar', 2)
-  expect(Bag.get(bag, 'bar')).toBe(5)
-  expect(Bag.remove(bag, 'bar', 2)).toBe(3)
-  expect(Bag.get(bag, 'bar')).toBe(3)
-  expect(Bag.remove(bag, 'bar', 4)).toBe(-1)
-  expect(Bag.get(bag, 'bar')).toBe(-0)
+  assert.equal(Bag.get(bag, 'bar'), 5)
+  assert.equal(Bag.remove(bag, 'bar', 2), 3)
+  assert.equal(Bag.get(bag, 'bar'), 3)
+  assert.equal(Bag.remove(bag, 'bar', 4), -1)
+  assert.equal(Bag.get(bag, 'bar'), -0)
 })

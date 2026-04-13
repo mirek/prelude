@@ -1,6 +1,8 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('memoized', () => {
+await test('memoized', () => {
 
   const generated: number[] = []
 
@@ -15,7 +17,7 @@ test('memoized', () => {
   const g_ = G.memoized(g())
 
   const expected = G.array(G.range(0, 9))
-  expect(G.array(g_())).toEqual(expected)
-  expect(G.array(g_())).toEqual(expected)
-  expect(generated).toEqual(expected)
+  assert.deepEqual(G.array(g_()), expected)
+  assert.deepEqual(G.array(g_()), expected)
+  assert.deepEqual(generated, expected)
 })

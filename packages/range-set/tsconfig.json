@@ -1,33 +1,7 @@
 {
-  // Base configuration
-  "extends": "@tsconfig/node24/tsconfig.json",
-
-  "compilerOptions": {
-    // Module system
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "verbatimModuleSyntax": true,
-
-    // Compilation output
-    "noEmit": false,
-    "target": "esnext",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "rootDir": "src",
-    "outDir": "mjs",
-    "allowSyntheticDefaultImports": true,
-
-    // Type checking and error prevention
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "strictNullChecks": true,
-    "exactOptionalPropertyTypes": true,
-    "skipLibCheck": true,
-
-    // File handling
-    "resolveJsonModule": true,
-    "forceConsistentCasingInFileNames": true
-  }
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.lib.json" },
+    { "path": "./tsconfig.test.json" }
+  ]
 }

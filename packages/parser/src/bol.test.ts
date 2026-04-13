@@ -1,9 +1,10 @@
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('bol', () => {
+await test('bol', () => {
   const p = P.parser(P.all(P.map(P.seq(P.bol, '#', P.line), _ => _[2])))
-  expect(p('#zero\nfoo\n#one\n #not\n#two')).toEqual([
+  assert.deepEqual(p('#zero\nfoo\n#one\n #not\n#two'), [
     'zero',
     'one',
     'two'

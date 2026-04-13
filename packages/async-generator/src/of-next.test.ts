@@ -1,9 +1,11 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('ofNext', async () => {
-  await expect(G.pipe(
+await test('ofNext', async () => {
+  assert.deepEqual(await G.pipe(
     G.ofNext(async i => ({ done: false, value: i ** 2 })),
     G.take(5),
     G.array
-  )).resolves.toEqual([ 0, 1, 4, 9, 16 ])
+  ), [ 0, 1, 4, 9, 16 ])
 })

@@ -3,7 +3,6 @@
   "version": "1.2.0",
   "description": "Set module.",
   "type": "module",
-  "main": "./cjs/index.js",
   "directories": {
     "test": "test"
   },
@@ -28,18 +27,16 @@
     "@prelude/array": "workspace:*",
     "@prelude/cmp": "workspace:*"
   },
+  "devDependencies": {
+    "@prelude/tsconfig": "workspace:*"
+  },
   "module": "./mjs/index.js",
   "exports": {
     ".": {
-      "import": "./mjs/index.js",
-      "require": "./cjs/index.js"
+      "import": "./mjs/index.js"
     },
     "./*.js": {
-      "import": "./mjs/*.js",
-      "require": "./cjs/*.js"
-    },
-    "./*": {
-      "require": "./cjs/*.js"
+      "import": "./mjs/*.js"
     }
   }
 }

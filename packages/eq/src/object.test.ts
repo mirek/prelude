@@ -1,12 +1,14 @@
 import * as $ from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('object', () => {
+await test('object', () => {
   type A = { xs?: string[] }
   const f: $.Eq<A> = $.object({ xs: $.undefinedOr($.array($.string)) })
-  expect(f({ xs: ['a', 'b'] }, { xs: ['a', 'b'] })).toBe(true)
-  expect(f({ xs: ['a', 'b'] }, { xs: ['a', 'b', 'c'] })).toBe(false)
-  expect(f({ xs: ['a', 'b'] }, { xs: undefined })).toBe(false)
-  expect(f({ xs: undefined }, {})).toBe(true)
-  expect(f({}, { xs: undefined })).toBe(true)
-  expect(f({}, {})).toBe(true)
+  assert.equal(f({ xs: ['a', 'b'] }, { xs: ['a', 'b'] }), true)
+  assert.equal(f({ xs: ['a', 'b'] }, { xs: ['a', 'b', 'c'] }), false)
+  assert.equal(f({ xs: ['a', 'b'] }, { xs: undefined }), false)
+  assert.equal(f({ xs: undefined }, {}), true)
+  assert.equal(f({}, { xs: undefined }), true)
+  assert.equal(f({}, {}), true)
 })

@@ -1,16 +1,18 @@
 import * as Cmp from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('accent sensitivity', () => {
+await test('accent sensitivity', () => {
   const cmp = Cmp.locale(undefined, { sensitivity: 'accent' })
-  expect(cmp('a', 'a')).toBe(Cmp.eq)
-  expect(cmp('a', 'A')).toBe(Cmp.eq)
-  expect(cmp('a', 'á')).toBe(Cmp.asc)
+  assert.equal(cmp('a', 'a'), Cmp.eq)
+  assert.equal(cmp('a', 'A'), Cmp.eq)
+  assert.equal(cmp('a', 'á'), Cmp.asc)
 })
 
-test('base sensitivity', () => {
+await test('base sensitivity', () => {
   const cmp = Cmp.locale(undefined, { sensitivity: 'base' })
-  expect(cmp('a', 'a')).toBe(Cmp.eq)
-  expect(cmp('a', 'A')).toBe(Cmp.eq)
-  expect(cmp('a', 'á')).toBe(Cmp.eq)
-  expect(cmp('b', 'a')).toBe(Cmp.dsc)
+  assert.equal(cmp('a', 'a'), Cmp.eq)
+  assert.equal(cmp('a', 'A'), Cmp.eq)
+  assert.equal(cmp('a', 'á'), Cmp.eq)
+  assert.equal(cmp('b', 'a'), Cmp.dsc)
 })

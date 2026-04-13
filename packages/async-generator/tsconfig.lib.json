@@ -1,0 +1,10 @@
+{
+  "extends": "@prelude/tsconfig/isomorphic.json",
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/**/*.test.ts",
+    "node_modules"
+  ]
+}

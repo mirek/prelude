@@ -29,10 +29,10 @@ const lift =
         if (a instanceof RegExp) {
           return regexp(a) as Refute<Lifted<T>>
         }
-        throw new TypeError(`Can't lift ${a}.`)
+        throw new TypeError(`Can't lift ${String(a)}.`)
       }
       default:
-        throw new TypeError(`Can't lift ${a as any}.`)
+        throw new TypeError(`Can't lift ${String(a)}.`)
     }
   }
 

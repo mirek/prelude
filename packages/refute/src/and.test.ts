@@ -1,13 +1,15 @@
 import * as $ from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('and', () => {
+await test('and', () => {
 
   const f = $.and(
     $.object({ foo: $.string, bar: $.string, baz: $.string }),
     $.object({ bar: $.string, baz: 'BAZ' as const })
   )
 
-  expect($.safeReason(f)({ foo: 'FOO', bar: 'BAR', baz: 'BAZ' })).toBe(undefined)
-  expect($.safeReason(f)({ foo: 'FOO', bar: 'BAR', baz: 'xyz' })).toBe('Invalid value at key baz, expected BAZ.')
+  assert.equal($.safeReason(f)({ foo: 'FOO', bar: 'BAR', baz: 'BAZ' }), undefined)
+  assert.equal($.safeReason(f)({ foo: 'FOO', bar: 'BAR', baz: 'xyz' }), 'Invalid value at key baz, expected BAZ.')
 
 })

@@ -76,7 +76,7 @@ export function verify(sourceLines: string[], targetLines: string[], ops: Op[]) 
           break
         }
         default:
-          throw new Error(`Unexpected op type ${op.type}`)
+          throw new Error(`Unexpected op type ${String(op.type)}`)
       }
     }
     k++
@@ -103,7 +103,7 @@ export function readable(ops: Op[]): string[] {
       case 'added':
         return op.lines.map(line => `+ ${line}`)
       default:
-        throw new Error(`Unexpected op type ${op.type}`)
+        throw new Error(`Unexpected op type ${String(op.type)}`)
     }
   })
 }

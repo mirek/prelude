@@ -1,15 +1,17 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('groupMap', () => {
+await test('groupMap', () => {
   const values = [
     { key: 1, value: 'a' },
     { key: '1', value: 'b' },
     { key: 1, value: 'c' }
   ]
   const grouped = G.pipe(values, G.groupMap(_ => _.key))
-  expect(grouped instanceof Map).toBe(true)
-  expect(grouped.size).toBe(2)
-  expect(Array.from(grouped.entries())).toEqual([
+  assert.equal(grouped instanceof Map, true)
+  assert.equal(grouped.size, 2)
+  assert.deepEqual(Array.from(grouped.entries()), [
     [ 1, [
       { key: 1, value: 'a' },
       { key: 1, value: 'c' }

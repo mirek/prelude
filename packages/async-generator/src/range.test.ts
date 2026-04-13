@@ -1,16 +1,18 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('range', async () => {
-  await expect(G.pipe(
+await test('range', async () => {
+  assert.deepEqual(await G.pipe(
     G.range(1, 5),
     G.array
-  )).resolves.toEqual([ 1, 2, 3, 4, 5 ])
-  await expect(G.pipe(
+  ), [ 1, 2, 3, 4, 5 ])
+  assert.deepEqual(await G.pipe(
     G.range(0, 0),
     G.array
-  )).resolves.toEqual([ 0 ])
-  await expect(G.pipe(
+  ), [ 0 ])
+  assert.deepEqual(await G.pipe(
     G.range(0, 10, 2),
     G.array
-  )).resolves.toEqual([ 0, 2, 4, 6, 8, 10 ])
+  ), [ 0, 2, 4, 6, 8, 10 ])
 })

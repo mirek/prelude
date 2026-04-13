@@ -7,28 +7,20 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "NODE_OPTIONS='--experimental-vm-modules' jest"
+    "lint": "oxlint --type-aware packages",
+    "test:r": "pnpm -r test",
+    "test": "tsx --test 'packages/*/src/**/*.test.ts'"
   },
   "keywords": [],
   "author": "",
   "license": "CC0-1.0",
   "packageManager": "pnpm@10.31.0",
   "devDependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/plugin-proposal-decorators": "^7.29.0",
-    "@babel/plugin-transform-class-properties": "^7.28.6",
-    "@babel/plugin-transform-private-methods": "^7.28.6",
-    "@babel/plugin-transform-private-property-in-object": "^7.28.6",
-    "@babel/preset-env": "^7.29.2",
-    "@babel/preset-typescript": "^7.28.5",
-    "@prelude/eslint-config": "workspace:*",
-    "@swc/core": "^1.15.21",
+    "@swc/core": "^1.15.24",
     "@tsconfig/node24": "^24.0.4",
-    "@types/jest": "^30.0.0",
-    "@types/node": "^25.5.0",
-    "babel-jest": "^30.3.0",
-    "eslint": "^10.1.0",
-    "jest": "^30.3.0",
+    "@types/node": "^25.6.0",
+    "oxlint": "^1.60.0",
+    "oxlint-tsgolint": "^0.20.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"
   }

@@ -1,10 +1,5 @@
 export const randoms =
-  (n: number) => {
-    const values = new Array(n)
-    for (let i = 0; i < n; ++i) {
-      values[i] = Math.random()
-    }
-    return values
-  }
+  (n: number): number[] =>
+    Array.from({ length: n }, () => Math.random())
 
 export default randoms

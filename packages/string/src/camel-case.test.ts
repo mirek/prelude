@@ -1,23 +1,25 @@
 import camelCase from './camel-case.js'
+import { test, describe } from 'node:test'
+import assert from 'node:assert/strict'
 
-describe('camelCase', () => {
-  test('converts kebab-case to camelCase', () => {
-    expect(camelCase('kebab-case')).toBe('kebabCase')
+await describe('camelCase', async () => {
+  await test('converts kebab-case to camelCase', () => {
+    assert.equal(camelCase('kebab-case'), 'kebabCase')
   })
 
-  test('converts PascalCase to camelCase', () => {
-    expect(camelCase('PascalCase')).toBe('pascalCase')
+  await test('converts PascalCase to camelCase', () => {
+    assert.equal(camelCase('PascalCase'), 'pascalCase')
   })
 
-  test('converts snake_case to camelCase', () => {
-    expect(camelCase('snake_case')).toBe('snakeCase')
+  await test('converts snake_case to camelCase', () => {
+    assert.equal(camelCase('snake_case'), 'snakeCase')
   })
 
-  test('converts space separated to camelCase', () => {
-    expect(camelCase('space separated')).toBe('spaceSeparated')
+  await test('converts space separated to camelCase', () => {
+    assert.equal(camelCase('space separated'), 'spaceSeparated')
   })
 
-  test('handles strings with multiple separators', () => {
-    expect(camelCase('mixed_Case With-separators')).toBe('mixedCaseWithSeparators')
+  await test('handles strings with multiple separators', () => {
+    assert.equal(camelCase('mixed_Case With-separators'), 'mixedCaseWithSeparators')
   })
 })

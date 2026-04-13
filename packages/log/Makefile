@@ -1,21 +1,16 @@
 clean:
-	@rm -Rf cjs mjs test/*.js
-
-build-cjs:
-	@rm -Rf cjs
-	@pnpm tsc --module commonjs --moduleResolution node --outDir cjs
-	@echo '{"type":"commonjs"}' > cjs/package.json
+	@rm -Rf mjs test/*.js
 
 build-mjs:
 	@rm -Rf mjs
-	@pnpm tsc -d --outDir mjs
+	@pnpm tsc -p tsconfig.lib.json -d --sourceMap --outDir mjs --rootDir src
 
-build: build-cjs build-mjs
+build: build-mjs
 
 rebuild: clean build
 
 test: rebuild
-	npx tsx --test src/**/*.test.ts
+	pnpm tsx --test src/**/*.test.ts
 
 update:
 	@pnpm npm-check --update --save-exact

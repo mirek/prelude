@@ -4,8 +4,8 @@
 - `make build`: Build CommonJS and ES modules
 - `make clean`: Remove build artifacts
 - `pnpm t`: Run all tests
-- `pnpm jest src/path/to/file.test.ts`: Run single test file
-- `pnpm jest -t "test description"`: Run tests matching description
+- `pnpm tsx --test src/path/to/file.test.ts`: Run single test file
+- `pnpm tsx --test --test-name-pattern "test description" src/**/*.test.ts`: Run tests matching description
 - `make rebuild`: Clean and rebuild
 
 ## Code Style Guidelines

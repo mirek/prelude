@@ -4,7 +4,7 @@ import rotate from './rotate.js'
 import shift from './shift.js'
 
 const delete_ =
-  <T, K>(_: N<T>, key: (value: T) => K, cmpB: Cmp.CmpB<K>, i: number): [ undefined | T, number, N<T> ] => {
+  <T, K>(_: N<T>, key: (value: T) => K, cmpB: (b: K) => Cmp.R, i: number): [ undefined | T, number, N<T> ] => {
     switch (true) {
 
       // del E = E

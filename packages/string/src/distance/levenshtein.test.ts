@@ -1,10 +1,11 @@
 import levenshtein from './levenshtein.js'
-import { test, expect } from '@jest/globals'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('simple', () => {
-  expect(levenshtein('kitten', 'sitting')).toBe(3)
-  expect(levenshtein('sunday', 'saturday')).toBe(3)
-  expect(levenshtein('cat', 'cut')).toBe(1)
-  expect(levenshtein('', 'test')).toBe(4)
-  expect(levenshtein('book', 'book')).toBe(0)
+await test('simple', () => {
+  assert.equal(levenshtein('kitten', 'sitting'), 3)
+  assert.equal(levenshtein('sunday', 'saturday'), 3)
+  assert.equal(levenshtein('cat', 'cut'), 1)
+  assert.equal(levenshtein('', 'test'), 4)
+  assert.equal(levenshtein('book', 'book'), 0)
 })

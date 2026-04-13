@@ -1,5 +1,5 @@
 export const ones =
   (n: number): number[] =>
-    new Array(n).fill(1)
+    Array.from({ length: n }, () => 1)
 
 export default ones

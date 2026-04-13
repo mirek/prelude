@@ -1,9 +1,11 @@
 import * as Cmp from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('non-descending', () => {
+await test('non-descending', () => {
   const f = Cmp.every(Cmp.nonDescending(Cmp.number))
-  expect(f([])).toBe(true)
-  expect(f([ 1 ])).toBe(true)
-  expect(f([ 1, 1 ])).toBe(true)
-  expect(f([ 1, 0, 2 ])).toBe(false)
+  assert.equal(f([]), true)
+  assert.equal(f([ 1 ]), true)
+  assert.equal(f([ 1, 1 ]), true)
+  assert.equal(f([ 1, 0, 2 ]), false)
 })

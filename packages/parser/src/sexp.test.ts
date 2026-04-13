@@ -1,6 +1,7 @@
-import { test, expect } from '@jest/globals'
 import * as Sexp from './sexp.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('basic', () => {
-  expect(Sexp.parser('\n\t(foo  bar baz) ')).toEqual([ 'foo', 'bar', 'baz' ])
+await test('basic', () => {
+  assert.deepEqual(Sexp.parser('\n\t(foo  bar baz) '), [ 'foo', 'bar', 'baz' ])
 })

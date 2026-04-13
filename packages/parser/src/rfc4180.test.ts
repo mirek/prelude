@@ -1,16 +1,17 @@
-import { test, expect } from '@jest/globals'
 import * as Rfc4180 from './rfc4180.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('basic', () => {
-  expect(Rfc4180.parse(`foo,bar,baz
+await test('basic', () => {
+  assert.deepEqual(Rfc4180.parse(`foo,bar,baz
 1,2,"three"
-`)).toEqual([
+`), [
     [ 'foo', 'bar', 'baz' ],
     [ '1', '2', 'three' ],
     [ '' ]
   ])
 })
 
-test('quoted', () => {
-  expect(Rfc4180.parse('"a""b\nc"')).toEqual([ [ 'a"b\nc' ] ])
+await test('quoted', () => {
+  assert.deepEqual(Rfc4180.parse('"a""b\nc"'), [ [ 'a"b\nc' ] ])
 })

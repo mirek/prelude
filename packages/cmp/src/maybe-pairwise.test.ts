@@ -1,11 +1,13 @@
 import * as Cmp from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('maybePairwise', () => {
+await test('maybePairwise', () => {
   const xs = [ 1, 2, 3 ]
   const cmp = Cmp.maybePairwise(Cmp.number)
-  expect(cmp(xs, [ 1, 2, 3 ])).toBe(Cmp.eq)
-  expect(cmp(xs, [ 1, 2, 4 ])).toBe(Cmp.asc)
-  expect(cmp(xs, [ 1, 2, 2 ])).toBe(Cmp.dsc)
-  expect(cmp(xs, [ 1, 2, 3, 4 ])).toBe(Cmp.asc)
-  expect(cmp(xs, [ 1, 2 ])).toBe(Cmp.dsc)
+  assert.equal(cmp(xs, [ 1, 2, 3 ]), Cmp.eq)
+  assert.equal(cmp(xs, [ 1, 2, 4 ]), Cmp.asc)
+  assert.equal(cmp(xs, [ 1, 2, 2 ]), Cmp.dsc)
+  assert.equal(cmp(xs, [ 1, 2, 3, 4 ]), Cmp.asc)
+  assert.equal(cmp(xs, [ 1, 2 ]), Cmp.dsc)
 })

@@ -1,6 +1,8 @@
 import * as F from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('throttle', async () => {
+await test('throttle', async () => {
   const xs: number[] = []
   const push = () => {
     xs.push(Math.random())
@@ -11,7 +13,7 @@ test('throttle', async () => {
   }, 100)
   await F.sleep(3.5 * 1000)
   clearInterval(id)
-  expect(xs.length).toBe(4)
+  assert.equal(xs.length, 4)
   await F.sleep(1000)
-  expect(xs.length).toBe(5)
+  assert.equal(xs.length, 5)
 })

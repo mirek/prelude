@@ -1,39 +1,41 @@
 import * as Cmp from './index.js'
+import { test, describe } from 'node:test'
+import assert from 'node:assert/strict'
 
-describe('nullable numbers', () => {
+await describe('nullable numbers', async () => {
 
   const cmp = Cmp.array(Cmp.nullOr(Cmp.number))
 
-  test('empty', () => {
-    expect(cmp([], [])).toBe(Cmp.eq)
+  await test('empty', () => {
+    assert.equal(cmp([], []), Cmp.eq)
   })
 
-  test('equal', () => {
-    expect(cmp(
+  await test('equal', () => {
+    assert.equal(cmp(
       [ 5, 3, 4 ],
       [ 5, 3, 4 ]
-    )).toBe(Cmp.eq)
+    ), Cmp.eq)
   })
 
-  test('nullable ascending', () => {
-    expect(cmp(
+  await test('nullable ascending', () => {
+    assert.equal(cmp(
       [ 5, null, 4 ],
       [ 5, 3, 4 ]
-    )).toBe(Cmp.asc)
+    ), Cmp.asc)
   })
 
-  test('equal nulls', () => {
-    expect(cmp(
+  await test('equal nulls', () => {
+    assert.equal(cmp(
       [ null ],
       [ null ]
-    )).toBe(Cmp.eq)
+    ), Cmp.eq)
   })
 
-  test('ascending nulls', () => {
-    expect(cmp(
+  await test('ascending nulls', () => {
+    assert.equal(cmp(
       [ null ],
       [ null, null ]
-    )).toBe(Cmp.asc)
+    ), Cmp.asc)
   })
 
 })

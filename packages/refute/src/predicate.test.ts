@@ -1,12 +1,14 @@
 import * as $ from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('predicate', () => {
+await test('predicate', () => {
   const predicate = $.predicate($.tuple($.exact({
     email: $.nullishOr($.string),
     password: $.nullishOr($.string),
     token: $.nullishOr($.string),
     version: $.nullishOr($.string)
   })))
-  expect(predicate([{ token: '123', 'version': '0.0.1' }])).toBe(true)
-  expect(predicate({ token: '123', 'version': '0.0.1' })).toBe(false)
+  assert.equal(predicate([{ token: '123', 'version': '0.0.1' }]), true)
+  assert.equal(predicate({ token: '123', 'version': '0.0.1' }), false)
 })

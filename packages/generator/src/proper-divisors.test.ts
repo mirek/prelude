@@ -1,13 +1,15 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
 const t =
   (n: number, ds: number[]) =>
-    expect(G.pipe(
+    assert.deepEqual(G.pipe(
       G.properDivisors(n),
       G.array
-    )).toEqual(ds)
+    ), ds)
 
-test('simple', () => {
+await test('simple', () => {
   t(0, [])
   t(1, [])
   t(2, [1])

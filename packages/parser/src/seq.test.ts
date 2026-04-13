@@ -1,7 +1,8 @@
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('lift', () => {
+await test('lift', () => {
   const parser = P.parser(P.seq(
     '<',
     /\w+/,
@@ -11,7 +12,7 @@ test('lift', () => {
   const a: '<' = parsed[0]
   const b: string = parsed[1]
   const c: '>' = parsed[2]
-  expect(a).toBe('<')
-  expect(b).toBe('abc')
-  expect(c).toBe('>')
+  assert.equal(a, '<')
+  assert.equal(b, 'abc')
+  assert.equal(c, '>')
 })

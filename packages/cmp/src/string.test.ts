@@ -1,7 +1,9 @@
 import * as Cmp from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('sort', () => {
-  expect([ 'world', 'hello' ].sort(Cmp.string)).toEqual([
+await test('sort', () => {
+  assert.deepEqual([ 'world', 'hello' ].sort(Cmp.string), [
     'hello',
     'world'
   ])

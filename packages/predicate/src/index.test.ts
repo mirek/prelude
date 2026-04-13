@@ -1,8 +1,10 @@
 import * as $ from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('string', () => {
+await test('string', () => {
   const x = JSON.parse('"a"')
   if ($.string(x)) {
-    expect(x === 'a').toBe(true)
+    assert.equal(x === 'a', true)
   }
 })

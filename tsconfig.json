@@ -1,37 +1,20 @@
 {
-  "references": [
-    { "path": "./packages/array" },
-    { "path": "./packages/async-generator" },
-    { "path": "./packages/babel-plugin-transform-import-meta" },
-    { "path": "./packages/channel" },
-    { "path": "./packages/cmp" },
-    { "path": "./packages/docs" },
-    { "path": "./packages/emitter" },
-    { "path": "./packages/eq" },
-    { "path": "./packages/err" },
-    { "path": "./packages/eslint-config" },
-    { "path": "./packages/fs" },
-    { "path": "./packages/function" },
-    { "path": "./packages/generator" },
-    { "path": "./packages/json" },
-    { "path": "./packages/jsonrpc" },
-    { "path": "./packages/log" },
-    { "path": "./packages/parser" },
-    { "path": "./packages/predicate" },
-    { "path": "./packages/prelude" },
-    { "path": "./packages/progress" },
-    { "path": "./packages/radix-trie" },
-    { "path": "./packages/range-set" },
-    { "path": "./packages/rb-tree" },
-    { "path": "./packages/refute" },
-    { "path": "./packages/remote-clock" },
-    { "path": "./packages/repl" },
-    { "path": "./packages/semver" },
-    { "path": "./packages/serial-queue" },
-    { "path": "./packages/set" },
-    { "path": "./packages/sorted-array" },
-    { "path": "./packages/string" },
-    { "path": "./packages/wait-group" },
-    { "path": "./packages/xml" }
+  "extends": "./packages/tsconfig/backend.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@prelude/*": ["./packages/*/src/index.ts"]
+    }
+  },
+  "include": [
+    "packages/*/src/**/*.ts"
+  ],
+  "exclude": [
+    "**/node_modules",
+    "**/mjs",
+    "**/dts",
+    "packages/docs/**",
+    "packages/graph/**",
+    "packages/*/src/**/*.test.ts"
   ]
 }

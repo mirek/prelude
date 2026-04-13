@@ -1,19 +1,20 @@
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('single', () => {
-  expect(P.parser(P.lit('a'))('a')).toEqual('a')
+await test('single', () => {
+  assert.deepEqual(P.parser(P.lit('a'))('a'), 'a')
   const p = P.parser(P.either('a', 'b'))
-  expect(p('a')).toEqual('a')
-  expect(p('b')).toEqual('b')
-  expect(() => p('c')).toThrow('Expected b.')
+  assert.deepEqual(p('a'), 'a')
+  assert.deepEqual(p('b'), 'b')
+  assert.throws(() => p('c'), /Expected b\./)
 })
 
-test('longest', () => {
-  expect(P.parser(P.star(P.lit(
+await test('longest', () => {
+  assert.deepEqual(P.parser(P.star(P.lit(
     'a',
     'aa'
-  )))('aaaaa')).toEqual([
+  )))('aaaaa'), [
     'aa',
     'aa',
     'a'

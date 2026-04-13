@@ -1,9 +1,10 @@
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('between', () => {
+await test('between', () => {
   const number = P.map(P.whileChars('0123456789'), parseFloat)
   const between = P.between('(', ')', number)
   const p = P.parser(P.trim()(between))
-  expect(p(' (123)\n')).toEqual(123)
+  assert.deepEqual(p(' (123)\n'), 123)
 })

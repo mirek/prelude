@@ -1,12 +1,14 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('extend', () => {
-  expect(G.pipe(
+await test('extend', () => {
+  assert.deepEqual(G.pipe(
     G.range(1, 5),
     G.map(value => ({ value })),
     G.extend(_ => ({ double: _.value * 2 })),
     G.array
-  )).toEqual([
+  ), [
     { value: 1, double: 2 },
     { value: 2, double: 4 },
     { value: 3, double: 6 },

@@ -3,10 +3,10 @@
 ## Build Commands
 
 - This package is using pnpm
-- `make build` - Build both CJS and ESM modules
+- `make build` - Build ESM modules
 - `make rebuild` - Clean and rebuild
 - `pnpm t` - Run all tests
-- `pnpm jest src/index.test.ts` - Run a specific test file
+- `pnpm tsx --test src/index.test.ts` - Run a specific test file
 
 ## Code Style
 

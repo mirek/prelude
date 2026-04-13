@@ -1,12 +1,14 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('areUnique', async () => {
-  await expect(G.pipe(
+await test('areUnique', async () => {
+  assert.equal(await G.pipe(
     G.ofIterable([ 1, 2, 3 ]),
     G.areUnique()
-  )).resolves.toBe(true)
-  await expect(G.pipe(
+  ), true)
+  assert.equal(await G.pipe(
     G.ofIterable([ 1, 2, 2, 3 ]),
     G.areUnique()
-  )).resolves.toBe(false)
+  ), false)
 })

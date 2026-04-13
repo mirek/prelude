@@ -1,7 +1,8 @@
-import { test, expect } from '@jest/globals'
 import * as EvalJs from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('simple', async () => {
+await test('simple', async () => {
   const results: unknown[] = []
   const markdown = `
 
@@ -21,5 +22,5 @@ new Promise(resolve => setTimeout(() => resolve(42), 10))
   for await (const result of EvalJs.extractAndRun(markdown)) {
     results.push(result)
   }
-  expect(results).toEqual([2, 42])
+  assert.deepEqual(results, [2, 42])
 })

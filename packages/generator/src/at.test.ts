@@ -1,12 +1,14 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('simple', () => {
-  expect(G.pipe(
+await test('simple', () => {
+  assert.deepEqual(G.pipe(
     G.range(1, 5),
     G.at(2)
-  )).toEqual(3)
-  expect(() => G.pipe(
+  ), 3)
+  assert.throws(() => G.pipe(
     G.range(1, 5),
     G.at(5)
-  )).toThrow('index 5 out of bounds')
+  ), /index 5 out of bounds/)
 })

@@ -1,7 +1,9 @@
 import * as $ from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('boolean', () => {
-  expect($.boolean(true)).toEqual($.ok(true))
-  expect($.boolean(false)).toEqual($.ok(false))
-  expect($.boolean(0)).toEqual($.fail(0, 'expected boolean'))
+await test('boolean', () => {
+  assert.deepEqual($.boolean(true), $.ok(true))
+  assert.deepEqual($.boolean(false), $.ok(false))
+  assert.deepEqual($.boolean(0), $.fail(0, 'expected boolean'))
 })

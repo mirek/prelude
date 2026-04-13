@@ -1,13 +1,14 @@
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('star', () => {
+await test('star', () => {
   const p = P.parser(P.star(P.either('a', 'b')))
-  expect(p('aab')).toEqual([ 'a', 'a', 'b' ])
+  assert.deepEqual(p('aab'), [ 'a', 'a', 'b' ])
 })
 
-test('break on non-advancing parser', () => {
+await test('break on non-advancing parser', () => {
   const blank = P.map(P.seq(/ */, P.eol), _ => _[0])
   const p = P.parser(P.star(blank))
-  expect(p(' \n\n')).toEqual([ ' ', '', '' ])
+  assert.deepEqual(p(' \n\n'), [ ' ', '', '' ])
 })

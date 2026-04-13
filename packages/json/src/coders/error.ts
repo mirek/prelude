@@ -45,25 +45,32 @@ export const decode =
       throw new Error($.reasonWithoutReceived(refute))
     }
     const { name: name_, message, cause, errors, stack } = refute.value
+    const options = cause === undefined ? undefined : { cause }
+    const withStack = (err: Error) => stack === undefined ? err : Object.assign(err, { stack })
     switch (name_) {
       case 'AggregateError':
-        return Object.assign(new AggregateError(errors ?? [], message, { cause }), { stack })
+        return withStack(new AggregateError(errors ?? [], message, options))
       case 'EvalError':
-        return Object.assign(new EvalError(message, { cause }), { stack })
+        return withStack(new EvalError(message, options))
       case 'RangeError':
-        return Object.assign(new RangeError(message, { cause }), { stack })
+        return withStack(new RangeError(message, options))
       case 'ReferenceError':
-        return Object.assign(new ReferenceError(message, { cause }), { stack })
+        return withStack(new ReferenceError(message, options))
       case 'SyntaxError':
-        return Object.assign(new SyntaxError(message, { cause }), { stack })
+        return withStack(new SyntaxError(message, options))
       case 'TypeError':
-        return Object.assign(new TypeError(message, { cause }), { stack })
+        return withStack(new TypeError(message, options))
       case 'URIError':
-        return Object.assign(new URIError(message, { cause }), { stack })
-      default:
-        return Object.assign(
-          new Error(message, { cause }),
-          { name: name_, errors, stack }
-        )
+        return withStack(new URIError(message, options))
+      default: {
+        const err = new Error(message, options)
+        if (name_ !== 'Error') {
+          Object.assign(err, { name: name_ })
+        }
+        if (errors !== undefined) {
+          Object.assign(err, { errors })
+        }
+        return withStack(err)
+      }
     }
   }

@@ -1,8 +1,10 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('self cartesian product', () => {
+await test('self cartesian product', () => {
   const xs = G.pipe(G.range(3, 5), G.cartesianProduct(), G.array)
-  expect(xs).toEqual([
+  assert.deepEqual(xs, [
     [ 3, 3 ],
     [ 3, 4 ],
     [ 3, 5 ],
@@ -15,11 +17,11 @@ test('self cartesian product', () => {
   ])
 })
 
-test('cartesian product', () => {
+await test('cartesian product', () => {
   const xs = G.range(3, 5)
   const ys = G.charRange('a', 'c')
   const zs = G.pipe(xs, G.cartesianProduct(ys), G.array)
-  expect(zs).toEqual([
+  assert.deepEqual(zs, [
     [ 3, 'a' ],
     [ 3, 'b' ],
     [ 3, 'c' ],

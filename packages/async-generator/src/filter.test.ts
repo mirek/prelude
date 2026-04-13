@@ -1,9 +1,11 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('filter', async () => {
-  await expect(G.pipe(
+await test('filter', async () => {
+  assert.deepEqual(await G.pipe(
     G.range(1, 10),
     G.filter(_ => _ % 2 === 0),
     G.array
-  )).resolves.toEqual([ 2, 4, 6, 8, 10 ])
+  ), [ 2, 4, 6, 8, 10 ])
 })

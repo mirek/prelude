@@ -1,11 +1,11 @@
 import * as S from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('dedent', () => {
-  expect(
-    S.dedent(`
+await test('dedent', () => {
+  assert.deepEqual(S.dedent(`
     hello
       world
     !
-  `)
-  ).toEqual('hello\n  world\n!')
+  `), 'hello\n  world\n!')
 })

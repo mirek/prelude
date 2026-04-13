@@ -1,5 +1,6 @@
-import { expect, test } from '@jest/globals'
 import * as Emitter from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
 type MyWebsocketEvents = {
   open: [],
@@ -26,10 +27,10 @@ class MyClient extends MyWebsocket<MyClientEvents> {
   }
 }
 
-test('should pass', async () => {
+await test('should pass', async () => {
   const client: Emitter.Interface<MyClientEvents> = new MyClient()
   Emitter.after(10, () => {
     client.emit('message', 'did-login')
   })
-  await expect(client.eventuallyIf('message', message => message.startsWith('did'))).resolves.toEqual([ 'did-login' ])
+  assert.deepEqual(await client.eventuallyIf('message', message => message.startsWith('did')), [ 'did-login' ])
 })

@@ -1,9 +1,11 @@
 import * as $ from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('partial', () => {
-  expect($.partial({ a: $.number })(null)).toEqual($.fail(null, 'expected object'))
-  expect($.partial({ a: $.number })({})).toEqual($.ok({}))
-  expect($.partial({ a: $.number })({ b: 1 })).toEqual($.ok({ b: 1 }))
-  expect($.partial({ a: $.number })({ a: '1' })).toEqual($.fail('1', 'at key a, expected number'))
-  expect($.partial({ a: $.number })({ a: 1, b: 2 })).toEqual($.ok({ a: 1, b: 2 }))
+await test('partial', () => {
+  assert.deepEqual($.partial({ a: $.number })(null), $.fail(null, 'expected object'))
+  assert.deepEqual($.partial({ a: $.number })({}), $.ok({}))
+  assert.deepEqual($.partial({ a: $.number })({ b: 1 }), $.ok({ b: 1 }))
+  assert.deepEqual($.partial({ a: $.number })({ a: '1' }), $.fail('1', 'at key a, expected number'))
+  assert.deepEqual($.partial({ a: $.number })({ a: 1, b: 2 }), $.ok({ a: 1, b: 2 }))
 })

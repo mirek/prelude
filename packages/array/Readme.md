@@ -28,7 +28,7 @@
 
 * `clone: <T>(values: T[]) => T[]`
 
-* `Cmp: typeof import("/Users/mirek/prelude/packages/array/node_modules/@prelude/cmp/cjs/index")`
+* `Cmp: typeof import("/Users/mirek/prelude/packages/array/node_modules/@prelude/cmp/mjs/index")`
 
 * `deleteSwapRandom: <T>(values: T[]) => T`
 

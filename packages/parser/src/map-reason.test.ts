@@ -1,7 +1,8 @@
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('mapReason', () => {
+await test('mapReason', () => {
   const p = P.mapReason(P.re(/\d/), _ => `<test>${_}</test>`)
-  expect(() => P.parse(p, 'a')).toThrow('<test>regexp /\\d/dy did not match</test>')
+  assert.throws(() => P.parse(p, 'a'), /<test>regexp \/\\d\/dy did not match<\/test>/)
 })

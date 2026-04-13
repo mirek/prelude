@@ -1,17 +1,19 @@
 import * as Fs from './index.js'
+import { test, before, after } from 'node:test'
+import assert from 'node:assert/strict'
 
 let dir: string
 
-beforeAll(() => {
+before(() => {
   dir = Fs.mkdtempSync(`${Fs.Os.tmpdir()}${Fs.Path.sep}`)
 })
 
-afterAll(() => {
+after(() => {
   Fs.rmSync(dir, { recursive: true, force: true })
 })
 
-test('writeJsonSync', () => {
+await test('writeJsonSync', () => {
   const path = Fs.Path.join(dir, 'write-json-sync.json')
   Fs.writeJsonSync(path, { foo: 'bar' })
-  expect(Fs.readStringSync(path)).toEqual(`{\n  "foo": "bar"\n}\n`)
+  assert.deepEqual(Fs.readStringSync(path), `{\n  "foo": "bar"\n}\n`)
 })

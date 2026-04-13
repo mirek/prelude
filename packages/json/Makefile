@@ -1,21 +1,16 @@
 test:
 	pnpm tsc
-	pnpm eslint src
-	npx tsx --test src/**/*.test.ts
+	pnpm oxlint --type-aware src
+	pnpm tsx --test src/**/*.test.ts
 
 clean:
-	rm -Rf cjs mjs test/*.js
-
-build-cjs:
-	rm -Rf cjs
-	pnpm exec tsc -p tsconfig.cjs.json
-	echo '{"type":"commonjs"}' > cjs/package.json
+	rm -Rf mjs test/*.js
 
 build-mjs:
 	rm -Rf mjs
 	pnpm exec tsc -p tsconfig.mjs.json
 
-build: build-cjs build-mjs
+build: build-mjs
 
 rebuild: clean build
 

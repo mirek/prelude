@@ -1,9 +1,11 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('defined', async () => {
-  await expect(G.pipe(
+await test('defined', async () => {
+  assert.deepEqual(await G.pipe(
     G.ofIterable([ 1, undefined, 3, undefined, 5 ]),
     G.defined,
     G.array
-  )).resolves.toEqual([ 1, 3, 5 ])
+  ), [ 1, 3, 5 ])
 })

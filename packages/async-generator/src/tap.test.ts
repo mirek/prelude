@@ -1,9 +1,11 @@
 import * as G from './index.js'
 import sleep from './sleep.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('concurrent', async () => {
+await test('concurrent', async () => {
   let taps = 0
-  await expect(G.pipe(
+  assert.deepEqual(await G.pipe(
     G.ofInterval(100),
     G.tap(async () => {
       await sleep(Math.random() * 10) // NOSONAR
@@ -12,6 +14,6 @@ test('concurrent', async () => {
     G.map(_ => _.index),
     G.take(20),
     G.array
-  )).resolves.toEqual(Array.from({ length: 20 }, (_, i) => i))
-  expect(taps).toBe(20)
+  ), Array.from({ length: 20 }, (_, i) => i))
+  assert.equal(taps, 20)
 })

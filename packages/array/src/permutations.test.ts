@@ -1,4 +1,6 @@
 import * as A from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
 const p =
   (value: string) =>
@@ -6,18 +8,18 @@ const p =
       .from(A.permutations(value.split('')))
       .map(_ => _.join(''))
 
-test('permutations', () => {
-  expect(p('')).toEqual([
+await test('permutations', () => {
+  assert.deepEqual(p(''), [
     ''
   ])
-  expect(p('a')).toEqual([
+  assert.deepEqual(p('a'), [
     'a'
   ])
-  expect(p('ab')).toEqual([
+  assert.deepEqual(p('ab'), [
     'ab',
     'ba'
   ])
-  expect(p('abc')).toEqual([
+  assert.deepEqual(p('abc'), [
     'abc',
     'bac',
     'cab',
@@ -25,7 +27,7 @@ test('permutations', () => {
     'bca',
     'cba'
   ])
-  expect(p('abcd')).toEqual([
+  assert.deepEqual(p('abcd'), [
     'abcd',
     'bacd',
     'cabd',

@@ -10,6 +10,6 @@ const instance =
     (value: unknown) =>
       value instanceof class_ ?
         ok(value as InstanceType<T>) :
-        fail(value, `not an instance of ${class_}`)
+        fail(value, `not an instance of ${class_.name}`)
 
 export default instance

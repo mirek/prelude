@@ -1,7 +1,8 @@
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('left', () => {
+await test('left', () => {
   const p = P.parser(P.left(P.re(/\d+/), '='))
-  expect(p('123=')).toEqual('123')
+  assert.deepEqual(p('123='), '123')
 })

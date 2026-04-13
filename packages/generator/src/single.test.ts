@@ -1,7 +1,9 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('single', () => {
+await test('single', () => {
   // expect(() => G.single([])).toThrow('Expected single element, got none.')
-  expect(G.single([42])).toEqual(42)
+  assert.deepEqual(G.single([42]), 42)
   // expect(() => G.single([ 1, 2 ])).toThrow('Expected single element, got more.')
 })

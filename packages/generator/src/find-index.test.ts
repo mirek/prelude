@@ -1,12 +1,14 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('simple', () => {
-  expect(G.pipe(
+await test('simple', () => {
+  assert.deepEqual(G.pipe(
     G.range(1, 5),
     G.findIndex(_ => _ === 3)
-  )).toEqual(2)
-  expect(G.pipe(
+  ), 2)
+  assert.deepEqual(G.pipe(
     G.range(1, 5),
     G.findIndex(_ => _ === 6)
-  )).toEqual(-1)
+  ), -1)
 })

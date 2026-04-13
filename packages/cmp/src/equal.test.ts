@@ -1,16 +1,18 @@
 import * as Cmp from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('locale strings', () => {
+await test('locale strings', () => {
   const eq = Cmp.equal(Cmp.locale(undefined, {
     ignorePunctuation: true,
     sensitivity: 'base'
   }))
-  expect(eq(
+  assert.equal(eq(
     'Używanie porównywania... jest,  fajne!',
     'uzywanie porownywania jest fajne'
-  )).toBe(true)
-  expect(eq(
+  ), true)
+  assert.equal(eq(
     'Używanie porównywania... jest,  fajne!',
     'uzywanie porownywania jest bardzo fajne'
-  )).toBe(false)
+  ), false)
 })

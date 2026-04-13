@@ -1,7 +1,9 @@
 import * as Semver from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('cmp', () => {
-  expect(Semver.stringCmp('1.0.0', '1.0.0')).toBe(0)
-  expect(Semver.stringCmp('1.0.0', '1.0.1')).toBe(-1)
-  expect(Semver.stringCmp('1.0.1', '1.0.0')).toBe(1)
+await test('cmp', () => {
+  assert.equal(Semver.stringCmp('1.0.0', '1.0.0'), 0)
+  assert.equal(Semver.stringCmp('1.0.0', '1.0.1'), -1)
+  assert.equal(Semver.stringCmp('1.0.1', '1.0.0'), 1)
 })

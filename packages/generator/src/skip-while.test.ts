@@ -1,8 +1,10 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('skip while', () => {
+await test('skip while', () => {
   let n = 0
-  expect(G.pipe(
+  assert.deepEqual(G.pipe(
     G.from(1),
     G.skipWhile(value => {
       n++
@@ -10,10 +12,10 @@ test('skip while', () => {
     }),
     G.take(3),
     G.array
-  )).toEqual([
+  ), [
     10,
     11,
     12
   ])
-  expect(n).toBe(10)
+  assert.equal(n, 10)
 })

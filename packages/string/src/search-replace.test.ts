@@ -2,6 +2,8 @@ import * as S from './index.js'
 import * as Fs from 'node:fs'
 import * as Path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
 const __dirname = Path.dirname(fileURLToPath(import.meta.url))
 
@@ -18,10 +20,10 @@ function fixture(name: string) {
   const source = Fs.readFileSync(Path.join(__dirname, `../fixtures/${name}.source.txt`), 'utf8')
   const target = Fs.readFileSync(Path.join(__dirname, `../fixtures/${name}.target.txt`), 'utf8')
   const { search, replace } = parseQuery(query)
-  expect(S.searchReplace(source, search, replace)).toEqual(target)
+  assert.deepEqual(S.searchReplace(source, search, replace), target)
 }
 
-test('searchReplace', () => {
-  expect(S.searchReplace('hello\nworld', 'wrld', 'universe')).toEqual('hello\nuniverse')
+await test('searchReplace', () => {
+  assert.deepEqual(S.searchReplace('hello\nworld', 'wrld', 'universe'), 'hello\nuniverse')
   fixture('search-replace.01')
 })

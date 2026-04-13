@@ -1,21 +1,23 @@
 import * as A from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('numbers', () => {
+await test('numbers', () => {
   const xs = A.numbers()
   for (let i = 0; i < 1000; i++) {
     A.insert(xs, Math.random())
   }
-  expect(xs.values).toEqual(xs.values.slice().sort((a, b) => a - b))
+  assert.deepEqual(xs.values, xs.values.slice().sort((a, b) => a - b))
 })
 
-test('strings', () => {
+await test('strings', () => {
   const xs = A.strings()
-  expect(A.insert(xs, 'foo')).toEqual(-1)
-  expect(A.insert(xs, 'bar')).toEqual(-1)
-  expect(A.insert(xs, 'baz')).toEqual(-2)
-  expect(xs.values).toEqual([ 'bar', 'baz', 'foo' ])
-  expect(A.hasValue(xs, 'foo')).toBe(true)
-  expect(A.hasKey(xs, 'bar')).toBe(true)
-  expect(A.has(xs, _ => A.Cmp.string(_, 'baz'))).toBe(true)
-  expect(A.hasValue(xs, 'zig')).toBe(false)
+  assert.deepEqual(A.insert(xs, 'foo'), -1)
+  assert.deepEqual(A.insert(xs, 'bar'), -1)
+  assert.deepEqual(A.insert(xs, 'baz'), -2)
+  assert.deepEqual(xs.values, [ 'bar', 'baz', 'foo' ])
+  assert.equal(A.hasValue(xs, 'foo'), true)
+  assert.equal(A.hasKey(xs, 'bar'), true)
+  assert.equal(A.has(xs, _ => A.Cmp.string(_, 'baz')), true)
+  assert.equal(A.hasValue(xs, 'zig'), false)
 })

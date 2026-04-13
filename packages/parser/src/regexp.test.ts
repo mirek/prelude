@@ -1,11 +1,12 @@
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
 import * as R from '@prelude/refute'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('comment', () => {
+await test('comment', () => {
   const comment = P.re(/<!--(.*?)-->/, 1)
-  expect(P.parse(comment, '<!--foo-->')).toEqual('foo')
-  expect(P.parse(P.star(P.or(P.ws1, comment)), ' <!--foo--> <!--bar--> ')).toEqual([
+  assert.deepEqual(P.parse(comment, '<!--foo-->'), 'foo')
+  assert.deepEqual(P.parse(P.star(P.or(P.ws1, comment)), ' <!--foo--> <!--bar--> '), [
     ' ',
     'foo',
     ' ',
@@ -14,16 +15,13 @@ test('comment', () => {
   ])
 })
 
-test('digit', () => {
+await test('digit', () => {
   const p = P.map(P.re(/\d/), _ => parseInt(_, 10))
-  expect(P.parse(p, '1')).toEqual(1)
-  expect(() => P.parse(p, '123')).toThrow(`Expected exhaustive result, parsed 1 (unparsed 2).
-
-123
- ^ 1:2`)
+  assert.deepEqual(P.parse(p, '1'), 1)
+  assert.throws(() => P.parse(p, '123'), new RegExp(String.raw`Expected exhaustive result, parsed 1 \(unparsed 2\)\.\n\n123\n \^ 1:2`))
 })
 
-test('convoluted date', () => {
+await test('convoluted date', () => {
   const digit0: P.t<number> =
     P.map(P.re(/\d/), _ => parseInt(_, 10))
   const dd2: P.t<number> =
@@ -48,11 +46,11 @@ test('convoluted date', () => {
   const yyyy: P.t<number> =
     intDigits(4)
   const p = P.seq(yyyy, mm, dd2)
-  expect(digit0(P.Reader.of('0'))).toEqual(P.Result.ok(P.Reader.of('0', 1), 0))
-  expect(digit0(P.Reader.of('1'))).toEqual(P.Result.ok(P.Reader.of('1', 1), 1))
-  expect(digit0(P.Reader.of('12'))).toEqual(P.Result.ok(P.Reader.of('12', 1), 1))
-  expect(P.parse(yyyy, '2021')).toEqual(2021)
-  expect(P.parse(mm, '05')).toEqual(4)
-  expect(P.parse(dd2, '01')).toEqual(1)
-  expect(P.parse(p, '20210501')).toEqual([ 2021, 4, 1 ])
+  assert.deepEqual(digit0(P.Reader.of('0')), P.Result.ok(P.Reader.of('0', 1), 0))
+  assert.deepEqual(digit0(P.Reader.of('1')), P.Result.ok(P.Reader.of('1', 1), 1))
+  assert.deepEqual(digit0(P.Reader.of('12')), P.Result.ok(P.Reader.of('12', 1), 1))
+  assert.deepEqual(P.parse(yyyy, '2021'), 2021)
+  assert.deepEqual(P.parse(mm, '05'), 4)
+  assert.deepEqual(P.parse(dd2, '01'), 1)
+  assert.deepEqual(P.parse(p, '20210501'), [ 2021, 4, 1 ])
 })

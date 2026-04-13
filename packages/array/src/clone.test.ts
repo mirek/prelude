@@ -1,9 +1,11 @@
 import * as A from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('clone', () => {
+await test('clone', () => {
   const values = [ 1, 2, 3 ]
   const cloned = A.clone(values)
-  expect(cloned).toEqual(values)
+  assert.deepEqual(cloned, values)
   cloned[0] = 0
-  expect(cloned).not.toEqual(values)
+  assert.notDeepEqual(cloned, values)
 })

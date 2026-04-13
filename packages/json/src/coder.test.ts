@@ -1,4 +1,6 @@
 import * as Json from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
 const custom = Json.of({
   ...Json.global,
@@ -9,9 +11,9 @@ Json.register(custom, Json.Codecs.Number)
 
 const t =
   (value: unknown) =>
-    expect(custom.parse(custom.stringify(value))).toEqual(value)
+    assert.deepEqual(custom.parse(custom.stringify(value)), value)
 
-test('basic', () => {
+await test('basic', () => {
   t(1)
   t('foo')
   t(true)
@@ -22,7 +24,7 @@ test('basic', () => {
   t([ 1, 'foo', true, false, null, [], {} ])
 })
 
-test('non json serializable', () => {
+await test('non json serializable', () => {
   t(new Date())
   t(new Error('foo'))
   t(/foo/)

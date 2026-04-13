@@ -27,7 +27,7 @@ export default class WaitGroup {
    */
   #maybeResolve() {
     if (this.#counter === 0) {
-      this.#settle(({ resolve }) => resolve())
+      this.#settle(waiter => { waiter.resolve() })
     }
     if (this.#counter < 0) {
       throw new Error('negative counter')
@@ -63,6 +63,6 @@ export default class WaitGroup {
 
   /** Rejects all waiters. */
   reject(err: unknown) {
-    this.#settle(({ reject }) => reject(err))
+    this.#settle(waiter => { waiter.reject(err) })
   }
 }

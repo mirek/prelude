@@ -1,23 +1,21 @@
 import * as F from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('timeout', async () => {
+await test('timeout', async () => {
 
-  expect(F.timeout(0.1 * 1000, () => F.sleep(1000).then(() => true), F.noop))
-    .resolves.toBe(undefined)
+  assert.equal(await F.timeout(0.1 * 1000, () => F.sleep(1000).then(() => true), F.noop), undefined)
 
-  expect(F.timeout(0.1 * 1000, () => F.sleep(1000).then(() => true), () => { throw new Error('Timeout.') }))
-    .rejects.toThrow('Timeout.')
+  await assert.rejects(F.timeout(0.1 * 1000, () => F.sleep(1000).then(() => true), () => { throw new Error('Timeout.') }), /Timeout\./)
 
 })
 
-test('special timeout', async () => {
+await test('special timeout', async () => {
 
-  expect(
-    F.timeout(
+  await assert.rejects(F.timeout(
       0.1 * 1000,
       () => F.sleep(0.2 * 1000).then(() => true),
       () => F.sleep(0.3 * 1000).then(() => { throw Error('Actually reject.') })
-    )
-  ).rejects.toThrow('Actually reject.')
+    ), /Actually reject\./)
 
 })

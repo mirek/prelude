@@ -1,11 +1,13 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('cartesianProduct', async () => {
-  await expect(G.pipe(
+await test('cartesianProduct', async () => {
+  assert.deepEqual(await G.pipe(
     G.ofIterable([ 1, 2, 3 ]),
     G.cartesianProduct(G.ofIterable([ 4, 5, 6 ])),
     G.array
-  )).resolves.toEqual([
+  ), [
     [ 1, 4 ],
     [ 1, 5 ],
     [ 1, 6 ],

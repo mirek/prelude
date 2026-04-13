@@ -1,5 +1,7 @@
 import * as A from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('randoms', () => {
-  expect(A.randoms(3)).toHaveLength(3)
+await test('randoms', () => {
+  assert.equal((A.randoms(3)).length, 3)
 })

@@ -1,6 +1,8 @@
 import * as A from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('last', () => {
-  expect(A.last([ 7, 3, 5 ])).toBe(5)
-  expect(() => A.last([])).toThrow()
+await test('last', () => {
+  assert.equal(A.last([ 7, 3, 5 ]), 5)
+  assert.throws(() => A.last([]))
 })

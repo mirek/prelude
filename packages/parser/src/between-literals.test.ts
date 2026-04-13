@@ -1,21 +1,18 @@
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('betweenLiterals', () => {
+await test('betweenLiterals', () => {
   const p = P.betweenLiterals('<!--', '-->')
-  expect(p(P.Reader.of('<!--abc-->'))).toEqual(
-    P.Result.ok(P.Reader.of('<!--abc-->', 10), 'abc')
-  )
+  assert.deepEqual(p(P.Reader.of('<!--abc-->')), P.Result.ok(P.Reader.of('<!--abc-->', 10), 'abc'))
 })
 
-test('str', () => {
+await test('str', () => {
   const p = P.betweenLiterals('"', '"')
-  expect(p(P.Reader.of('"abc"'))).toEqual(
-    P.Result.ok(P.Reader.of('"abc"', 5), 'abc')
-  )
+  assert.deepEqual(p(P.Reader.of('"abc"')), P.Result.ok(P.Reader.of('"abc"', 5), 'abc'))
 })
 
-test('attr', () => {
+await test('attr', () => {
   const id =
     P.join(P.star(P.charRange('09azAZ'), 1))
 
@@ -30,5 +27,5 @@ test('attr', () => {
 
   const p = P.parser(attr)
 
-  expect(p('foo="bar"')).toEqual([ 'foo', 'bar' ])
+  assert.deepEqual(p('foo="bar"'), [ 'foo', 'bar' ])
 })

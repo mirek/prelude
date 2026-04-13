@@ -1,12 +1,14 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('some', async () => {
-  await expect(G.pipe(
+await test('some', async () => {
+  assert.equal(await G.pipe(
     G.range(1, 5),
     G.some(_ => _ > 3)
-  )).resolves.toBe(true)
-  await expect(G.pipe(
+  ), true)
+  assert.equal(await G.pipe(
     G.range(1, 5),
     G.some(_ => _ > 5)
-  )).resolves.toBe(false)
+  ), false)
 })

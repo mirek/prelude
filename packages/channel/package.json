@@ -3,12 +3,11 @@
   "version": "1.0.0",
   "description": "Channel module.",
   "type": "module",
-  "main": "./cjs/index.js",
   "files": [
     "*"
   ],
   "scripts": {
-    "test": "npx tsx --test src/**/*.test.ts --coverage",
+    "test": "pnpm tsx --test src/**/*.test.ts --coverage",
     "preversion": "make preversion",
     "postversion": "make postversion"
   },
@@ -39,7 +38,8 @@
   "author": "Mirek Rusin (https://github.com/mirek)",
   "license": "CC0-1.0",
   "devDependencies": {
-    "@prelude/cmp": "workspace:*"
+    "@prelude/cmp": "workspace:*",
+    "@prelude/tsconfig": "workspace:*"
   },
   "dependencies": {
     "@prelude/array": "workspace:*"
@@ -47,15 +47,10 @@
   "module": "./mjs/index.js",
   "exports": {
     ".": {
-      "import": "./mjs/index.js",
-      "require": "./cjs/index.js"
+      "import": "./mjs/index.js"
     },
     "./*.js": {
-      "import": "./mjs/*.js",
-      "require": "./cjs/*.js"
-    },
-    "./*": {
-      "require": "./cjs/*.js"
+      "import": "./mjs/*.js"
     }
   }
 }

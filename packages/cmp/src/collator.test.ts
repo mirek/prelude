@@ -1,10 +1,12 @@
 import * as Cmp from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('french locale, search usage, base sensitivity', () => {
+await test('french locale, search usage, base sensitivity', () => {
   const cmp = Cmp.collator(new Intl.Collator('fr', {
     usage: 'search',
     sensitivity: 'base'
   }))
-  expect(cmp('Congrès', 'congres')).toBe(Cmp.eq)
-  expect(cmp('Assemblée', 'poisson')).toBe(Cmp.asc)
+  assert.equal(cmp('Congrès', 'congres'), Cmp.eq)
+  assert.equal(cmp('Assemblée', 'poisson'), Cmp.asc)
 })

@@ -1,14 +1,16 @@
 import WaitGroup from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('simple', async () => {
+await test('simple', async () => {
   const wg = new WaitGroup(3)
   setTimeout(() => {
     wg.done(3)
   }, 100)
-  await expect(wg.wait()).resolves.toBeUndefined()
+  assert.equal(await wg.wait(), undefined)
 })
 
-test('rejects', () => {
+await test('rejects', () => {
   const wg = new WaitGroup(3)
-  expect(() => wg.done(4)).toThrow('negative counter')
+  assert.throws(() => wg.done(4), /negative counter/)
 })

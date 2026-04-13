@@ -3,7 +3,6 @@
   "version": "0.4.1",
   "description": "Function module.",
   "type": "module",
-  "main": "./cjs/index.js",
   "directories": {
     "test": "test"
   },
@@ -26,7 +25,8 @@
   "author": "Mirek Rusin (https://github.com/mirek)",
   "license": "CC0-1.0",
   "devDependencies": {
-    "@prelude/array": "workspace:*"
+    "@prelude/array": "workspace:*",
+    "@prelude/tsconfig": "workspace:*"
   },
   "dependencies": {
     "@prelude/serial-queue": "workspace:*"
@@ -34,15 +34,10 @@
   "module": "./mjs/index.js",
   "exports": {
     ".": {
-      "import": "./mjs/index.js",
-      "require": "./cjs/index.js"
+      "import": "./mjs/index.js"
     },
     "./*.js": {
-      "import": "./mjs/*.js",
-      "require": "./cjs/*.js"
-    },
-    "./*": {
-      "require": "./cjs/*.js"
+      "import": "./mjs/*.js"
     }
   }
 }

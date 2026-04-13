@@ -1,7 +1,9 @@
 import * as Cmp from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('chain', () => {
-  expect([
+await test('chain', () => {
+  assert.deepEqual([
     { rank: 3, name: 'a' },
     { rank: 1, name: 'b' },
     { rank: 3, name: 'b' },
@@ -10,7 +12,7 @@ test('chain', () => {
   ].sort(Cmp.chain(
     Cmp.map(Cmp.number, _ => _.rank),
     Cmp.map(Cmp.string, _ => _.name)
-  ))).toEqual([
+  )), [
     { rank: 1, name: 'a' },
     { rank: 1, name: 'b' },
     { rank: 2, name: 'c' },

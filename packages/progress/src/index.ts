@@ -61,9 +61,9 @@ export function bar(length: number, progress: number) {
   return Array
     .from({ length })
     .map((_, i) => {
-      const j = Math.round(i * 8)
-      const k = Math.round(progress * length * 8)
-      return chars[k < j ? 0 : k >= (j + 8) ? 8 : k % 8]
+      const j = i * 8
+      const k = Math.floor(progress * length * 8)
+      return chars[k <= j ? 0 : k >= (j + 8) ? 8 : k - j]
     })
     .join('')
 }
@@ -103,7 +103,6 @@ export class Progress {
       return
     }
     if (progress !== undefined) {
-      worker.target = progress
       worker.progress = progress
     }
     if (target !== undefined) {
@@ -133,7 +132,8 @@ export class Progress {
     this.stop()
     this.#intervalId = setInterval(() => {
       for (const worker of this.#workers) {
-        worker.progress += (worker.target - worker.progress) / fps
+        const diff = worker.target - worker.progress
+        worker.progress = Math.abs(diff) < 0.005 ? worker.target : worker.progress + diff / fps
       }
       this.print()
     }, 1000 / fps)

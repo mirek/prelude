@@ -13,7 +13,7 @@ export function distance(a: string, b: string, method: 'levenshtein' = 'levensht
     case 'levenshtein':
       return levenshtein(a, b)
     default:
-      throw new Error(`Expected known distance method, got ${method}.`)
+      throw new Error(`Expected known distance method, got ${String(method)}.`)
   }
 }
 

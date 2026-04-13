@@ -1,4 +1,6 @@
 import * as $ from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
 class Api {
   @$.rpc($.tuple($.number, $.number))
@@ -15,7 +17,7 @@ const call =
       target[method](...params) :
       undefined
 
-test('rpc', () => {
-  expect(call(api, 'add', 1, 2)).toEqual(3)
-  expect(() => call(api, 'add', '1', '2')).toThrow('Invalid argument(s).')
+await test('rpc', () => {
+  assert.deepEqual(call(api, 'add', 1, 2), 3)
+  assert.throws(() => call(api, 'add', '1', '2'), /Invalid argument\(s\)\./)
 })

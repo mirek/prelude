@@ -1,13 +1,11 @@
 {
   "extends": "@tsconfig/node24/tsconfig.json",
   "compilerOptions": {
-    "importsNotUsedAsValues": "error",
-    "module": "ES2020",
-    "moduleResolution": "Node",
     "noImplicitAny": false,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "rootDir": "./src"
   },
   "include": [
     "src"

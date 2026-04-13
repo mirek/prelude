@@ -1,7 +1,8 @@
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('reentry', () => {
+await test('reentry', () => {
   type Node =
     | number
     | { type: 'Eq', lhs: Node, rhs: Node }
@@ -17,7 +18,7 @@ test('reentry', () => {
         p_,
         P.map(P.charRange('09'), parseFloat)
       )(reader)
-  expect(P.parser(p)('1=2=3')).toEqual({
+  assert.deepEqual(P.parser(p)('1=2=3'), {
     type: 'Eq',
     lhs: 1,
     rhs: {
@@ -28,9 +29,9 @@ test('reentry', () => {
   })
 })
 
-test('longest', () => {
+await test('longest', () => {
   const p = P.longestReentrant('a', 'aa')
-  expect(P.parser(P.star(p))('aaaaa')).toEqual([
+  assert.deepEqual(P.parser(P.star(p))('aaaaa'), [
     'aa',
     'aa',
     'a'

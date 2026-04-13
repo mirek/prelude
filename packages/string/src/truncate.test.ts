@@ -1,35 +1,37 @@
 import truncate from './truncate.js'
+import { test, describe } from 'node:test'
+import assert from 'node:assert/strict'
 
-describe('truncate', () => {
-  test('returns the original string if shorter than length', () => {
-    expect(truncate('hello', 10)).toBe('hello')
+await describe('truncate', async () => {
+  await test('returns the original string if shorter than length', () => {
+    assert.equal(truncate('hello', 10), 'hello')
   })
 
-  test('returns the original string if equal to length', () => {
-    expect(truncate('hello', 5)).toBe('hello')
+  await test('returns the original string if equal to length', () => {
+    assert.equal(truncate('hello', 5), 'hello')
   })
 
-  test('truncates the string and adds suffix if longer than length', () => {
-    expect(truncate('hello world', 8)).toBe('hello...')
+  await test('truncates the string and adds suffix if longer than length', () => {
+    assert.equal(truncate('hello world', 8), 'hello...')
   })
 
-  test('uses custom suffix when provided', () => {
-    expect(truncate('hello world', 7, '.')).toBe('hello.')
+  await test('uses custom suffix when provided', () => {
+    assert.equal(truncate('hello world', 7, '.'), 'hello.')
   })
 
-  test('handles empty string', () => {
-    expect(truncate('', 5)).toBe('')
+  await test('handles empty string', () => {
+    assert.equal(truncate('', 5), '')
   })
 
-  test('handles zero length', () => {
-    expect(truncate('hello', 0)).toBe('...')
+  await test('handles zero length', () => {
+    assert.equal(truncate('hello', 0), '...')
   })
 
-  test('handles negative length', () => {
-    expect(truncate('hello', -5)).toBe('...')
+  await test('handles negative length', () => {
+    assert.equal(truncate('hello', -5), '...')
   })
 
-  test('handles length less than suffix length', () => {
-    expect(truncate('hello', 2, '...')).toBe('...')
+  await test('handles length less than suffix length', () => {
+    assert.equal(truncate('hello', 2, '...'), '...')
   })
 })

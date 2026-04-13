@@ -1,13 +1,15 @@
 import * as Cmp from '@prelude/cmp'
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('unsorted', () => {
+await test('unsorted', () => {
 
-  expect(G.pipe(
+  assert.deepEqual(G.pipe(
     [ 7, 4, 5 ],
     G.diff([ 4, 8, 1, 5 ], Cmp.number),
     G.array,
-  )).toEqual([
+  ), [
     [ undefined, 1 ],
     [ 4, 4 ],
     [ 5, 5 ],
@@ -15,11 +17,11 @@ test('unsorted', () => {
     [ undefined, 8 ]
   ])
 
-  expect(G.pipe(
+  assert.deepEqual(G.pipe(
     [ 7, 4, 5 ],
     G.diff([ 4, 8, 1, 5 ], Cmp.number, { direction: Cmp.dsc }),
     G.array,
-  )).toEqual([
+  ), [
     [ undefined, 8 ],
     [ 7, undefined ],
     [ 5, 5 ],
@@ -27,11 +29,11 @@ test('unsorted', () => {
     [ undefined, 1 ]
   ])
 
-  expect(G.pipe(
+  assert.deepEqual(G.pipe(
     [ 7, 4, 5 ],
     G.diff([ 4, 8, 1, 5 ], Cmp.reversed(Cmp.number)),
     G.array,
-  )).toEqual([
+  ), [
     [ undefined, 8 ],
     [ 7, undefined ],
     [ 5, 5 ],
@@ -41,7 +43,7 @@ test('unsorted', () => {
 
 })
 
-test('lhs, rhs having different type', () => {
+await test('lhs, rhs having different type', () => {
   const xs =
     [ 2, 6, 4 ]
   const ys =
@@ -53,7 +55,7 @@ test('lhs, rhs having different type', () => {
       _ => _,
       G.array,
     )
-  expect(zs).toEqual([
+  assert.deepEqual(zs, [
     [ undefined, '1' ],
     [ 2, '2' ],
     [ 4, undefined ],

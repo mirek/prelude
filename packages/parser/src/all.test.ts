@@ -1,7 +1,8 @@
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('all', () => {
+await test('all', () => {
   const p = P.parser(P.all(P.re(/\d+/)))
-  expect(p('foo 123 bar 456 baz')).toEqual([ '123', '456' ])
+  assert.deepEqual(p('foo 123 bar 456 baz'), [ '123', '456' ])
 })

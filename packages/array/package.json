@@ -3,9 +3,8 @@
   "version": "3.0.0",
   "description": "Array module.",
   "type": "module",
-  "main": "./cjs/index.js",
   "scripts": {
-    "test": "node --test src",
+    "test": "pnpm tsx --test src/**/*.test.ts",
     "preversion": "make preversion",
     "postversion": "make postversion"
   },
@@ -24,18 +23,16 @@
   "dependencies": {
     "@prelude/cmp": "workspace:*"
   },
+  "devDependencies": {
+    "@prelude/tsconfig": "workspace:*"
+  },
   "module": "./mjs/index.js",
   "exports": {
     ".": {
-      "import": "./mjs/index.js",
-      "require": "./cjs/index.js"
+      "import": "./mjs/index.js"
     },
     "./*.js": {
-      "import": "./mjs/*.js",
-      "require": "./cjs/*.js"
-    },
-    "./*": {
-      "require": "./cjs/*.js"
+      "import": "./mjs/*.js"
     }
   }
 }

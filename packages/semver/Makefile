@@ -2,18 +2,13 @@ test:
 	pnpm t
 
 clean:
-	rm -Rf cjs mjs test/*.js
-
-build-cjs:
-	rm -Rf cjs
-	pnpm exec tsc -m commonjs -d --sourceMap --outDir cjs
-	echo '{"type":"commonjs"}' > cjs/package.json
+	rm -Rf mjs test/*.js
 
 build-mjs:
 	rm -Rf mjs
-	pnpm exec tsc -d --sourceMap --outDir mjs
+	pnpm exec tsc -p tsconfig.lib.json -d --sourceMap --outDir mjs --rootDir src
 
-build: build-cjs build-mjs
+build: build-mjs
 
 rebuild: clean build
 

@@ -4,7 +4,6 @@
   "description": "Refute module.",
   "type": "module",
   "module": "./mjs/index.js",
-  "main": "./cjs/index.js",
   "directories": {
     "test": "test"
   },
@@ -27,17 +26,15 @@
   ],
   "author": "Mirek Rusin (https://github.com/mirek)",
   "license": "CC0-1.0",
+  "devDependencies": {
+    "@prelude/tsconfig": "workspace:*"
+  },
   "exports": {
     ".": {
-      "import": "./mjs/index.js",
-      "require": "./cjs/index.js"
+      "import": "./mjs/index.js"
     },
     "./*.js": {
-      "import": "./mjs/*.js",
-      "require": "./cjs/*.js"
-    },
-    "./*": {
-      "require": "./cjs/*.js"
+      "import": "./mjs/*.js"
     }
   }
 }

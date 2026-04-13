@@ -1,7 +1,9 @@
 import * as Semver from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('parse', () => {
-  expect(Semver.parse('1.0.0')).toEqual({
+await test('parse', () => {
+  assert.deepEqual(Semver.parse('1.0.0'), {
     major: 1,
     minor: 0,
     patch: 0,
@@ -9,7 +11,7 @@ test('parse', () => {
     build: undefined,
     date: undefined
   })
-  expect(Semver.parse('1.0.0-alpha')).toEqual({
+  assert.deepEqual(Semver.parse('1.0.0-alpha'), {
     major: 1,
     minor: 0,
     patch: 0,
@@ -17,7 +19,7 @@ test('parse', () => {
     build: undefined,
     date: undefined
   })
-  expect(Semver.parse('1.0.0-alpha.1')).toEqual({
+  assert.deepEqual(Semver.parse('1.0.0-alpha.1'), {
     major: 1,
     minor: 0,
     patch: 0,
@@ -25,5 +27,5 @@ test('parse', () => {
     build: undefined,
     date: undefined
   })
-  expect(() => Semver.parse('1.0.foo')).toThrow('invalid semver 1.0.foo')
+  assert.throws(() => Semver.parse('1.0.foo'), /invalid semver 1\.0\.foo/)
 })

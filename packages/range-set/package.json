@@ -3,10 +3,9 @@
   "version": "0.0.0",
   "description": "Range set.",
   "type": "module",
-  "main": "./cjs/index.js",
   "module": "./mjs/index.js",
   "scripts": {
-    "test": "NODE_OPTIONS='--no-warnings --experimental-vm-modules' pnpm npx tsx --test src/**/*.test.ts",
+    "test": "NODE_OPTIONS='--no-warnings --experimental-vm-modules' pnpm tsx --test src/**/*.test.ts",
     "preversion": "make preversion",
     "postversion": "make postversion"
   },
@@ -17,7 +16,6 @@
     "stdlib",
     "library",
     "esm",
-    "cjs",
     "range",
     "set",
     "interval",
@@ -35,20 +33,18 @@
     "@babel/preset-env": "^7.29.2",
     "@babel/preset-typescript": "^7.28.5",
     "@babel/types": "^7.29.0",
-    "@types/babel__core": "^7.20.5"
+    "@types/babel__core": "^7.20.5",
+    "@prelude/tsconfig": "workspace:*"
   },
   "exports": {
     ".": {
-      "import": "./mjs/index.js",
-      "require": "./cjs/index.js"
+      "import": "./mjs/index.js"
     },
     "./*.js": {
-      "import": "./mjs/*.js",
-      "require": "./cjs/*.js"
+      "import": "./mjs/*.js"
     },
     "./*": {
-      "import": "./mjs/*.js",
-      "require": "./cjs/*.js"
+      "import": "./mjs/*.js"
     }
   },
   "packageManager": "pnpm@10.12.1",

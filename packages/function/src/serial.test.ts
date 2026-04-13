@@ -1,7 +1,9 @@
 import * as A from '@prelude/array'
 import * as F from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('serial', async () => {
+await test('serial', async () => {
   const xs: number[] = []
 
   const f =
@@ -11,11 +13,11 @@ test('serial', async () => {
   const g = F.serial(f)
 
   for (let i = 0; i < 100; i++) {
-    g(i)
+    void g(i)
     await F.sleep(Math.random() * 10)
   }
 
   await F.eventually(async () => xs.length === 100)
 
-  expect(xs).toEqual(A.indices(100))
+  assert.deepEqual(xs, A.indices(100))
 }, 10 * 1000)

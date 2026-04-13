@@ -1,36 +1,38 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('is closing', () => {
+await test('is closing', () => {
   const g = G.range(1, 100)
-  expect(G.pipe(g, G.take(3), G.array)).toEqual([ 1, 2, 3 ])
-  expect(G.pipe(g, G.take(3), G.array)).toEqual([])
+  assert.deepEqual(G.pipe(g, G.take(3), G.array), [ 1, 2, 3 ])
+  assert.deepEqual(G.pipe(g, G.take(3), G.array), [])
 })
 
-test('can be retained', () => {
+await test('can be retained', () => {
   const g = G.range(1, 100)
-  expect(G.pipe(g, G.retain, G.take(1), G.array)).toEqual([ 1 ])
-  expect(G.pipe(g, G.retain, G.take(2), G.array)).toEqual([ 2, 3 ])
-  expect(G.pipe(g, G.take(2), G.array)).toEqual([ 4, 5 ])
-  expect(G.pipe(g, G.take(3), G.array)).toEqual([])
+  assert.deepEqual(G.pipe(g, G.retain, G.take(1), G.array), [ 1 ])
+  assert.deepEqual(G.pipe(g, G.retain, G.take(2), G.array), [ 2, 3 ])
+  assert.deepEqual(G.pipe(g, G.take(2), G.array), [ 4, 5 ])
+  assert.deepEqual(G.pipe(g, G.take(3), G.array), [])
 })
 
-test('works on empty', () => {
+await test('works on empty', () => {
   const g = G.of([])
-  expect(G.pipe(g, G.take(3), G.array)).toEqual([])
+  assert.deepEqual(G.pipe(g, G.take(3), G.array), [])
 })
 
-test('works on shorter', () => {
+await test('works on shorter', () => {
   let g = G.of([ 1, 2 ])
-  expect(G.pipe(g, G.take(3), G.array)).toEqual([ 1, 2 ])
-  expect(G.pipe(g, G.take(3), G.array)).toEqual([])
+  assert.deepEqual(G.pipe(g, G.take(3), G.array), [ 1, 2 ])
+  assert.deepEqual(G.pipe(g, G.take(3), G.array), [])
   g = G.of([ 1, 2 ])
-  expect(G.pipe(g, G.retain, G.take(3), G.array)).toEqual([ 1, 2 ])
-  expect(G.pipe(g, G.retain, G.take(3), G.array)).toEqual([])
+  assert.deepEqual(G.pipe(g, G.retain, G.take(3), G.array), [ 1, 2 ])
+  assert.deepEqual(G.pipe(g, G.retain, G.take(3), G.array), [])
 })
 
-test('taking 0 is a bit special', () => {
+await test('taking 0 is a bit special', () => {
   const g = G.range(1, 100)
-  expect(G.pipe(g, G.take(0), G.array)).toEqual([])
-  expect(G.pipe(g, G.take(1), G.array)).toEqual([ 1 ])
-  expect(G.pipe(g, G.take(1), G.array)).toEqual([])
+  assert.deepEqual(G.pipe(g, G.take(0), G.array), [])
+  assert.deepEqual(G.pipe(g, G.take(1), G.array), [ 1 ])
+  assert.deepEqual(G.pipe(g, G.take(1), G.array), [])
 })

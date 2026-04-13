@@ -27,7 +27,7 @@ const insert =
       case Cmp.eq: {
         const v = merge(x, y) // TODO: merge on number of elements
         if (cmp(key(y), key(v)) !== Cmp.eq) {
-          throw new Error(`Merge can't produce non equal value, ${y} != ${v}.`)
+          throw new Error(`Merge can't produce non equal value, ${String(y)} != ${String(v)}.`)
         }
         return mk(c, a, v, i + j, b)
       }

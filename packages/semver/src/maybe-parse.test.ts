@@ -1,7 +1,9 @@
 import * as Semver from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('maybeParse', () => {
-  expect(Semver.maybeParse('1.0.0')).toEqual({
+await test('maybeParse', () => {
+  assert.deepEqual(Semver.maybeParse('1.0.0'), {
     major: 1,
     minor: 0,
     patch: 0,
@@ -9,7 +11,7 @@ test('maybeParse', () => {
     build: undefined,
     date: undefined
   })
-  expect(Semver.maybeParse('1.0.0-alpha')).toEqual({
+  assert.deepEqual(Semver.maybeParse('1.0.0-alpha'), {
     major: 1,
     minor: 0,
     patch: 0,
@@ -17,7 +19,7 @@ test('maybeParse', () => {
     build: undefined,
     date: undefined
   })
-  expect(Semver.maybeParse('1.0.0-alpha.1')).toEqual({
+  assert.deepEqual(Semver.maybeParse('1.0.0-alpha.1'), {
     major: 1,
     minor: 0,
     patch: 0,
@@ -25,8 +27,8 @@ test('maybeParse', () => {
     build: undefined,
     date: undefined
   })
-  expect(Semver.maybeParse('1.0.foo')).toBe(undefined)
-  expect(Semver.maybeParse('1.0.0', '2020-01-01')).toEqual({
+  assert.equal(Semver.maybeParse('1.0.foo'), undefined)
+  assert.deepEqual(Semver.maybeParse('1.0.0', '2020-01-01'), {
     major: 1,
     minor: 0,
     patch: 0,

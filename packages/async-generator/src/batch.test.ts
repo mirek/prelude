@@ -1,33 +1,35 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('batch', async () => {
+await test('batch', async () => {
   // Test basic batching
   const result = await G.pipe(
     G.ofIterable([1, 2, 3, 4, 5, 6, 7, 8]),
     G.batch(3),
     G.array
   )
-  expect(result).toEqual([[1, 2, 3], [4, 5, 6], [7, 8]])
+  assert.deepEqual(result, [[1, 2, 3], [4, 5, 6], [7, 8]])
 })
 
-test('batch with exact multiple', async () => {
+await test('batch with exact multiple', async () => {
   const result = await G.pipe(
     G.ofIterable([1, 2, 3, 4, 5, 6]),
     G.batch(3),
     G.array
   )
-  expect(result).toEqual([[1, 2, 3], [4, 5, 6]])
+  assert.deepEqual(result, [[1, 2, 3], [4, 5, 6]])
 })
 
-test('batch with single item batches', async () => {
+await test('batch with single item batches', async () => {
   const result = await G.pipe(
     G.ofIterable([1, 2, 3]),
     G.batch(1),
     G.array
   )
-  expect(result).toEqual([[1], [2], [3]])
+  assert.deepEqual(result, [[1], [2], [3]])
 })
 
-test('batch throws for invalid length', async () => {
-  expect(() => G.batch(0)).toThrow('Expected batch length to be at least 1')
+await test('batch throws for invalid length', async () => {
+  assert.throws(() => G.batch(0), /Expected batch length to be at least 1/)
 })

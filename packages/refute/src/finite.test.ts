@@ -1,7 +1,9 @@
 import * as $ from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('finite', () => {
-  expect($.finite(1)).toEqual($.ok(1))
-  expect($.finite(Infinity)).toEqual($.fail(Infinity, 'expected finite number'))
-  expect($.finite(NaN)).toEqual($.fail(NaN, 'expected finite number'))
+await test('finite', () => {
+  assert.deepEqual($.finite(1), $.ok(1))
+  assert.deepEqual($.finite(Infinity), $.fail(Infinity, 'expected finite number'))
+  assert.deepEqual($.finite(NaN), $.fail(NaN, 'expected finite number'))
 })

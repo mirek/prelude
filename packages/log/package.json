@@ -9,25 +9,21 @@
     "prepack": "make prepack",
     "postversion": "make postversion"
   },
-  "main": "./cjs/index.js",
   "module": "./mjs/index.js",
   "exports": {
     ".": {
       "bundle": "./src/index.ts",
       "import": "./mjs/index.js",
-      "require": "./cjs/index.js",
       "types": "./dts/index.d.ts"
     },
     "./*.js": {
       "bundle": "./src/*.ts",
       "import": "./mjs/*.js",
-      "require": "./cjs/*.js",
       "types": "./dts/*.d.ts"
     },
     "./*": {
       "bundle": "./src/*",
       "import": "./mjs/*",
-      "require": "./cjs/*.js",
       "types": "./dts/*.d.ts"
     }
   },
@@ -47,6 +43,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "7.29.0",
     "@babel/preset-env": "7.29.2",
-    "@babel/preset-typescript": "7.28.5"
+    "@babel/preset-typescript": "7.28.5",
+    "@prelude/tsconfig": "workspace:*"
   }
 }

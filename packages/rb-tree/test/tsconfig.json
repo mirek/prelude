@@ -1,6 +1,7 @@
 {
-  "extends": "../tsconfig.json",
-  "include": [
-    "."
-  ]
+  "extends": "../tsconfig.test.json",
+  "compilerOptions": {
+    "noEmit": false
+  },
+  "include": ["."]
 }

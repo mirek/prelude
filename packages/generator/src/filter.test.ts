@@ -1,6 +1,8 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('type predicate', () => {
+await test('type predicate', () => {
   const nonnullish =
     <T>(value: T): value is NonNullable<T> =>
       value != null
@@ -10,5 +12,5 @@ test('type predicate', () => {
     G.array
   )
   const ys: number[] = xs
-  expect(ys).toEqual([ 1 ])
+  assert.deepEqual(ys, [ 1 ])
 })

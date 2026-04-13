@@ -1,8 +1,9 @@
-import { test, expect } from '@jest/globals'
 import parse from './rfc8259/parse.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('basic', () => {
-  expect(parse(`
+await test('basic', () => {
+  assert.deepEqual(parse(`
     {
       "Image": {
         "Width":  800,
@@ -17,7 +18,7 @@ test('basic', () => {
         "IDs": [116, 943, 234, 38793]
       }
     }
-  `)).toEqual({
+  `), {
     'Image': {
       'Width': 800,
       'Height': 600,

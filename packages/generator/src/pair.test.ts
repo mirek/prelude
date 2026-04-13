@@ -1,8 +1,9 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('pair', () => {
-  expect(
-    G.pipe(
+await test('pair', () => {
+  assert.deepEqual(G.pipe(
       G.from(),
       G.pair(G.pipe(
         G.from(),
@@ -10,8 +11,7 @@ test('pair', () => {
       )),
       G.take(3),
       G.array
-    )
-  ).toEqual([
+    ), [
     [ 0, 2 ],
     [ 1, 3 ],
     [ 2, 4 ]

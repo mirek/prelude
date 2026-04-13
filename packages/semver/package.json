@@ -3,12 +3,11 @@
   "version": "2.0.1",
   "description": "Semver module.",
   "type": "module",
-  "main": "./cjs/index.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "npx tsx --test src/**/*.test.ts --coverage",
+    "test": "pnpm tsx --test src/**/*.test.ts --coverage",
     "preversion": "make preversion",
     "postversion": "make postversion"
   },
@@ -24,19 +23,17 @@
   "module": "./mjs/index.js",
   "exports": {
     ".": {
-      "import": "./mjs/index.js",
-      "require": "./cjs/index.js"
+      "import": "./mjs/index.js"
     },
     "./*.js": {
-      "import": "./mjs/*.js",
-      "require": "./cjs/*.js"
-    },
-    "./*": {
-      "require": "./cjs/*.js"
+      "import": "./mjs/*.js"
     }
   },
   "dependencies": {
     "@prelude/cmp": "workspace:*",
     "@prelude/function": "workspace:*"
+  },
+  "devDependencies": {
+    "@prelude/tsconfig": "workspace:*"
   }
 }

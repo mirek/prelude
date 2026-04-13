@@ -17,8 +17,8 @@ export function levenshtein(source: string, target: string): number {
   }
 
   // Create two rows instead of full matrix
-  let previousRow: number[] = new Array(source.length + 1)
-  let row: number[] = new Array(source.length + 1)
+  let previousRow: number[] = Array.from({ length: source.length + 1 }, () => 0)
+  let row: number[] = Array.from({ length: source.length + 1 }, () => 0)
 
   // Initialize previous row with incremental values
   for (let i = 0; i <= source.length; i++) {

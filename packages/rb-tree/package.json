@@ -3,7 +3,6 @@
   "version": "0.3.0",
   "description": "Red-black tree module.",
   "type": "module",
-  "main": "./cjs/index.js",
   "directories": {
     "test": "test"
   },
@@ -25,7 +24,8 @@
   "author": "Mirek Rusin (https://github.com/mirek)",
   "license": "CC0-1.0",
   "devDependencies": {
-    "@prelude/array": "workspace:*"
+    "@prelude/array": "workspace:*",
+    "@prelude/tsconfig": "workspace:*"
   },
   "dependencies": {
     "@prelude/cmp": "workspace:*"
@@ -33,16 +33,13 @@
   "module": "./mjs/index.js",
   "exports": {
     ".": {
-      "import": "./mjs/index.js",
-      "require": "./cjs/index.js"
+      "import": "./mjs/index.js"
     },
     "./bag": {
-      "import": "./mjs/bag.js",
-      "require": "./cjs/bag.js"
+      "import": "./mjs/bag.js"
     },
     "./map": {
-      "import": "./mjs/map.js",
-      "require": "./cjs/map.js"
+      "import": "./mjs/map.js"
     }
   }
 }

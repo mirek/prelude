@@ -1,9 +1,10 @@
 /* eslint-disable no-use-before-define */
 
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('mutually recursive', () => {
+await test('mutually recursive', () => {
 
   type Numeric = {
     type: 'Numeric',
@@ -47,6 +48,6 @@ test('mutually recursive', () => {
       grouped
     ))
 
-  expect(P.parser(expr)('(2*1)+1')).toEqual(3)
+  assert.deepEqual(P.parser(expr)('(2*1)+1'), 3)
 
 })

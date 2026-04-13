@@ -1,9 +1,11 @@
 import * as Jsonrpc from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('kind', () => {
-  expect(Jsonrpc.kind(undefined)).toBe(undefined)
-  expect(Jsonrpc.kind({ jsonrpc: '2.0', id: 1, method: 'a', params: [] })).toBe('call')
-  expect(Jsonrpc.kind({ jsonrpc: '2.0', method: 'a', params: [] })).toBe('notification')
-  expect(Jsonrpc.kind({ jsonrpc: '2.0', id: 1, result: null })).toBe('result')
-  expect(Jsonrpc.kind({ jsonrpc: '2.0', id: 1, error: { message: 'a' } })).toBe('error')
+await test('kind', () => {
+  assert.equal(Jsonrpc.kind(undefined), undefined)
+  assert.equal(Jsonrpc.kind({ jsonrpc: '2.0', id: 1, method: 'a', params: [] }), 'call')
+  assert.equal(Jsonrpc.kind({ jsonrpc: '2.0', method: 'a', params: [] }), 'notification')
+  assert.equal(Jsonrpc.kind({ jsonrpc: '2.0', id: 1, result: null }), 'result')
+  assert.equal(Jsonrpc.kind({ jsonrpc: '2.0', id: 1, error: { message: 'a' } }), 'error')
 })

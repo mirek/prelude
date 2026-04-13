@@ -1,4 +1,6 @@
 import * as Json from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
 const custom = Json.of({
   ...Json.global,
@@ -7,42 +9,42 @@ const custom = Json.of({
 Json.register(custom, Json.Codecs.Undefined)
 Json.register(custom, Json.Codecs.Number)
 
-test('bigint', () => {
-  expect(Json.stringify(1n)).toBe('{"^bigint$":"1"}')
+await test('bigint', () => {
+  assert.equal(Json.stringify(1n), '{"^bigint$":"1"}')
 })
 
-test('Date', () => {
-  expect(Json.stringify(new Date('2020-01-01T00:00:00.000Z'))).toBe('{"^Date$":"2020-01-01T00:00:00.000Z"}')
+await test('Date', () => {
+  assert.equal(Json.stringify(new Date('2020-01-01T00:00:00.000Z')), '{"^Date$":"2020-01-01T00:00:00.000Z"}')
 })
 
-test('Error', () => {
-  expect(Json.stringify(Object.assign(new Error('foo'), { stack: 'test' }))).toBe('{"^Error$":{"name":"Error","message":"foo","stack":"test"}}')
+await test('Error', () => {
+  assert.equal(Json.stringify(Object.assign(new Error('foo'), { stack: 'test' })), '{"^Error$":{"name":"Error","message":"foo","stack":"test"}}')
 })
 
-test('Map', () => {
-  expect(Json.stringify(new Map([ [ 'foo', 'bar' ], [ 'baz', 'qux' ] ]))).toBe('{"^Map$":{"foo":"bar","baz":"qux"}}')
+await test('Map', () => {
+  assert.equal(Json.stringify(new Map([ [ 'foo', 'bar' ], [ 'baz', 'qux' ] ])), '{"^Map$":{"foo":"bar","baz":"qux"}}')
 })
 
-test('number', () => {
-  expect(Json.stringify(4.2)).toBe('4.2')
-  expect(custom.stringify(NaN)).toBe('{"^Number$":"NaN"}')
-  expect(custom.stringify(Infinity)).toBe('{"^Number$":"Infinity"}')
-  expect(custom.stringify(-Infinity)).toBe('{"^Number$":"-Infinity"}')
-  expect(custom.stringify(-0)).toBe('{"^Number$":"-0"}')
+await test('number', () => {
+  assert.equal(Json.stringify(4.2), '4.2')
+  assert.equal(custom.stringify(NaN), '{"^Number$":"NaN"}')
+  assert.equal(custom.stringify(Infinity), '{"^Number$":"Infinity"}')
+  assert.equal(custom.stringify(-Infinity), '{"^Number$":"-Infinity"}')
+  assert.equal(custom.stringify(-0), '{"^Number$":"-0"}')
 })
 
-test('nested', () => {
-  expect(Json.stringify(new Map([ [ 'foo', new Set([ 1, 2, 3 ]) ] ]))).toBe('{"^Map$":{"foo":{"^Set$":[1,2,3]}}}')
+await test('nested', () => {
+  assert.equal(Json.stringify(new Map([ [ 'foo', new Set([ 1, 2, 3 ]) ] ])), '{"^Map$":{"foo":{"^Set$":[1,2,3]}}}')
 })
 
-test('Undefined', () => {
-  expect(custom.stringify(undefined)).toBe('{"^Undefined$":true}')
-  expect(custom.stringify({ foo: undefined })).toBe('{"foo":{"^Undefined$":true}}')
-  expect(custom.stringify([ null, undefined, NaN ])).toBe('[null,{"^Undefined$":true},{"^Number$":"NaN"}]')
+await test('Undefined', () => {
+  assert.equal(custom.stringify(undefined), '{"^Undefined$":true}')
+  assert.equal(custom.stringify({ foo: undefined }), '{"foo":{"^Undefined$":true}}')
+  assert.equal(custom.stringify([ null, undefined, NaN ]), '[null,{"^Undefined$":true},{"^Number$":"NaN"}]')
 })
 
-test('weirdos', () => {
-  expect(custom.stringify([
+await test('weirdos', () => {
+  assert.equal(custom.stringify([
     undefined,
     null,
     NaN,
@@ -50,5 +52,5 @@ test('weirdos', () => {
     -Infinity,
     -0,
     0
-  ])).toBe('[{"^Undefined$":true},null,{"^Number$":"NaN"},{"^Number$":"Infinity"},{"^Number$":"-Infinity"},{"^Number$":"-0"},0]')
+  ]), '[{"^Undefined$":true},null,{"^Number$":"NaN"},{"^Number$":"Infinity"},{"^Number$":"-Infinity"},{"^Number$":"-0"},0]')
 })

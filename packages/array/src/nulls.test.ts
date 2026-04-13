@@ -1,5 +1,7 @@
 import * as A from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('nulls', () => {
-  expect(A.nulls(3)).toEqual([ null, null, null ])
+await test('nulls', () => {
+  assert.deepEqual(A.nulls(3), [ null, null, null ])
 })

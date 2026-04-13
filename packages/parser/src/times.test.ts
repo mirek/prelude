@@ -1,9 +1,10 @@
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('times', () => {
+await test('times', () => {
   const q = P.times(3, 'a')
   const p = P.parser(q)
   const r: 'a'[] = p('aaa')
-  expect(r).toEqual([ 'a', 'a', 'a' ])
+  assert.deepEqual(r, [ 'a', 'a', 'a' ])
 })

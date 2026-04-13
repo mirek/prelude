@@ -1,6 +1,8 @@
 import * as $ from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('lt', () => {
-  expect($.lt(1)(0)).toEqual($.ok(0))
-  expect($.lt(1)(1)).toEqual($.fail(1, 'expected less than 1'))
+await test('lt', () => {
+  assert.deepEqual($.lt(1)(0), $.ok(0))
+  assert.deepEqual($.lt(1)(1), $.fail(1, 'expected less than 1'))
 })

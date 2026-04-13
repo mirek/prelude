@@ -1,5 +1,7 @@
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('42', () => {
-  expect(P.pipe(42, String)).toEqual('42')
+await test('42', () => {
+  assert.deepEqual(P.pipe(42, String), '42')
 })

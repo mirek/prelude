@@ -1,12 +1,14 @@
 import * as Cmp from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('sign', () => {
-  expect(Cmp.sign(Infinity)).toBe(1)
-  expect(Cmp.sign(42)).toBe(1)
-  expect(Cmp.sign(Number.EPSILON)).toBe(1)
-  expect(Cmp.sign(0)).toBe(0)
-  expect(Cmp.sign(-Number.EPSILON)).toBe(-1)
-  expect(Cmp.sign(-42)).toBe(-1)
-  expect(Cmp.sign(-Infinity)).toBe(-1)
-  expect(() => Cmp.sign(NaN)).toThrow()
+await test('sign', () => {
+  assert.equal(Cmp.sign(Infinity), 1)
+  assert.equal(Cmp.sign(42), 1)
+  assert.equal(Cmp.sign(Number.EPSILON), 1)
+  assert.equal(Cmp.sign(0), 0)
+  assert.equal(Cmp.sign(-Number.EPSILON), -1)
+  assert.equal(Cmp.sign(-42), -1)
+  assert.equal(Cmp.sign(-Infinity), -1)
+  assert.throws(() => Cmp.sign(NaN))
 })

@@ -1,5 +1,6 @@
-import { expect, test, jest } from '@jest/globals'
 import * as Emitter from './index.js'
+import { test, mock } from 'node:test'
+import assert from 'node:assert/strict'
 
 type TestEvents = Emitter.Events & {
   message: [ message: string ]
@@ -7,76 +8,76 @@ type TestEvents = Emitter.Events & {
   empty: []
 }
 
-test('eventNames should list all events with listeners', () => {
+await test('eventNames should list all events with listeners', () => {
   const emitter = Emitter.of<TestEvents>()
-  expect(emitter.eventNames()).toEqual([])
+  assert.deepEqual(emitter.eventNames(), [])
 
   const noop = () => {}
   emitter.on('message', noop)
-  expect(emitter.eventNames()).toEqual(['message'])
+  assert.deepEqual(emitter.eventNames(), ['message'])
 
   emitter.on('data', noop)
-  expect(emitter.eventNames()).toContain('message')
-  expect(emitter.eventNames()).toContain('data')
-  expect(emitter.eventNames().length).toBe(2)
+  assert.ok((emitter.eventNames()).includes('message'))
+  assert.ok((emitter.eventNames()).includes('data'))
+  assert.equal(emitter.eventNames().length, 2)
 
   emitter.off('message', noop)
-  expect(emitter.eventNames()).toEqual(['data'])
+  assert.deepEqual(emitter.eventNames(), ['data'])
 })
 
-test('listeners should return all listeners for an event', () => {
+await test('listeners should return all listeners for an event', () => {
   const emitter = Emitter.of<TestEvents>()
-  const listener1 = jest.fn()
-  const listener2 = jest.fn()
+  const listener1 = mock.fn()
+  const listener2 = mock.fn()
 
-  expect(emitter.listeners('message')).toBeUndefined()
+  assert.equal(emitter.listeners('message'), undefined)
 
   emitter.on('message', listener1)
-  expect(emitter.listeners('message')?.size).toBe(1)
-  expect(emitter.listeners('message')?.has(listener1)).toBe(true)
+  assert.equal(emitter.listeners('message')?.size, 1)
+  assert.equal(emitter.listeners('message')?.has(listener1), true)
 
   emitter.on('message', listener2)
-  expect(emitter.listeners('message')?.size).toBe(2)
-  expect(emitter.listeners('message')?.has(listener1)).toBe(true)
-  expect(emitter.listeners('message')?.has(listener2)).toBe(true)
+  assert.equal(emitter.listeners('message')?.size, 2)
+  assert.equal(emitter.listeners('message')?.has(listener1), true)
+  assert.equal(emitter.listeners('message')?.has(listener2), true)
 })
 
-test('hasListener should correctly check for listeners', () => {
+await test('hasListener should correctly check for listeners', () => {
   const emitter = Emitter.of<TestEvents>()
-  const listener = jest.fn()
+  const listener = mock.fn()
 
-  expect(emitter.hasListener()).toBe(false)
-  expect(emitter.hasListener('message')).toBe(false)
-  expect(emitter.hasListener('message', listener)).toBe(false)
+  assert.equal(emitter.hasListener(), false)
+  assert.equal(emitter.hasListener('message'), false)
+  assert.equal(emitter.hasListener('message', listener), false)
 
   emitter.on('message', listener)
-  expect(emitter.hasListener()).toBe(true)
-  expect(emitter.hasListener('message')).toBe(true)
-  expect(emitter.hasListener('message', listener)).toBe(true)
-  expect(emitter.hasListener('data')).toBe(false)
+  assert.equal(emitter.hasListener(), true)
+  assert.equal(emitter.hasListener('message'), true)
+  assert.equal(emitter.hasListener('message', listener), true)
+  assert.equal(emitter.hasListener('data'), false)
 
   emitter.off('message', listener)
-  expect(emitter.hasListener('message')).toBe(false)
-  expect(emitter.hasListener()).toBe(false)
+  assert.equal(emitter.hasListener('message'), false)
+  assert.equal(emitter.hasListener(), false)
 })
 
-test('emit should call all registered listeners', () => {
+await test('emit should call all registered listeners', () => {
   const emitter = Emitter.of<TestEvents>()
-  const listener1 = jest.fn()
-  const listener2 = jest.fn()
+  const listener1 = mock.fn()
+  const listener2 = mock.fn()
 
   emitter.on('message', listener1)
   emitter.on('message', listener2)
 
   emitter.emit('message', 'hello')
 
-  expect(listener1).toHaveBeenCalledWith('hello')
-  expect(listener2).toHaveBeenCalledWith('hello')
+  assert.deepEqual((listener1).mock.calls.at(-1)?.arguments, ['hello'])
+  assert.deepEqual((listener2).mock.calls.at(-1)?.arguments, ['hello'])
 })
 
-test('emit should handle errors in listeners', () => {
+await test('emit should handle errors in listeners', () => {
   const emitter = Emitter.of<TestEvents>()
-  const errorListener = jest.fn()
+  const errorListener = mock.fn()
   const error = new Error('listener error')
 
   emitter.on('error', errorListener)
@@ -87,86 +88,86 @@ test('emit should handle errors in listeners', () => {
 
   emitter.emit('message', 'hello')
 
-  expect(errorListener).toHaveBeenCalledWith(error)
+  assert.deepEqual((errorListener).mock.calls.at(-1)?.arguments, [error])
 })
 
-test('off should remove listeners', () => {
+await test('off should remove listeners', () => {
   const emitter = Emitter.of<TestEvents>()
-  const messageListener1 = jest.fn()
-  const messageListener2 = jest.fn()
-  const dataListener = jest.fn()
+  const messageListener1 = mock.fn()
+  const messageListener2 = mock.fn()
+  const dataListener = mock.fn()
 
   emitter.on('message', messageListener1)
   emitter.on('message', messageListener2)
   emitter.on('data', dataListener)
 
   const removed = emitter.off('message', messageListener1)
-  expect(removed).toBe(1)
+  assert.equal(removed, 1)
   emitter.emit('message', 'test')
-  expect(messageListener1).not.toHaveBeenCalled()
-  expect(messageListener2).toHaveBeenCalledWith('test')
+  assert.equal((messageListener1).mock.callCount(), 0)
+  assert.deepEqual((messageListener2).mock.calls.at(-1)?.arguments, ['test'])
 
   const removedAll = emitter.off('message')
-  expect(removedAll).toBe(1)
+  assert.equal(removedAll, 1)
   emitter.emit('message', 'test2')
-  expect(messageListener2).toHaveBeenCalledTimes(1)
+  assert.equal((messageListener2).mock.callCount(), 1)
 
   emitter.on('message', messageListener1)
   const removedEverything = emitter.off()
-  expect(removedEverything).toBe(2)
-  expect(emitter.hasListener()).toBe(false)
+  assert.equal(removedEverything, 2)
+  assert.equal(emitter.hasListener(), false)
 })
 
-test('on should register a listener and return unregister function', () => {
+await test('on should register a listener and return unregister function', () => {
   const emitter = Emitter.of<TestEvents>()
-  const listener = jest.fn()
+  const listener = mock.fn()
 
   const off = emitter.on('message', listener)
-  expect(emitter.hasListener('message', listener)).toBe(true)
+  assert.equal(emitter.hasListener('message', listener), true)
 
   emitter.emit('message', 'test')
-  expect(listener).toHaveBeenCalledWith('test')
+  assert.deepEqual((listener).mock.calls.at(-1)?.arguments, ['test'])
 
   off()
-  expect(emitter.hasListener('message', listener)).toBe(false)
+  assert.equal(emitter.hasListener('message', listener), false)
 })
 
-test('on should emit newListener event', () => {
+await test('on should emit newListener event', () => {
   const emitter = Emitter.of<TestEvents>()
-  const newListenerSpy = jest.fn()
-  const listener = jest.fn()
+  const newListenerSpy = mock.fn()
+  const listener = mock.fn()
   emitter.on('newListener', newListenerSpy)
   emitter.on('message', listener)
-  expect(newListenerSpy).toHaveBeenCalledWith('message', listener)
+  assert.deepEqual((newListenerSpy).mock.calls.at(-1)?.arguments, ['message', listener])
 })
 
-test('on should throw if registering the same listener twice', () => {
+await test('on should throw if registering the same listener twice', () => {
   const emitter = Emitter.of<TestEvents>()
-  const listener = jest.fn()
+  const listener = mock.fn()
 
   emitter.on('message', listener)
 
-  expect(() => {
+  assert.throws(() => {
     emitter.on('message', listener)
-  }).toThrow()
+  })
 })
 
-test('once should call listener only once', async () => {
+await test('once should call listener only once', async () => {
   const emitter = Emitter.of<TestEvents>()
-  const listener = jest.fn()
+  const listener = mock.fn()
 
   emitter.once('message', listener)
 
   emitter.emit('message', 'first')
   emitter.emit('message', 'second')
 
-  expect(listener).toHaveBeenCalledTimes(1)
-  expect(listener).toHaveBeenCalledWith('first')
+  assert.equal((listener).mock.callCount(), 1)
+  assert.deepEqual((listener).mock.calls.at(-1)?.arguments, ['first'])
 })
 
-test('onceIf should call listener only when predicate matches', () => {
+await test('onceIf should call listener only when predicate matches', () => {
   const emitter = Emitter.of<TestEvents>()
-  const listener = jest.fn()
+  const listener = mock.fn()
 
   emitter.onceIf('message',
     message => message.includes('world'),
@@ -174,16 +175,16 @@ test('onceIf should call listener only when predicate matches', () => {
   )
 
   emitter.emit('message', 'hello')
-  expect(listener).not.toHaveBeenCalled()
+  assert.equal((listener).mock.callCount(), 0)
 
   emitter.emit('message', 'hello world')
-  expect(listener).toHaveBeenCalledWith('hello world')
+  assert.deepEqual((listener).mock.calls.at(-1)?.arguments, ['hello world'])
 
   emitter.emit('message', 'hello world again')
-  expect(listener).toHaveBeenCalledTimes(1)
+  assert.equal((listener).mock.callCount(), 1)
 })
 
-test('eventually should resolve when event is emitted', async () => {
+await test('eventually should resolve when event is emitted', async () => {
   const emitter = Emitter.of<TestEvents>()
 
   Emitter.after(50, () => {
@@ -191,18 +192,16 @@ test('eventually should resolve when event is emitted', async () => {
   })
 
   const [ result ] = await emitter.eventually('message', 1000)
-  expect(result).toBe('async response')
+  assert.equal(result, 'async response')
 })
 
-test('eventually should reject on timeout', async () => {
+await test('eventually should reject on timeout', async () => {
   const emitter = Emitter.of<TestEvents>()
 
-  await expect(emitter.eventually('message', 50)).rejects.toMatchObject({
-    code: 'timeout'
-  })
+  await assert.rejects(emitter.eventually('message', 50), (e: { code?: string }) => e.code === 'timeout')
 })
 
-test('eventuallyIf should resolve when predicate matches', async () => {
+await test('eventuallyIf should resolve when predicate matches', async () => {
   const emitter = Emitter.of<TestEvents>()
 
   Emitter.after(50, () => {
@@ -215,24 +214,24 @@ test('eventuallyIf should resolve when predicate matches', async () => {
 
   const result = await emitter.eventuallyIf('data', data => data.id === 2, 1000)
 
-  expect(result).toEqual([ { id: 2, value: 'second' } ])
+  assert.deepEqual(result, [ { id: 2, value: 'second' } ])
 })
 
-test('off should emit removeListener event', () => {
+await test('off should emit removeListener event', () => {
   const emitter = Emitter.of<TestEvents>()
-  const removeListenerSpy = jest.fn()
-  const listener = jest.fn()
+  const removeListenerSpy = mock.fn()
+  const listener = mock.fn()
   emitter.on('removeListener', removeListenerSpy)
   const off = emitter.on('message', listener)
   off()
-  expect(removeListenerSpy).toHaveBeenCalledWith('message', listener)
+  assert.deepEqual((removeListenerSpy).mock.calls.at(-1)?.arguments, ['message', listener])
 })
 
-test('meta events work with standard event types', () => {
+await test('meta events work with standard event types', () => {
   const emitter = Emitter.of<TestEvents>()
-  const metaListener = jest.fn()
-  const regularListener = jest.fn()
+  const metaListener = mock.fn()
+  const regularListener = mock.fn()
   emitter.on('newListener', metaListener)
   emitter.on('message', regularListener)
-  expect(metaListener).toHaveBeenCalledWith('message', regularListener)
+  assert.deepEqual((metaListener).mock.calls.at(-1)?.arguments, ['message', regularListener])
 })

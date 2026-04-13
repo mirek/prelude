@@ -1,8 +1,9 @@
-import { test, expect } from '@jest/globals'
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('maybeMap', () => {
+await test('maybeMap', () => {
   const p = P.parser(P.maybeMap(P.Rfc8259.number, _ => _.value % 2 === 0 ? _ : P.Result.fail(_.reader, 'not even')))
-  expect(p('1234')).toEqual(1234)
-  expect(() => p('123')).toThrow('not even')
+  assert.deepEqual(p('1234'), 1234)
+  assert.throws(() => p('123'), /not even/)
 })

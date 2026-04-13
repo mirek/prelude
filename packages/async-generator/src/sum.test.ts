@@ -1,8 +1,10 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('sum', async () => {
-  await expect(G.pipe(
+await test('sum', async () => {
+  assert.equal(await G.pipe(
     G.ofIterable([ 1, 2, 3 ]),
     G.sum
-  )).resolves.toBe(6)
+  ), 6)
 })

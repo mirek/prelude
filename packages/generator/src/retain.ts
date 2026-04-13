@@ -20,7 +20,7 @@
 export const retain =
   <T = unknown, TReturn = unknown, TNext = unknown>(g: Generator<T>, count = 1) => {
     let count_ = count
-    const g_: Generator<T, TReturn | undefined, TNext> = {
+    const g_ = {
       next() {
         return g.next()
       },
@@ -37,7 +37,7 @@ export const retain =
       [Symbol.iterator]() {
         return g_
       }
-    }
+    } as Generator<T, TReturn | undefined, TNext>
     return g_
   }
 

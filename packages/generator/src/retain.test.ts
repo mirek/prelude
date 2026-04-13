@@ -1,14 +1,16 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('retain', () => {
+await test('retain', () => {
   const g = G.range(1, 100)
-  expect(G.pipe(g, G.retain, G.take(3), G.array)).toEqual([ 1, 2, 3 ])
-  expect(G.pipe(g, G.retain, G.take(3), G.array)).toEqual([ 4, 5, 6 ])
-  expect(G.pipe(g, G.take(3), G.array)).toEqual([ 7, 8, 9 ])
-  expect(G.pipe(g, G.take(3), G.array)).toEqual([])
+  assert.deepEqual(G.pipe(g, G.retain, G.take(3), G.array), [ 1, 2, 3 ])
+  assert.deepEqual(G.pipe(g, G.retain, G.take(3), G.array), [ 4, 5, 6 ])
+  assert.deepEqual(G.pipe(g, G.take(3), G.array), [ 7, 8, 9 ])
+  assert.deepEqual(G.pipe(g, G.take(3), G.array), [])
 })
 
-test('for', () => {
+await test('for', () => {
   const g = G.retain(G.range(1, 5), 2)
   for (const _ of g) {
     break
@@ -20,5 +22,5 @@ test('for', () => {
   for (const value of g) {
     values.push(value)
   }
-  expect(values).toEqual([ 3, 4, 5 ])
+  assert.deepEqual(values, [ 3, 4, 5 ])
 })

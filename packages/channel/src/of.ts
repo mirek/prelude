@@ -30,7 +30,7 @@ export function ofIterable<T>(iterable: Iterable<T>, cap = 0) {
           .then(() => ch.write(value))
       }
     }
-  produce()
+  void produce()
     .finally(() => {
       if (!ch.doneWriting) {
         ch.closeWriting()
@@ -57,7 +57,7 @@ export function ofAsyncIterable<T>(asyncIterable: AsyncIterable<T>, cap = 0) {
         await ch.write(value)
       }
     }
-  produce()
+  void produce()
     .finally(() => {
       if (!ch.doneWriting) {
         ch.closeWriting()

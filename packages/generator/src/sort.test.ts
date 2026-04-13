@@ -1,10 +1,12 @@
 import * as G from './index.js'
 import * as Cmp from '@prelude/cmp'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('sort', () => {
-  expect(G.pipe(
+await test('sort', () => {
+  assert.deepEqual(G.pipe(
     ['5', 3, 2, '6', 1, '4'],
     G.sort((a, b) => Cmp.string(String(a), String(b))),
     G.array
-  )).toEqual([1, 2, 3, '4', '5', '6'])
+  ), [1, 2, 3, '4', '5', '6'])
 })

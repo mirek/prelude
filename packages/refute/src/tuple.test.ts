@@ -1,8 +1,10 @@
 import * as $ from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('tuple', () => {
-  expect($.tuple($.number, $.string)(null)).toEqual($.fail(null, 'expected array'))
-  expect($.tuple($.number, $.string)([1, 'a'])).toEqual($.ok([1, 'a']))
-  expect($.tuple($.number, $.string)([1, 2])).toEqual($.fail(2, 'at index 1, expected string'))
-  expect($.tuple($.number, $.string)([1, 'a', false])).toEqual($.fail([1, 'a', false], 'expected array not longer than 2'))
+await test('tuple', () => {
+  assert.deepEqual($.tuple($.number, $.string)(null), $.fail(null, 'expected array'))
+  assert.deepEqual($.tuple($.number, $.string)([1, 'a']), $.ok([1, 'a']))
+  assert.deepEqual($.tuple($.number, $.string)([1, 2]), $.fail(2, 'at index 1, expected string'))
+  assert.deepEqual($.tuple($.number, $.string)([1, 'a', false]), $.fail([1, 'a', false], 'expected array not longer than 2'))
 })

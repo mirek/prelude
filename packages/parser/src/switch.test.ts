@@ -1,6 +1,8 @@
 import * as P from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('switch', () => {
+await test('switch', () => {
   const id = P.whileNotChars(' /<>', 1)
   const comment = P.map(P.betweenLiterals('<!--', '-->'), value => ({ type: 'comment' as const, value }))
   const element = P.map(P.seq('<', id, '/>'), ([ , name ]) => ({ type: 'element' as const, name }))
@@ -17,13 +19,13 @@ test('switch', () => {
     '': text
   })
   const parser = P.parser(P.star(misc, 1))
-  expect(parser('<a/>')).toEqual([
+  assert.deepEqual(parser('<a/>'), [
     { type: 'element', name: 'a' }
   ])
-  expect(parser('foo')).toEqual([
+  assert.deepEqual(parser('foo'), [
     { type: 'text', value: 'foo' }
   ])
-  expect(parser('<a/><!--comment-->foo<?xml?>')).toEqual([
+  assert.deepEqual(parser('<a/><!--comment-->foo<?xml?>'), [
     { type: 'element', name: 'a' },
     { type: 'comment', value: 'comment' },
     { type: 'text', value: 'foo' },

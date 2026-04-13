@@ -1,10 +1,12 @@
 import * as G from './index.js'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
 
-test('recursive', () => {
-  expect(G.pipe(
+await test('recursive', () => {
+  assert.deepEqual(G.pipe(
     G.recursive(_ => _ + 1, 1, _ => _ === 10),
     G.array
-  )).toEqual([
+  ), [
     1, 2, 3, 4, 5, 6, 7, 8, 9
   ])
 })

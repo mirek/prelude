@@ -26,11 +26,11 @@ export const of =
       getCurrentDirectory: () => process.cwd(),
       getCompilationSettings: () => compilerOptions,
       getDefaultLibFileName: options => Ts.getDefaultLibFilePath(options),
-      fileExists: Ts.sys.fileExists,
-      readFile: Ts.sys.readFile,
-      readDirectory: Ts.sys.readDirectory,
-      directoryExists: Ts.sys.directoryExists,
-      getDirectories: Ts.sys.getDirectories,
+      fileExists: Ts.sys.fileExists.bind(Ts.sys),
+      readFile: Ts.sys.readFile.bind(Ts.sys),
+      readDirectory: Ts.sys.readDirectory.bind(Ts.sys),
+      directoryExists: Ts.sys.directoryExists.bind(Ts.sys),
+      getDirectories: Ts.sys.getDirectories.bind(Ts.sys),
     }
     const service = Ts.createLanguageService(host, Ts.createDocumentRegistry())
     const program = Ts.createProgram(fileNames, compilerOptions)

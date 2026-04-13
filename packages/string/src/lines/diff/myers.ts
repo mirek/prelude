@@ -13,7 +13,7 @@ export function myers(sourceLines: string[], targetLines: string[]): Op.T[] {
   const max = n + m
 
   // Initialize V with -1, except V[max] = 0 for k=0
-  let V: number[] = new Array(2 * max + 1).fill(-1)
+  let V: number[] = Array.from({ length: 2 * max + 1 }, () => -1)
   V[max] = 0 // Starting point at (0,0) for k=0
   let trace: number[][] = []
 
