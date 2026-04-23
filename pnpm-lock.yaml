@@ -30,6 +30,16 @@ importers:
         specifier: ^6.0.2
         version: 6.0.2
 
+  packages/actor:
+    dependencies:
+      '@prelude/channel':
+        specifier: workspace:*
+        version: link:../channel
+    devDependencies:
+      '@prelude/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+
   packages/array:
     dependencies:
       '@prelude/cmp':

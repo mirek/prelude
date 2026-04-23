@@ -1,0 +1,49 @@
+{
+  "name": "@prelude/actor",
+  "version": "0.0.1",
+  "description": "Actor module.",
+  "type": "module",
+  "files": [
+    "*"
+  ],
+  "scripts": {
+    "test": "make test",
+    "preversion": "make preversion",
+    "postversion": "make postversion"
+  },
+  "keywords": [
+    "prelude",
+    "std",
+    "lib",
+    "stdlib",
+    "library",
+    "actor",
+    "actors",
+    "actor-model",
+    "concurrency",
+    "async",
+    "asynchronous",
+    "message",
+    "mailbox",
+    "inbox",
+    "channel",
+    "csp"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "@prelude/tsconfig": "workspace:*"
+  },
+  "dependencies": {
+    "@prelude/channel": "workspace:*"
+  },
+  "module": "./mjs/index.js",
+  "exports": {
+    ".": {
+      "import": "./mjs/index.js"
+    },
+    "./*.js": {
+      "import": "./mjs/*.js"
+    }
+  }
+}
