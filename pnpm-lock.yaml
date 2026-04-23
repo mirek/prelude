@@ -40,6 +40,12 @@ importers:
         specifier: workspace:*
         version: link:../tsconfig
 
+  packages/assert:
+    devDependencies:
+      '@prelude/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+
   packages/async-generator:
     dependencies:
       '@prelude/channel':

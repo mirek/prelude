@@ -1,0 +1,39 @@
+{
+  "name": "@prelude/assert",
+  "version": "0.0.1",
+  "description": "Assert module.",
+  "type": "module",
+  "module": "./mjs/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "make test",
+    "preversion": "make preversion",
+    "postversion": "make postversion"
+  },
+  "keywords": [
+    "prelude",
+    "std",
+    "lib",
+    "stdlib",
+    "library",
+    "assert",
+    "assertion",
+    "runtime",
+    "types"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "@prelude/tsconfig": "workspace:*"
+  },
+  "exports": {
+    ".": {
+      "import": "./mjs/index.js"
+    },
+    "./*.js": {
+      "import": "./mjs/*.js"
+    }
+  }
+}
