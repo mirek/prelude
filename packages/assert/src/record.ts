@@ -5,7 +5,7 @@ const record =
   <K extends string | symbol | number, V>(k: Assert<K>, v: Assert<V>): Assert<Record<K, V>> =>
     value => {
       if (typeof value !== 'object' || value === null) {
-        throw new AssertionError({ expected: 'an object', received: value })
+        throw new AssertionError({ expected: 'an object', value })
       }
       for (const k_ in value) {
         try {
@@ -14,7 +14,7 @@ const record =
           if (err instanceof AssertionError) {
             throw new AssertionError({
               expected: err.expected,
-              received: err.received,
+              value: err.value,
               key: k_,
               cause: err
             })
@@ -27,7 +27,7 @@ const record =
           if (err instanceof AssertionError) {
             throw new AssertionError({
               expected: err.expected,
-              received: err.received,
+              value: err.value,
               key: k_,
               cause: err
             })

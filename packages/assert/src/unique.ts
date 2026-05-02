@@ -5,7 +5,7 @@ const unique =
   <T>(a: Assert<T>, f?: (value: T) => Primitive): Assert<T[]> =>
     value => {
       if (!Array.isArray(value)) {
-        throw new AssertionError({ expected: 'an array', received: value })
+        throw new AssertionError({ expected: 'an array', value })
       }
       const seen = new Set<Primitive>()
       for (let i = 0; i < value.length; i++) {
@@ -16,7 +16,7 @@ const unique =
           if (err instanceof AssertionError) {
             throw new AssertionError({
               expected: err.expected,
-              received: err.received,
+              value: err.value,
               key: i,
               cause: err
             })
@@ -27,7 +27,7 @@ const unique =
         if (seen.has(key)) {
           throw new AssertionError({
             expected: 'a unique value',
-            received: value[i],
+            value: value[i],
             key: i
           })
         }

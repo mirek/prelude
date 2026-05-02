@@ -6,7 +6,7 @@ const string_: Assert<string> =
     if (typeof value === 'string') {
       return value
     }
-    throw new AssertionError({ expected: 'a string', received: value })
+    throw new AssertionError({ expected: 'a string', value })
   }
 
 export default string_

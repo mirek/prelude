@@ -13,7 +13,7 @@ const nullOr =
         if (err instanceof AssertionError && !err.cause) {
           throw new AssertionError({
             expected: `${err.expected} or null`,
-            received: value
+            value
           })
         }
         throw err

@@ -16,7 +16,7 @@ const object_ =
     }
     return value => {
       if (typeof value !== 'object' || value === null) {
-        throw new AssertionError({ expected: 'an object', received: value })
+        throw new AssertionError({ expected: 'an object', value })
       }
       for (const k in asserts) {
         try {
@@ -25,7 +25,7 @@ const object_ =
           if (err instanceof AssertionError) {
             throw new AssertionError({
               expected: err.expected,
-              received: err.received,
+              value: err.value,
               key: k,
               cause: err
             })

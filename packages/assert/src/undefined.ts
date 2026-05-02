@@ -6,7 +6,7 @@ const undefined_: Assert<undefined> =
     if (value === undefined) {
       return value
     }
-    throw new AssertionError({ expected: 'undefined', received: value })
+    throw new AssertionError({ expected: 'undefined', value })
   }
 
 export default undefined_

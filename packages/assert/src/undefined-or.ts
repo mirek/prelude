@@ -13,7 +13,7 @@ const undefinedOr =
         if (err instanceof AssertionError && !err.cause) {
           throw new AssertionError({
             expected: `${err.expected} or undefined`,
-            received: value
+            value
           })
         }
         throw err

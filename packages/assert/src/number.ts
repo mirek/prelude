@@ -6,7 +6,7 @@ const number_: Assert<number> =
     if (typeof value === 'number') {
       return value
     }
-    throw new AssertionError({ expected: 'a number', received: value })
+    throw new AssertionError({ expected: 'a number', value })
   }
 
 export default number_

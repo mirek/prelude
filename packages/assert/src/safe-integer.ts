@@ -6,7 +6,7 @@ const safeInteger: Assert<number> =
     if (typeof value === 'number' && Number.isSafeInteger(value)) {
       return value
     }
-    throw new AssertionError({ expected: 'a safe integer', received: value })
+    throw new AssertionError({ expected: 'a safe integer', value })
   }
 
 export default safeInteger

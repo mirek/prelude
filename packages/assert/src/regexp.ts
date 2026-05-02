@@ -6,10 +6,10 @@ const regexp =
     const expected = `a string matching ${re}`
     return value => {
       if (typeof value !== 'string') {
-        throw new AssertionError({ expected: 'a string', received: value })
+        throw new AssertionError({ expected: 'a string', value })
       }
       if (!re.test(value)) {
-        throw new AssertionError({ expected, received: value })
+        throw new AssertionError({ expected, value })
       }
       return value
     }

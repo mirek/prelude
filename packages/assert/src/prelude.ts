@@ -37,7 +37,7 @@ export type Key = string | number | symbol
 
 export type AssertionErrorInit = {
   expected: string,
-  received: unknown,
+  value: unknown,
   key?: Key,
   cause?: AssertionError
 }
@@ -45,7 +45,7 @@ export type AssertionErrorInit = {
 export class AssertionError extends Error {
 
   readonly expected: string
-  readonly received: unknown
+  readonly value: unknown
   readonly key?: Key
   override readonly cause?: AssertionError
 
@@ -53,7 +53,7 @@ export class AssertionError extends Error {
     super()
     this.name = 'AssertionError'
     this.expected = init.expected
-    this.received = init.received
+    this.value = init.value
     if (init.key !== undefined) {
       this.key = init.key
     }
@@ -71,7 +71,7 @@ const formatKey =
       `.${k.toString()}` :
       `.${String(k)}`
 
-/** Walks cause chain, collects keys, uses innermost `expected`/`received`. */
+/** Walks cause chain, collects keys, uses innermost `expected`/`value`. */
 const buildMessage =
   (err: AssertionError): string => {
     let path = ''
@@ -86,14 +86,14 @@ const buildMessage =
       }
     }
     return path ?
-      `Expected ${path} to be ${leaf.expected}, got ${inspect(leaf.received)}.` :
-      `Expected ${leaf.expected}, got ${inspect(leaf.received)}.`
+      `Expected ${path} to be ${leaf.expected}, got ${inspect(leaf.value)}.` :
+      `Expected ${leaf.expected}, got ${inspect(leaf.value)}.`
   }
 
 /** Throws an `AssertionError`. */
 export const fail =
-  (expected: string, received: unknown): never => {
-    throw new AssertionError({ expected, received })
+  (expected: string, value: unknown): never => {
+    throw new AssertionError({ expected, value })
   }
 
 /** Wraps an `AssertionError` with a container `key` and re-throws. Non-assertion errors pass through. */
@@ -102,7 +102,7 @@ export const wrap =
     if (err instanceof AssertionError) {
       throw new AssertionError({
         expected: err.expected,
-        received: err.received,
+        value: err.value,
         key,
         cause: err
       })

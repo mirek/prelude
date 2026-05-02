@@ -6,7 +6,7 @@ const null_: Assert<null> =
     if (value === null) {
       return value
     }
-    throw new AssertionError({ expected: 'null', received: value })
+    throw new AssertionError({ expected: 'null', value })
   }
 
 export default null_

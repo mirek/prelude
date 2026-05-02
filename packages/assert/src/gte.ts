@@ -8,7 +8,7 @@ const gte =
       if (typeof value === 'number' && value >= than) {
         return value
       }
-      throw new AssertionError({ expected, received: value })
+      throw new AssertionError({ expected, value })
     }
   }
 

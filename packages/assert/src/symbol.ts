@@ -6,7 +6,7 @@ const symbol_: Assert<symbol> =
     if (typeof value === 'symbol') {
       return value
     }
-    throw new AssertionError({ expected: 'a symbol', received: value })
+    throw new AssertionError({ expected: 'a symbol', value })
   }
 
 export default symbol_

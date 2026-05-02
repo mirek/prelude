@@ -8,7 +8,7 @@ const instance =
       if (value instanceof class_) {
         return value as InstanceType<T>
       }
-      throw new AssertionError({ expected, received: value })
+      throw new AssertionError({ expected, value })
     }
   }
 

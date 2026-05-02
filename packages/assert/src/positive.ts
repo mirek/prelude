@@ -6,7 +6,7 @@ const positive: Assert<number> =
     if (typeof value === 'number' && value > 0) {
       return value
     }
-    throw new AssertionError({ expected: 'a positive number', received: value })
+    throw new AssertionError({ expected: 'a positive number', value })
   }
 
 export default positive

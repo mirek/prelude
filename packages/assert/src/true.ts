@@ -6,7 +6,7 @@ const true_: Assert<true> =
     if (value === true) {
       return true as const
     }
-    throw new AssertionError({ expected: 'true', received: value })
+    throw new AssertionError({ expected: 'true', value })
   }
 
 export default true_

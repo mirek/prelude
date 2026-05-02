@@ -5,12 +5,12 @@ const tuple =
   <T extends [...Assert<unknown>[]]>(...as: T): Assert<{ [I in keyof T]: Asserted<T[I]> }> =>
     value => {
       if (!Array.isArray(value)) {
-        throw new AssertionError({ expected: 'an array', received: value })
+        throw new AssertionError({ expected: 'an array', value })
       }
       if (value.length > as.length) {
         throw new AssertionError({
           expected: `an array not longer than ${as.length}`,
-          received: value
+          value
         })
       }
       for (let i = 0; i < value.length; i++) {
@@ -20,7 +20,7 @@ const tuple =
           if (err instanceof AssertionError) {
             throw new AssertionError({
               expected: err.expected,
-              received: err.received,
+              value: err.value,
               key: i,
               cause: err
             })

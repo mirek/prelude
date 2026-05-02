@@ -19,7 +19,7 @@ const or =
       }
       throw new AssertionError({
         expected: expecteds.join(' or '),
-        received: value
+        value
       })
     }
   }

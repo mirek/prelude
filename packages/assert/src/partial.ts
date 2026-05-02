@@ -13,7 +13,7 @@ const partial =
     }
     return value => {
       if (typeof value !== 'object' || value === null) {
-        throw new AssertionError({ expected: 'an object', received: value })
+        throw new AssertionError({ expected: 'an object', value })
       }
       for (const k in asserts) {
         const v = (value as Record<string, unknown>)[k]
@@ -26,7 +26,7 @@ const partial =
           if (err instanceof AssertionError) {
             throw new AssertionError({
               expected: err.expected,
-              received: err.received,
+              value: err.value,
               key: k,
               cause: err
             })
