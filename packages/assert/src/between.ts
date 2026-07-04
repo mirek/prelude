@@ -8,7 +8,7 @@ const between =
       if (typeof value === 'number' && value >= min && value <= max) {
         return value
       }
-      throw new AssertionError({ expected, received: value })
+      throw new AssertionError({ expected, value })
     }
   }
 

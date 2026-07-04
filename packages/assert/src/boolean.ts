@@ -6,7 +6,7 @@ const boolean_: Assert<boolean> =
     if (typeof value === 'boolean') {
       return value
     }
-    throw new AssertionError({ expected: 'a boolean', received: value })
+    throw new AssertionError({ expected: 'a boolean', value })
   }
 
 export default boolean_

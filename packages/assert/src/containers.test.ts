@@ -46,7 +46,7 @@ await test('nested .foo.bar.0.baz path', () => {
       assert.ok(err instanceof $.AssertionError)
       assert.equal(err.message, 'Expected .foo.bar.0.baz to be a string, got 1.')
       assert.equal(err.expected, 'a string')
-      assert.equal(err.received, 1)
+      assert.equal(err.value, 1)
       assert.equal(err.key, 'foo')
       assert.ok(err.cause instanceof $.AssertionError)
       return true

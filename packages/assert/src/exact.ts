@@ -16,7 +16,7 @@ const exact =
     }
     return value => {
       if (typeof value !== 'object' || value === null) {
-        throw new AssertionError({ expected: 'an object', received: value })
+        throw new AssertionError({ expected: 'an object', value })
       }
       for (const k in asserts) {
         try {
@@ -25,7 +25,7 @@ const exact =
           if (err instanceof AssertionError) {
             throw new AssertionError({
               expected: err.expected,
-              received: err.received,
+              value: err.value,
               key: k,
               cause: err
             })
@@ -37,7 +37,7 @@ const exact =
         if (!(k in asserts)) {
           throw new AssertionError({
             expected: 'no extra keys',
-            received: value,
+            value,
             key: k
           })
         }

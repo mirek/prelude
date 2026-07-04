@@ -6,7 +6,7 @@ const false_: Assert<false> =
     if (value === false) {
       return false as const
     }
-    throw new AssertionError({ expected: 'false', received: value })
+    throw new AssertionError({ expected: 'false', value })
   }
 
 export default false_
