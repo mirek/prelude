@@ -4,7 +4,7 @@ import { AssertionError } from './prelude.js'
 const defined =
   <T>(value: T): Exclude<T, undefined> => {
     if (value === undefined) {
-      throw new AssertionError({ expected: 'defined', received: value })
+      throw new AssertionError({ expected: 'defined', value })
     }
     return value as Exclude<T, undefined>
   }

@@ -6,7 +6,7 @@ const array_ =
   <T>(a: Assert<T>): Assert<T[]> =>
     value => {
       if (!Array.isArray(value)) {
-        throw new AssertionError({ expected: 'an array', received: value })
+        throw new AssertionError({ expected: 'an array', value })
       }
       if (a === unknown_) {
         return value as T[]
@@ -18,7 +18,7 @@ const array_ =
           if (err instanceof AssertionError) {
             throw new AssertionError({
               expected: err.expected,
-              received: err.received,
+              value: err.value,
               key: i,
               cause: err
             })

@@ -6,7 +6,7 @@ const finite: Assert<number> =
     if (typeof value === 'number' && Number.isFinite(value)) {
       return value
     }
-    throw new AssertionError({ expected: 'a finite number', received: value })
+    throw new AssertionError({ expected: 'a finite number', value })
   }
 
 export default finite

@@ -9,7 +9,7 @@ const eq =
       if (value === a) {
         return value as T
       }
-      throw new AssertionError({ expected, received: value })
+      throw new AssertionError({ expected, value })
     }
   }
 

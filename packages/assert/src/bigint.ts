@@ -6,7 +6,7 @@ const bigint_: Assert<bigint> =
     if (typeof value === 'bigint') {
       return value
     }
-    throw new AssertionError({ expected: 'a bigint', received: value })
+    throw new AssertionError({ expected: 'a bigint', value })
   }
 
 export default bigint_
