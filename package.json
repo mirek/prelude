@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "lint": "oxlint --type-aware packages",
+    "typecheck": "tsc --noEmit",
     "test:r": "pnpm -r test",
     "test": "tsx --test 'packages/*/src/**/*.test.ts'"
   },
