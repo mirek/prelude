@@ -35,15 +35,23 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - name: Lint
-        run: pnpm lint
+        run: pnpm lint 2>&1 | tee lint.log
       - name: Typecheck
-        run: pnpm typecheck
+        run: pnpm typecheck 2>&1 | tee typecheck.log
       - name: Test
-        run: pnpm test
+        run: pnpm test 2>&1 | tee test.log
       - name: Build packages
-        run: pnpm build
+        run: pnpm build 2>&1 | tee build.log
       - name: Validate tarballs
-        run: pnpm pack:check
+        run: pnpm pack:check 2>&1 | tee pack-check.log
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostics-node-${{ matrix.node }}
+          path: '*.log'
+          retention-days: 1
 
   ci:
     name: CI
