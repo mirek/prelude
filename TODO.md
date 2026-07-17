@@ -2,7 +2,6 @@
 
 This index contains outstanding work only, ordered by importance. When an item is addressed, delete its `todo/*.md` file and remove its index entry; do not add status fields or retain completed items.
 
-- [Make filesystem fixtures portable](todo/make-filesystem-fixtures-portable.md) — Stop relying on repository symlinks that can be rewritten or disabled by checkout and archive tools.
 - [Complete XML parser conformance](todo/complete-xml-parser-conformance.md) — Cover ordinary doctypes, entities, Unicode, element content, and malformed input with an explicit supported subset.
 - [Integrate or remove the graph prototype](todo/integrate-or-remove-graph-prototype.md) — Resolve the two incompatible graph models and either make the package buildable/tested or remove it.
 - [Rehabilitate or remove the docs package](todo/rehabilitate-or-remove-docs-package.md) — Fix its unusable CLI and skipped build/test lifecycle or retire the package.
