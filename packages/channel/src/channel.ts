@@ -209,11 +209,18 @@ export class Channel<T> implements AsyncIterableIterator<T> {
     return result.value
   }
 
+  /**
+   * Reads the next value, returning `undefined` after channel completion.
+   *
+   * When `T` includes `undefined`, a queued `undefined` value and channel
+   * completion have the same return value. Use `next()` and inspect `done` when
+   * that distinction matters.
+   */
   async maybeRead(): Promise<undefined | T> {
     const result = await this.next()
     return result.done ?
-      result.value :
-      undefined
+      undefined :
+      result.value
   }
 
   /** @returns all values that was possible to read immediatelly, aka all pending writes. */
