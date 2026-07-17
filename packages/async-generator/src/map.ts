@@ -3,7 +3,7 @@ import type { Transformer } from './prelude.js'
 import unwrapIndexed from './unwrap-indexed.js'
 import withIndex from './with-index.js'
 
-type F<T, U> = (value: T, index: number, worker: number) => U | Promise<U>
+type F<T, R> = (value: T, index: number, worker: number) => R
 
 /**
  * Serial implementation of map transformation.
@@ -12,11 +12,11 @@ type F<T, U> = (value: T, index: number, worker: number) => U | Promise<U>
  * @param f - Mapping function
  * @returns Transformer function for mapping values serially
  */
-function serial<T, U>(f: F<T, U>) {
+function serial<T, R>(f: F<T, R>): Transformer<T, Awaited<R>> {
   return async function* (values: AsyncIterable<T>) {
     let index = 0
     for await (const value of values) {
-      yield await Promise.resolve(f(value, index++, 0))
+      yield await f(value, index++, 0)
     }
   }
 }
@@ -29,15 +29,15 @@ function serial<T, U>(f: F<T, U>) {
  * @param concurrency - Maximum number of concurrent operations
  * @returns Transformer function for mapping values concurrently without preserving order
  */
-function unordered<T, U>(f: F<T, U>, concurrency: number) {
+function unordered<T, R>(f: F<T, R>, concurrency: number): Transformer<T, Awaited<R>> {
   return async function* (values: AsyncIterable<T>) {
     let index = 0
     const input = Ch.ofAsyncIterable(values)
-    const output = Ch.of<U>()
+    const output = Ch.of<Awaited<R>>()
     Promise
       .allSettled(Array.from({ length: concurrency }, async (_, worker) => {
         for await (const value of input) {
-          await output.write(await Promise.resolve(f(value, index++, worker)))
+          await output.write(await f(value, index++, worker))
         }
       }))
       .finally(() => {
@@ -58,17 +58,17 @@ function unordered<T, U>(f: F<T, U>, concurrency: number) {
  * @param concurrency - Maximum number of concurrent operations
  * @returns Transformer function for mapping values concurrently while preserving order
  */
-function ordered<T, U>(f: F<T, U>, concurrency: number) {
+function ordered<T, R>(f: F<T, R>, concurrency: number): Transformer<T, Awaited<R>> {
   return async function* (values: AsyncIterable<T>) {
     let index = 0
     const input = Ch.ofAsyncIterable(withIndex(values))
-    const output = Ch.of<{ index: number, value: U }>()
+    const output = Ch.of<{ index: number, value: Awaited<R> }>()
     Promise
       .allSettled(Array.from({ length: concurrency }, async (_, worker) => {
         for await (const value of input) {
           await output.write({
             index: value.index,
-            value: await Promise.resolve(f(value.value, index++, worker))
+            value: await f(value.value, index++, worker)
           })
         }
       }))
@@ -115,10 +115,10 @@ function ordered<T, U>(f: F<T, U>, concurrency: number) {
  * ); // [2, 4, 6, 8, 10]
  * ```
  */
-export function map<T, U>(f: F<T, U>, { concurrency = 1, preserveOrder = true }: {
+export function map<T, R>(f: F<T, R>, { concurrency = 1, preserveOrder = true }: {
   concurrency?: number,
   preserveOrder?: boolean
-} = {}): Transformer<T, U> {
+} = {}): Transformer<T, Awaited<R>> {
   if (concurrency === 1) {
     return serial(f)
   }
