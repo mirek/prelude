@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { createRelease, root } from './release-lib.mjs'
 
