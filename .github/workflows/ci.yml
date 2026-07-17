@@ -34,6 +34,18 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+      - name: Normalize package configuration
+        run: pnpm manifests:write
+      - name: Upload normalized package configuration
+        if: matrix.node == 24
+        uses: actions/upload-artifact@v4
+        with:
+          name: normalized-package-configuration
+          path: |
+            packages/*/package.json
+            packages/*/tsconfig.lib.json
+            packages/*/tsconfig.test.json
+          retention-days: 1
       - name: Lint
         run: pnpm lint 2>&1 | tee lint.log
       - name: Typecheck
