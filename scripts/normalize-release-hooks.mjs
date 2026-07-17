@@ -41,27 +41,45 @@ function normalizeMakefile(content) {
   return result.join('\n').replace(/\n{3,}/g, '\n\n')
 }
 
+function normalizeManifest(content) {
+  const manifest = JSON.parse(content)
+  if (!manifest.scripts) {
+    return content
+  }
+
+  const scripts = { ...manifest.scripts }
+  delete scripts.preversion
+  delete scripts.postversion
+  manifest.scripts = scripts
+  return `${JSON.stringify(manifest, null, 2)}\n`
+}
+
+function update(filePath, normalize, changed) {
+  if (!existsSync(filePath)) {
+    return
+  }
+
+  const original = readFileSync(filePath, 'utf8')
+  const normalized = normalize(original)
+  if (normalized === original) {
+    return
+  }
+
+  changed.push(path.relative(root, filePath))
+  if (write) {
+    writeFileSync(filePath, normalized)
+  }
+}
+
 const changed = []
 for (const entry of readdirSync(packagesDirectory, { withFileTypes: true })) {
   if (!entry.isDirectory()) {
     continue
   }
 
-  const makefile = path.join(packagesDirectory, entry.name, 'Makefile')
-  if (!existsSync(makefile)) {
-    continue
-  }
-
-  const original = readFileSync(makefile, 'utf8')
-  const normalized = normalizeMakefile(original)
-  if (normalized === original) {
-    continue
-  }
-
-  changed.push(path.relative(root, makefile))
-  if (write) {
-    writeFileSync(makefile, normalized)
-  }
+  const directory = path.join(packagesDirectory, entry.name)
+  update(path.join(directory, 'package.json'), normalizeManifest, changed)
+  update(path.join(directory, 'Makefile'), normalizeMakefile, changed)
 }
 
 if (changed.length > 0) {
