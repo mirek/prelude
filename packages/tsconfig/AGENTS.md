@@ -72,48 +72,35 @@ packages/<name>/
 ```json
 {
   "extends": "@prelude/tsconfig/isomorphic.json",
-  "compilerOptions": {
-    "paths": {
-      "@prelude/*": ["../*/src/index.ts"]
-    }
-  },
   "include": ["src/**/*.ts"],
   "exclude": ["src/**/*.test.ts", "node_modules"]
 }
 ```
 
 - `extends` pulls in `types: []` (the isolation), the isomorphic `lib`
-  (`ESNext` only — no DOM, no Node), and the ambient timer declarations from
-  `isomorphic.d.ts`.
-- `paths` resolves cross-package workspace imports (`@prelude/cmp` etc.) to
-  the dependency's source. Without this, tsc tries to resolve via the
-  package's `main`/`exports` fields, which point at unbuilt `mjs/` output
-  and fail.
+  (`ESNext` only — no DOM, no Node), the ambient timer declarations from
+  `isomorphic.d.ts`, and workspace source resolution from `base.json`.
+- The shared `@prelude/*` path mapping resolves cross-package imports to sibling
+  source files. Without it, tsc tries package `main`/`exports` fields, which
+  point at unbuilt `mjs/` output and fail on a clean checkout.
 - `exclude` peels off the colocated tests so they belong to
   `tsconfig.test.json` instead.
 - Backend-only packages (e.g., `fs`, `log`, `progress`, `repl`) extend
-  `@prelude/tsconfig/backend.json` instead — same shape, but with
-  `types: ["node"]` and Node visible in library code.
+  `@prelude/tsconfig/backend.json` instead — same workspace mapping and shape,
+  but with `types: ["node"]` and Node visible in library code.
 
 ### `tsconfig.test.json` — tests
 
 ```json
 {
   "extends": "@prelude/tsconfig/test.json",
-  "compilerOptions": {
-    "paths": {
-      "@prelude/*": ["../*/src/index.ts"]
-    }
-  },
   "include": ["src/**/*.test.ts"],
   "exclude": ["node_modules"]
 }
 ```
 
-- `extends` pulls in `noEmit: true` and `types: ["node"]` — only the test
-  sub-project sees `@types/node`.
-- The same `paths` mapping is repeated here so test files can import workspace
-  packages too.
+- `extends` pulls in `noEmit: true`, `types: ["node"]`, and the same shared
+  workspace source mapping — only the test sub-project sees `@types/node`.
 - No `references` to the lib config: TypeScript project references would
   require `composite: true` on the lib, which conflicts with how cross-package
   source files get pulled into the program (they aren't in the lib's `include`
@@ -124,6 +111,8 @@ packages/<name>/
 
 All per-package files extend one of these:
 
+- **`base.json`** — common compiler options and the centralized `@prelude/*`
+  source mapping shared by every library and test project.
 - **`isomorphic.json`** — strict ECMAScript-only environment. Sets
   `lib: ["ESNext"]` and `types: []`. Loads `isomorphic.d.ts`, which provides
   ambient declarations for `setTimeout` / `setInterval` that work in both
@@ -135,7 +124,6 @@ All per-package files extend one of these:
   `types: ["node"]`. Used by every `tsconfig.test.json`.
 - **`javascript-backend.json`** — `allowJs` + `checkJs`, for the JS-only
   packages (`eslint-config`).
-- **`base.json`** — common compiler options shared by all of the above.
 
 ## How VS Code routes files
 
@@ -147,11 +135,11 @@ All per-package files extend one of these:
 5. `src/foo.test.ts` → matched by `tsconfig.test.json` → Node types available.
 6. No restart, no per-workspace settings, no manual config — it just works.
 
-## Build commands
+## Build and typecheck commands
 
-Tests run directly through `tsx` / `node --test` and don't need `tsc` at all.
-The ESM build (`make build-mjs`) must point `tsc` at the lib config explicitly,
-since the root `tsconfig.json` now compiles nothing:
+Tests run directly through `tsx` / `node --test` and don't need emitted test
+JavaScript. The ESM build (`make build-mjs`) must point `tsc` at the lib config
+explicitly, since the package root `tsconfig.json` is solution-style:
 
 ```makefile
 build-mjs:
@@ -159,8 +147,9 @@ build-mjs:
 	pnpm exec tsc -p tsconfig.lib.json -d --sourceMap --outDir mjs
 ```
 
-The `-p tsconfig.lib.json` is the only change versus the old recipe — every
-other flag stays the same.
+The root `pnpm typecheck` command discovers every `tsconfig.lib.json` and
+`tsconfig.test.json` and checks each project independently. This is the local
+regression gate for workspace resolution, environment isolation, and test types.
 
 ## Common pitfalls
 
@@ -182,6 +171,12 @@ Common mistake when copying tsconfig from a backend package. The whole
 enforcement mechanism is `types: []` (inherited from `isomorphic.json`).
 Adding `types: ["node"]` in the per-package `tsconfig.lib.json` re-enables
 `@types/node` and silently breaks isomorphism. Don't.
+
+### Overriding the shared workspace mapping
+
+A package-level `compilerOptions.paths` replaces the inherited mapping. Only
+override it when the package genuinely needs additional aliases, and retain the
+`@prelude/*` source mapping when doing so.
 
 ### Importing test files from src
 

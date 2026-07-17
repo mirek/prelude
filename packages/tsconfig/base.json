@@ -3,6 +3,9 @@
     "target": "ESNext",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "paths": {
+      "@prelude/*": ["../*/src/index.ts"]
+    },
     "strict": true,
     "noImplicitAny": false,
     "noImplicitReturns": true,
