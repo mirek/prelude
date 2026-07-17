@@ -9,6 +9,7 @@
   "scripts": {
     "lint": "oxlint --type-aware packages",
     "typecheck": "node scripts/typecheck.mjs",
+    "test:check": "node scripts/check-tests.mjs",
     "test:r": "pnpm -r test",
     "test": "tsx --test 'packages/*/src/**/*.test.ts'",
     "build": "node scripts/build.mjs",
@@ -20,7 +21,7 @@
     "release:prepare": "node scripts/release-prepare.mjs",
     "release:publish": "node scripts/release-publish.mjs",
     "pack:check": "node scripts/pack-check.mjs",
-    "verify": "pnpm manifests:check && pnpm release-hooks:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm pack:check"
+    "verify": "pnpm manifests:check && pnpm release-hooks:check && pnpm test:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm pack:check"
   },
   "keywords": [],
   "author": "",
