@@ -2,7 +2,6 @@
 
 This index contains outstanding work only, ordered by importance. When an item is addressed, delete its `todo/*.md` file and remove its index entry; do not add status fields or retain completed items.
 
-- [Settle `WaitGroup` waiters on invalid counters](todo/settle-wait-group-on-invalid-counter.md) — Prevent negative counters from throwing while leaving existing waiters permanently pending.
 - [Implement SemVer 2.0 precedence](todo/implement-semver-precedence.md) — Correct stable/prerelease ordering and numeric prerelease identifier comparison.
 - [Conform JSON-RPC handling to the 2.0 specification](todo/conform-jsonrpc-to-spec.md) — Accept valid request shapes and produce standard responses, errors, batches, and correlated client results.
 - [Make asynchronous tests deterministic](todo/make-async-tests-deterministic.md) — Replace random sleeps and ignored timeout arguments with deterministic synchronization and valid test options.
