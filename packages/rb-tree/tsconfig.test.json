@@ -1,10 +1,10 @@
 {
-  "extends": "@prelude/tsconfig/test.json",
-  "compilerOptions": {
-    "paths": {
-      "@prelude/*": ["../*/src/index.ts"]
-    }
-  },
-  "include": ["src/**/*.test.ts", "test/**/*.test.ts"],
-  "exclude": ["node_modules"]
+  "extends": "@prelude/tsconfig/workspace-test.json",
+  "include": [
+    "src/**/*.test.ts",
+    "test/**/*.test.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

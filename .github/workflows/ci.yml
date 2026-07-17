@@ -34,6 +34,8 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+      - name: Package configuration
+        run: pnpm manifests:check 2>&1 | tee manifests.log
       - name: Lint
         run: pnpm lint 2>&1 | tee lint.log
       - name: Typecheck
