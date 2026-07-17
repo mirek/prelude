@@ -34,7 +34,16 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm verify
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Test
+        run: pnpm test
+      - name: Build packages
+        run: pnpm build
+      - name: Validate tarballs
+        run: pnpm pack:check
 
   ci:
     name: CI
