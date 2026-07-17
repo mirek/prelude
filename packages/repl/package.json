@@ -8,8 +8,6 @@
   },
   "scripts": {
     "test": "make test",
-    "preversion": "make preversion",
-    "postversion": "make postversion",
     "prepack": "node ../../scripts/build-package.mjs"
   },
   "keywords": [

@@ -6,8 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "make test",
-    "prepack": "node ../../scripts/build-package.mjs",
-    "postversion": "make postversion"
+    "prepack": "node ../../scripts/build-package.mjs"
   },
   "module": "./mjs/index.js",
   "exports": {

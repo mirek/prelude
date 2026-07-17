@@ -6,8 +6,6 @@
   "module": "./mjs/index.js",
   "scripts": {
     "test": "NODE_OPTIONS='--no-warnings --experimental-vm-modules' pnpm tsx --test src/**/*.test.ts",
-    "preversion": "make preversion",
-    "postversion": "make postversion",
     "prepack": "node ../../scripts/build-package.mjs"
   },
   "keywords": [

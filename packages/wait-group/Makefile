@@ -15,11 +15,6 @@ rebuild: clean build
 update:
 	pnpm npm-check --update --save-exact
 
-postversion:
-	git push
-	git push --tags
-	npm publish --access public
-
 install:
 	pnpm i
 
