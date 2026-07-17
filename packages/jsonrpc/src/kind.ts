@@ -1,28 +1,25 @@
+import {
+  isErrorResponse,
+  isNotification,
+  isRequest,
+  isSuccessResponse
+} from './protocol.js'
+
 const kind =
-  (msg: unknown): undefined | 'call' | 'result' | 'error' | 'notification' => {
-    if (typeof msg !== 'object' || msg === null) {
-      return
+  (message: unknown): undefined | 'call' | 'result' | 'error' | 'notification' => {
+    if (isRequest(message)) {
+      return 'call'
     }
-    if (msg['jsonrpc'] !== '2.0') {
-      return
+    if (isNotification(message)) {
+      return 'notification'
     }
-    const id = typeof msg['id'] !== 'undefined'
-    const method = typeof msg['method'] !== 'undefined'
-    const params = typeof msg['params'] !== 'undefined'
-    const result = typeof msg['result'] !== 'undefined'
-    const error = typeof msg['error'] !== 'undefined'
-    switch (true) {
-      case id && method && params && !result && !error:
-        return 'call'
-      case id && !method && !params && result && !error:
-        return 'result'
-      case !id && method && params && !result && !error:
-        return 'notification'
-      case id && !method && !params && !result && error:
-        return 'error'
-      default:
-        return
+    if (isSuccessResponse(message)) {
+      return 'result'
     }
+    if (isErrorResponse(message)) {
+      return 'error'
+    }
+    return undefined
   }
 
 export default kind
