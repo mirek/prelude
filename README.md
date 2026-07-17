@@ -30,13 +30,16 @@ pnpm verify
 
 `pnpm verify` runs the same checks as GitHub Actions, in this order:
 
-1. `pnpm lint` — type-aware linting across `packages`.
-2. `pnpm typecheck` — checks every package library and test TypeScript project independently.
-3. `pnpm test` — runs all colocated `*.test.ts` files through Node's test runner.
-4. `pnpm build` — rebuilds every package with a `tsconfig.lib.json` from clean source.
-5. `pnpm pack:check` — dry-runs package tarballs and verifies that declared entry points are included.
+1. `pnpm manifests:check` — verifies normalized package manifests, exports, and workspace TypeScript configs.
+2. `pnpm lint` — type-aware linting across `packages`.
+3. `pnpm typecheck` — checks every package library and test TypeScript project independently.
+4. `pnpm test` — runs all colocated `*.test.ts` files through Node's test runner.
+5. `pnpm build` — rebuilds every package with a `tsconfig.lib.json` from clean source.
+6. `pnpm pack:check` — packs every public package and installs the tarballs into an isolated consumer project.
 
-GitHub Actions runs this command independently on Node.js 22 and 24. The aggregate `CI` job is suitable as the required branch-protection check.
+The package check verifies declared entry points, declaration resolution, root and subpath runtime imports, workspace dependency rewriting, the externally published TypeScript configs, and exclusion of development-only files. Every publishable library also builds from source during its own `prepack` lifecycle.
+
+GitHub Actions runs these checks independently on Node.js 22 and 24. The aggregate `CI` job is suitable as the required branch-protection check.
 
 ### Clean TypeScript build artifacts
 
