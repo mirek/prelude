@@ -6,20 +6,20 @@
   "type": "module",
   "scripts": {
     "test": "make test",
-    "prepack": "make prepack",
+    "prepack": "node ../../scripts/build-package.mjs",
     "postversion": "make postversion"
   },
   "module": "./mjs/index.js",
   "exports": {
     ".": {
+      "types": "./dts/index.d.ts",
       "bundle": "./src/index.ts",
-      "import": "./mjs/index.js",
-      "types": "./dts/index.d.ts"
+      "import": "./mjs/index.js"
     },
     "./*.js": {
+      "types": "./dts/*.d.ts",
       "bundle": "./src/*.ts",
-      "import": "./mjs/*.js",
-      "types": "./dts/*.d.ts"
+      "import": "./mjs/*.js"
     },
     "./*": {
       "bundle": "./src/*",
@@ -45,5 +45,13 @@
     "@babel/preset-env": "7.29.2",
     "@babel/preset-typescript": "7.28.5",
     "@prelude/tsconfig": "workspace:*"
-  }
+  },
+  "files": [
+    "mjs",
+    "Readme.md",
+    "README.md",
+    "License.md",
+    "LICENSE"
+  ],
+  "types": "./mjs/index.d.ts"
 }

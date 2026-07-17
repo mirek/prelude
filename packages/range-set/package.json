@@ -7,7 +7,8 @@
   "scripts": {
     "test": "NODE_OPTIONS='--no-warnings --experimental-vm-modules' pnpm tsx --test src/**/*.test.ts",
     "preversion": "make preversion",
-    "postversion": "make postversion"
+    "postversion": "make postversion",
+    "prepack": "node ../../scripts/build-package.mjs"
   },
   "keywords": [
     "prelude",
@@ -38,12 +39,15 @@
   },
   "exports": {
     ".": {
+      "types": "./mjs/index.d.ts",
       "import": "./mjs/index.js"
     },
     "./*.js": {
+      "types": "./mjs/*.d.ts",
       "import": "./mjs/*.js"
     },
     "./*": {
+      "types": "./mjs/*.d.ts",
       "import": "./mjs/*.js"
     }
   },
@@ -51,5 +55,13 @@
   "peerDependencies": {
     "@babel/core": "^7.26.10",
     "@babel/types": "^7.27.0"
-  }
+  },
+  "files": [
+    "mjs",
+    "Readme.md",
+    "README.md",
+    "License.md",
+    "LICENSE"
+  ],
+  "types": "./mjs/index.d.ts"
 }

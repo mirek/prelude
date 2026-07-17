@@ -6,9 +6,11 @@
   "module": "./mjs/index.js",
   "exports": {
     ".": {
+      "types": "./mjs/index.d.ts",
       "import": "./mjs/index.js"
     },
     "./*.js": {
+      "types": "./mjs/*.d.ts",
       "import": "./mjs/*.js"
     }
   },
@@ -18,7 +20,8 @@
   "scripts": {
     "test": "pnpm tsx --test src/**/*.test.ts --coverage",
     "preversion": "make preversion",
-    "postversion": "make postversion"
+    "postversion": "make postversion",
+    "prepack": "node ../../scripts/build-package.mjs"
   },
   "keywords": [
     "prelude",
@@ -38,5 +41,13 @@
   },
   "dependencies": {
     "@prelude/cmp": "workspace:*"
-  }
+  },
+  "files": [
+    "mjs",
+    "Readme.md",
+    "README.md",
+    "License.md",
+    "LICENSE"
+  ],
+  "types": "./mjs/index.d.ts"
 }
