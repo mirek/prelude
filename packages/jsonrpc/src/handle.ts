@@ -1,104 +1,47 @@
-import sendResult from './send-result.js'
-import sendError from './send-error.js'
-import kind from './kind.js'
-import * as $ from '@prelude/predicate'
-import * as Err from '@prelude/err'
-import type { Sendable } from './prelude.js'
+import payloadText from './payload.js'
+import { ErrorCode, processMessage, standardError } from './protocol.js'
+import sendJson from './send-json.js'
+import type { EventTransport, HandleOptions } from './prelude.js'
 
-type WsLike = Sendable & {
-  on(event: 'message', cb: (message: string) => void): void
-  removeListener(event: 'message', cb: (message: string) => void): void
+export async function handlePayload(
+  transport: EventTransport,
+  payload: unknown,
+  options: HandleOptions = {}
+) {
+  let value: unknown
+  try {
+    value = JSON.parse(payloadText(payload))
+  } catch (error: unknown) {
+    if (error instanceof SyntaxError) {
+      await sendJson(transport, standardError(ErrorCode.parseError))
+      return
+    }
+    options.exception?.(error)
+    return
+  }
+
+  const response = await processMessage(value, options)
+  if (response !== undefined) {
+    await sendJson(transport, response)
+  }
 }
 
 const handle =
-  (ws: WsLike, { call, result: result_, error: error_, notification, exception }: {
-    call?: (method: string, params: unknown) => Promise<unknown>,
-    result?: (id: number, result: unknown) => Promise<void>,
-    error?: (id: number, error: { code: Err.Code.t, message: string, severity: Err.Severity.t }) => Promise<void>
-    notification?: (method: string, params: unknown) => Promise<void>,
-    exception: (err: Error) => unknown
-  }): () => void => {
-    const handler =
-      async (msgString: string) => {
-        const msg = typeof msgString === 'string' ?
-          JSON.parse(msgString) :
-          undefined
-        const kind_ = kind(msg)
-        switch (kind_) {
-          case 'call': {
-            if (!call) {
-              return
-            }
-            if (!$.exact({
-              jsonrpc: $.eq('2.0'),
-              id: $.number,
-              method: $.string,
-              params: $.defined
-            })(msg)) {
-              throw Err.error('jsonrpc', 'Invalid call.')
-            }
-            try {
-              const result = await call(msg.method, msg.params)
-              await sendResult(ws, msg.id, result)
-            } catch (err: unknown) {
-              await sendError(ws, msg.id, err)
-            }
-            break
-          }
-          case 'result': {
-            if (!result_) {
-              return
-            }
-            if (!$.exact({ jsonrpc: $.eq('2.0'), id: $.number, result: $.defined })(msg)) {
-              throw Err.error('jsonrpc', 'Invalid result.')
-            }
-            await result_(msg.id, msg.result)
-            break
-          }
-          case 'error': {
-            if (!error_) {
-              return
-            }
-            if (!$.exact({
-              jsonrpc: $.eq('2.0'),
-              id: $.number,
-              error: $.object({
-                code: $.unknown,
-                severity: $.unknown,
-                message: $.string
-              })
-            })(msg)) {
-              throw Err.error('jsonrpc', 'Invalid error.')
-            }
-            const message = Err.message(msg.error)
-            const code = Err.code(msg.error)
-            const severity = Err.severity(msg.error)
-            await error_(msg.id, { message, code, severity })
-            break
-          }
-          case 'notification': {
-            if (!notification) {
-              return
-            }
-            if (!$.exact({
-              jsonrpc: $.eq('2.0'),
-              method: $.string,
-              params: $.defined
-            })(msg)) {
-              throw Err.error('jsonrpc', 'Invalid notification.')
-            }
-            await notification(msg.method, msg.params)
-            break
-          }
-          default:
-            throw Err.error('jsonrpc', 'Not a jsonrpc message.')
-        }
+  (transport: EventTransport, options: HandleOptions = {}): (() => void) => {
+    const listener = (payload?: unknown) => {
+      void handlePayload(transport, payload, options).catch(error => {
+        options.exception?.(error)
+      })
+    }
+
+    transport.on('message', listener)
+    return () => {
+      if (transport.off) {
+        transport.off('message', listener)
+      } else {
+        transport.removeListener?.('message', listener)
       }
-    const handler_ =
-      (msgString: string) =>
-        handler(msgString).catch(exception)
-    ws.on('message', handler_)
-    return () => ws.removeListener('message', handler_)
+    }
   }
 
 export default handle
