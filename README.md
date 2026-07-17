@@ -13,26 +13,30 @@ This repository is organized as a monorepo with one package per directory under 
 
 ### Prerequisites
 
-- Node.js (recent LTS recommended)
-- pnpm `10.31.0` (or compatible)
+- Node.js 22 or 24
+- pnpm `11.1.3` through the root `packageManager` declaration
 
 ### Install dependencies
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 ```
 
-### Run checks from the repo root
+### Run the CI-equivalent quality gate
 
 ```bash
-pnpm lint
-pnpm test
-pnpm test:r
+pnpm verify
 ```
 
-- `pnpm lint`: type-aware linting across `packages`.
-- `pnpm test`: runs `tsx --test` over package tests.
-- `pnpm test:r`: runs `test` recursively for each workspace package.
+`pnpm verify` runs the same checks as GitHub Actions, in this order:
+
+1. `pnpm lint` — type-aware linting across `packages`.
+2. `pnpm typecheck` — checks every package library and test TypeScript project independently.
+3. `pnpm test` — runs all colocated `*.test.ts` files through Node's test runner.
+4. `pnpm build` — rebuilds every package with a `tsconfig.lib.json` from clean source.
+5. `pnpm pack:check` — dry-runs package tarballs and verifies that declared entry points are included.
+
+GitHub Actions runs this command independently on Node.js 22 and 24. The aggregate `CI` job is suitable as the required branch-protection check.
 
 ### Clean TypeScript build artifacts
 

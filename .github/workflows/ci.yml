@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - 22
+          - 24
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint 2>&1 | tee lint.log
+      - name: Typecheck
+        run: pnpm typecheck 2>&1 | tee typecheck.log
+      - name: Test
+        run: pnpm test 2>&1 | tee test.log
+      - name: Build packages
+        run: pnpm build 2>&1 | tee build.log
+      - name: Validate tarballs
+        run: pnpm pack:check 2>&1 | tee pack-check.log
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostics-node-${{ matrix.node }}
+          path: '*.log'
+          retention-days: 1
+
+  ci:
+    name: CI
+    if: always()
+    needs:
+      - verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all verification jobs
+        run: test "${{ needs.verify.result }}" = success

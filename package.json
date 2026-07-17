@@ -10,7 +10,10 @@
     "lint": "oxlint --type-aware packages",
     "typecheck": "node scripts/typecheck.mjs",
     "test:r": "pnpm -r test",
-    "test": "tsx --test 'packages/*/src/**/*.test.ts'"
+    "test": "tsx --test 'packages/*/src/**/*.test.ts'",
+    "build": "node scripts/build.mjs",
+    "pack:check": "node scripts/pack-check.mjs",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm pack:check"
   },
   "keywords": [],
   "author": "",
