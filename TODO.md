@@ -2,7 +2,6 @@
 
 This index contains outstanding work only, ordered by importance. When an item is addressed, delete its `todo/*.md` file and remove its index entry; do not add status fields or retain completed items.
 
-- [Guarantee valid published artifacts](todo/guarantee-publishable-artifacts.md) — Build and inspect every tarball so exported JavaScript, declarations, and shared config files are always present.
 - [Replace unsafe per-package release hooks](todo/replace-unsafe-release-hooks.md) — Centralize versioning and publishing instead of pushing and publishing from duplicated `postversion` recipes.
 - [Fix `Channel.maybeRead`](todo/fix-channel-maybe-read.md) — Return the queued value on a successful read and `undefined` only when the channel is done.
 - [Settle `WaitGroup` waiters on invalid counters](todo/settle-wait-group-on-invalid-counter.md) — Prevent negative counters from throwing while leaving existing waiters permanently pending.
