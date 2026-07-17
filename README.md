@@ -31,11 +31,15 @@ pnpm verify
 `pnpm verify` runs the same checks as GitHub Actions, in this order:
 
 1. `pnpm manifests:check` — verifies normalized package manifests, exports, and workspace TypeScript configs.
-2. `pnpm lint` — type-aware linting across `packages`.
-3. `pnpm typecheck` — checks every package library and test TypeScript project independently.
-4. `pnpm test` — runs all colocated `*.test.ts` files through Node's test runner.
-5. `pnpm build` — rebuilds every package with a `tsconfig.lib.json` from clean source.
-6. `pnpm pack:check` — packs every public package and installs the tarballs into an isolated consumer project.
+2. `pnpm release-hooks:check` — rejects package-local version, push, or publish hooks.
+3. `pnpm test:check` — rejects unseeded randomness and unsupported `node:test` timeout arguments in the default suite.
+4. `pnpm lint` — type-aware linting across `packages`.
+5. `pnpm typecheck` — checks every package library and test TypeScript project independently.
+6. `pnpm test` — runs all colocated `*.test.ts` files through Node's test runner.
+7. `pnpm build` — rebuilds every package with a `tsconfig.lib.json` from clean source.
+8. `pnpm pack:check` — packs every public package and installs the tarballs into an isolated consumer project.
+
+Concurrency tests use explicit barriers, fake schedulers, and awaited task settlement rather than random sleeps or eventual polling. Optional randomized stress coverage must use a reproducible seed.
 
 The package check verifies declared entry points, declaration resolution, root and subpath runtime imports, workspace dependency rewriting, the externally published TypeScript configs, and exclusion of development-only files. Every publishable library also builds from source during its own `prepack` lifecycle.
 
