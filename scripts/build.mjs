@@ -1,11 +1,8 @@
-import { existsSync, readdirSync, rmSync } from 'node:fs'
-import { createRequire } from 'node:module'
-import { spawnSync } from 'node:child_process'
+import { existsSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { buildPackage } from './build-package.mjs'
 
-const require = createRequire(import.meta.url)
-const tsc = require.resolve('typescript/bin/tsc')
 const root = fileURLToPath(new URL('..', import.meta.url))
 const packages = path.join(root, 'packages')
 
@@ -20,32 +17,6 @@ if (projects.length === 0) {
 }
 
 for (const directory of projects) {
-  const config = path.join(directory, 'tsconfig.lib.json')
-  const source = path.join(directory, 'src')
-  const output = path.join(directory, 'mjs')
-  const packageName = path.basename(directory)
-
-  console.log(`build ${packageName}`)
-  rmSync(output, { force: true, recursive: true })
-
-  const result = spawnSync(process.execPath, [
-    tsc,
-    '--project', config,
-    '--noCheck',
-    '--declaration',
-    '--sourceMap',
-    '--outDir', output,
-    '--rootDir', source
-  ], {
-    cwd: root,
-    stdio: 'inherit'
-  })
-
-  if (result.error) {
-    throw result.error
-  }
-
-  if (result.status !== 0) {
-    process.exit(result.status ?? 1)
-  }
+  console.log(`build ${path.basename(directory)}`)
+  buildPackage(directory)
 }
