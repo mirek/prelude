@@ -14,6 +14,12 @@ const files = [
   'LICENSE'
 ]
 
+const workspaceExtends = new Map([
+  ['@prelude/tsconfig/isomorphic.json', '@prelude/tsconfig/workspace-isomorphic.json'],
+  ['@prelude/tsconfig/backend.json', '@prelude/tsconfig/workspace-backend.json'],
+  ['@prelude/tsconfig/test.json', '@prelude/tsconfig/workspace-test.json']
+])
+
 function declarationTarget(target) {
   return target.replace(/\.js$/, '.d.ts')
 }
@@ -99,6 +105,39 @@ function normalizeTsconfigManifest(manifest) {
   }
 }
 
+function normalizeProject(project) {
+  const normalized = {
+    ...project,
+    extends: workspaceExtends.get(project.extends) ?? project.extends
+  }
+
+  const paths = normalized.compilerOptions?.paths
+  if (JSON.stringify(paths) === JSON.stringify({ '@prelude/*': ['../*/src/index.ts'] })) {
+    const compilerOptions = { ...normalized.compilerOptions }
+    delete compilerOptions.paths
+    if (Object.keys(compilerOptions).length === 0) {
+      delete normalized.compilerOptions
+    } else {
+      normalized.compilerOptions = compilerOptions
+    }
+  }
+
+  return normalized
+}
+
+function updateJson(filePath, normalize, changed) {
+  const original = readFileSync(filePath, 'utf8')
+  const content = `${JSON.stringify(normalize(JSON.parse(original)), null, 2)}\n`
+  if (content === original) {
+    return
+  }
+
+  changed.push(path.relative(root, filePath))
+  if (write) {
+    writeFileSync(filePath, content)
+  }
+}
+
 const packageDirectories = readdirSync(packagesDirectory, { withFileTypes: true })
   .filter(entry => entry.isDirectory())
   .map(entry => path.join(packagesDirectory, entry.name))
@@ -108,31 +147,24 @@ const packageDirectories = readdirSync(packagesDirectory, { withFileTypes: true 
 const changed = []
 for (const directory of packageDirectories) {
   const manifestPath = path.join(directory, 'package.json')
-  const original = readFileSync(manifestPath, 'utf8')
-  const manifest = JSON.parse(original)
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
 
-  let normalized
   if (manifest.name === '@prelude/tsconfig') {
-    normalized = normalizeTsconfigManifest(manifest)
+    updateJson(manifestPath, normalizeTsconfigManifest, changed)
   } else if (existsSync(path.join(directory, 'tsconfig.lib.json')) && manifest.private !== true) {
-    normalized = normalizeLibraryManifest(manifest)
-  } else {
-    continue
+    updateJson(manifestPath, normalizeLibraryManifest, changed)
   }
 
-  const content = `${JSON.stringify(normalized, null, 2)}\n`
-  if (content === original) {
-    continue
-  }
-
-  changed.push(path.relative(root, manifestPath))
-  if (write) {
-    writeFileSync(manifestPath, content)
+  for (const name of ['tsconfig.lib.json', 'tsconfig.test.json']) {
+    const projectPath = path.join(directory, name)
+    if (existsSync(projectPath)) {
+      updateJson(projectPath, normalizeProject, changed)
+    }
   }
 }
 
 if (changed.length > 0) {
-  const message = `Package manifests need normalization:\n${changed.map(file => `- ${file}`).join('\n')}`
+  const message = `Package configuration needs normalization:\n${changed.map(file => `- ${file}`).join('\n')}`
   if (!write) {
     throw new Error(`${message}\nRun pnpm manifests:write.`)
   }
