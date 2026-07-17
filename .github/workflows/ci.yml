@@ -36,6 +36,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Package configuration
         run: pnpm manifests:check 2>&1 | tee manifests.log
+      - name: Release hooks
+        run: pnpm release-hooks:check 2>&1 | tee release-hooks.log
       - name: Lint
         run: pnpm lint 2>&1 | tee lint.log
       - name: Typecheck

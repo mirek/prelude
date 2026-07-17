@@ -12,8 +12,6 @@
   ],
   "scripts": {
     "test": "make test",
-    "preversion": "make test",
-    "postversion": "make postversion",
     "prepack": "node ../../scripts/build-package.mjs"
   },
   "keywords": [

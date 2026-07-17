@@ -19,8 +19,6 @@
   },
   "scripts": {
     "test": "pnpm tsx --test src/**/*.test.ts --coverage",
-    "preversion": "make preversion",
-    "postversion": "make postversion",
     "prepack": "node ../../scripts/build-package.mjs"
   },
   "keywords": [

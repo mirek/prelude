@@ -6,8 +6,6 @@
   "scripts": {
     "test": "make test",
     "build": "make build",
-    "preversion": "make preversion",
-    "postversion": "make postversion",
     "prepack": "node ../../scripts/build-package.mjs"
   },
   "keywords": [

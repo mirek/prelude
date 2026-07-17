@@ -6,9 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "make test",
-    "build": "make build",
-    "preversion": "make preversion",
-    "postversion": "make postversion"
+    "build": "make build"
   },
   "keywords": [
     "prelude",

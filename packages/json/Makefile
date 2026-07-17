@@ -17,11 +17,4 @@ rebuild: clean build
 update:
 	pnpm up --latest
 
-preversion: test rebuild
-
-postversion:
-	git push
-	git push --tags
-	pnpm publish --access public
-
 .PHONY: test

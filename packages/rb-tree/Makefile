@@ -15,9 +15,4 @@ test:
 update:
 	@pnpm npm-check --update --save-exact
 
-postversion:
-	@git push
-	@git push --tags
-	@npm publish
-
 .PHONY: test
