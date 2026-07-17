@@ -46,9 +46,17 @@ function isPublished(name, version) {
 }
 
 function remoteTagCommit(tag) {
-  const result = requireSuccess('git', ['ls-remote', '--tags', 'origin', `refs/tags/${tag}`])
-  const line = result.stdout.trim()
-  return line === '' ? undefined : line.split(/\s+/)[0]
+  const result = requireSuccess('git', [
+    'ls-remote',
+    '--tags',
+    'origin',
+    `refs/tags/${tag}`,
+    `refs/tags/${tag}^{}`
+  ])
+  const lines = result.stdout.trim().split('\n').filter(Boolean)
+  const dereferenced = lines.find(line => line.endsWith(`refs/tags/${tag}^{}`))
+  const direct = lines.find(line => line.endsWith(`refs/tags/${tag}`))
+  return (dereferenced ?? direct)?.split(/\s+/)[0]
 }
 
 const status = requireSuccess('git', ['status', '--porcelain']).stdout.trim()
@@ -106,6 +114,10 @@ for (const item of prepared.packages) {
     continue
   }
 
+  const localTag = run('git', ['rev-parse', '-q', '--verify', `refs/tags/${item.tag}`])
+  if (localTag.status === 0) {
+    requireSuccess('git', ['tag', '-d', item.tag])
+  }
   requireSuccess('git', ['tag', '-a', item.tag, '-m', `${item.name} ${item.version}`])
   requireSuccess('git', ['push', 'origin', `refs/tags/${item.tag}`])
   console.log(`tagged ${item.tag}`)
