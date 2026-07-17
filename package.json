@@ -12,8 +12,10 @@
     "test:r": "pnpm -r test",
     "test": "tsx --test 'packages/*/src/**/*.test.ts'",
     "build": "node scripts/build.mjs",
+    "manifests:check": "node scripts/normalize-package-manifests.mjs --check",
+    "manifests:write": "node scripts/normalize-package-manifests.mjs --write",
     "pack:check": "node scripts/pack-check.mjs",
-    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm pack:check"
+    "verify": "pnpm manifests:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm pack:check"
   },
   "keywords": [],
   "author": "",
