@@ -139,6 +139,16 @@ await test('throwing result/error hooks are reported through exception and do no
   assert.deepEqual(exceptions.map(error => (error as Error).message), [ 'result hook', 'error hook' ])
 })
 
+await test('payload bytes are decoded as WHATWG UTF-8', () => {
+  const text = (bytes: number[]) => Jsonrpc.payloadText(new Uint8Array(bytes))
+  assert.equal(text([ 0xc0, 0xa2 ]), '\ufffd\ufffd', 'overlong encodings are not accepted')
+  assert.equal(text([ 0xc0, 0x80 ]), '\ufffd\ufffd', 'overlong NUL is not accepted')
+  assert.equal(text([ 0xed, 0xa0, 0x80 ]), '\ufffd\ufffd\ufffd', 'encoded surrogates are not accepted')
+  assert.equal(text([ 0xe2, 0x41 ]), '\ufffdA', 'bytes after a truncated sequence are still decoded')
+  assert.equal(text(Array.from(new TextEncoder().encode('{"a":"é😀"}'))), '{"a":"é😀"}')
+  assert.equal(Jsonrpc.payloadText(new TextEncoder().encode('[1]').buffer), '[1]')
+})
+
 await test('matches normative request and response examples', async () => {
   assert.deepEqual(await Jsonrpc.processMessage({
     jsonrpc: '2.0',

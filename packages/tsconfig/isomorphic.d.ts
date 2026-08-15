@@ -103,3 +103,21 @@ declare const AbortSignal: {
   abort(reason?: any): AbortSignal;
   timeout(milliseconds: number): AbortSignal;
 };
+
+// ---------------------------------------------------------------------------
+// Encoding
+//
+// TextEncoder/TextDecoder are WHATWG Encoding globals available in Node,
+// browsers, Deno, Bun, workers and edge runtimes. Only the surface isomorphic
+// code needs is declared.
+
+declare class TextDecoder {
+  constructor(label?: string, options?: { fatal?: boolean; ignoreBOM?: boolean });
+  readonly encoding: string;
+  decode(input?: ArrayBuffer | ArrayBufferView): string;
+}
+
+declare class TextEncoder {
+  readonly encoding: string;
+  encode(input?: string): Uint8Array;
+}
