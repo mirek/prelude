@@ -1,8 +1,8 @@
 import * as Parser from '../parser.js'
 import file from './file.js'
-import trim from '../trim.js'
 
+/** RFC 4180 §2.4: spaces are part of a field, so the input is not trimmed. */
 export const parser =
-  Parser.parser(trim()(file))
+  Parser.parser(file)
 
 export default parser
