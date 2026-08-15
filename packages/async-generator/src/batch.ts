@@ -41,8 +41,8 @@ import type { Transformer } from './prelude.js'
  * @throws {Error} If length is less than 1
  */
 export function batch<T>(length: number): Transformer<T, T[]> {
-  if (length < 1) {
-    throw new Error(`Expected batch length to be at least 1, got ${length}`)
+  if (!Number.isSafeInteger(length) || length < 1) {
+    throw new RangeError(`Expected batch length to be a positive integer, got ${length}.`)
   }
   return async function* (values) {
     let range: T[] = []
