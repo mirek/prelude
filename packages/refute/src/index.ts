@@ -6,17 +6,20 @@ import bigint_ from './bigint.js'
 import boolean_ from './boolean.js'
 import calendarDate from './calendar-date.js'
 import defined from './defined.js'
+import eq from './eq.js'
 import exact from './exact.js'
 import exactPartial from './exact-partial.js'
 import false_ from './false.js'
 import finite from './finite.js'
 import gt from './gt.js'
 import gte from './gte.js'
+import instance from './instance.js'
 import is from './is.js'
 import lift from './lift.js'
 import lt from './lt.js'
 import lte from './lte.js'
 import null_ from './null.js'
+import nullish from './nullish.js'
 import nullishOr from './nullish-or.js'
 import nullOr from './null-or.js'
 import number_ from './number.js'
@@ -52,17 +55,20 @@ export {
   boolean_ as boolean,
   calendarDate,
   defined,
+  eq,
   exact,
   exactPartial,
   false_ as false,
   finite,
   gt,
   gte,
+  instance,
   is,
   lift,
   lt,
   lte,
   null_ as null,
+  nullish,
   nullishOr,
   nullOr,
   number_ as number,
