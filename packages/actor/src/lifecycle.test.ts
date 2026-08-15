@@ -303,7 +303,7 @@ await test('a falsy kill reason still rejects blocked senders and asks', async (
   await assert.rejects(asked, (reason: unknown) => reason === null)
   await assert.rejects(actor.send(5), (reason: unknown) => reason === null)
   await assert.rejects(actor.ask(6), (reason: unknown) => reason === null)
-  assert.deepEqual(dead.map(([ message ]) => message).toSorted(), [ 2, 3, 4, 5, 6 ])
+  assert.deepEqual(dead.map(([ message ]) => message).toSorted((a, b) => a - b), [ 2, 3, 4, 5, 6 ])
   assert.ok(dead.every(([ , reason ]) => reason === null))
 
   gate.resolve()
