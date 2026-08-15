@@ -46,3 +46,13 @@ await test('readers skip blank lines and CRLF endings between records', () => wi
   assert.deepEqual(Fs.readJsonsSync(path), records)
   assert.deepEqual(await Fs.readJsons(path), records)
 }))
+
+await test('writers refuse values JSON cannot represent instead of writing the text undefined', () => withDir(async dir => {
+  const path = Fs.Path.join(dir, 'bad.json')
+  assert.throws(() => Fs.writeJsonSync(path, undefined), TypeError)
+  assert.throws(() => Fs.writeJsonSync(path, () => 1), TypeError)
+  await assert.rejects(Fs.writeJson(path, undefined), TypeError)
+  assert.throws(() => Fs.writeJsonsSync(path, [ { a: 1 }, undefined ]), TypeError)
+  await assert.rejects(Fs.writeJsons(path, [ undefined ]), TypeError)
+  assert.equal(Fs.existsSync(path), false)
+}))

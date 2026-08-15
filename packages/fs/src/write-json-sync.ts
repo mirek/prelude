@@ -1,5 +1,6 @@
 import type * as Fs from 'fs'
 import writeStringSync from './write-string-sync.js'
+import jsonText from './json-text.js'
 
 type Replacer =
   Parameters<typeof JSON.stringify>[1]
@@ -15,6 +16,6 @@ const writeJsonSync =
     space: Space = 2,
     nl = true
   ) =>
-    writeStringSync(path, JSON.stringify(value, replacer, space) + (nl ? '\n' : ''))
+    writeStringSync(path, jsonText(value, replacer, space) + (nl ? '\n' : ''))
 
 export default writeJsonSync
