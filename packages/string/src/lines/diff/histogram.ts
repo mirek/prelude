@@ -14,11 +14,44 @@ function matchesOf(sourceLines: string[], targetLines: string[]): [number, numbe
   const sourceOccurrence = new Occurrence(sourceLines)
   const targetOccurrence = new Occurrence(targetLines)
   const unique = Occurrence.unique(sourceOccurrence, targetOccurrence)
-  return Array.from(unique).map(line => {
+  const matches: [number, number][] = Array.from(unique).map(line => {
     const sourceIndex = sourceOccurrence.firstIndexOf(line)
     const targetIndex = targetOccurrence.firstIndexOf(line)
     return [sourceIndex, targetIndex]
   })
+  matches.sort((a, b) => a[0] - b[0])
+  return longestIncreasingByTarget(matches)
+}
+
+/**
+ * Keeps the longest subsequence of matches (already ordered by source index) whose target
+ * indices also increase, so anchors never cross; crossing anchors would emit invalid operations
+ * (unique lines that swapped places are handled by the Myers passes in between instead).
+ * @private
+ */
+function longestIncreasingByTarget(matches: [number, number][]): [number, number][] {
+  const tails: number[] = [] // tails[k] = index into matches of the smallest target ending an increasing run of length k + 1
+  const previous: number[] = Array.from({ length: matches.length }, () => -1)
+  for (let i = 0; i < matches.length; i++) {
+    const target = matches[i][1]
+    let low = 0
+    let high = tails.length
+    while (low < high) {
+      const middle = (low + high) >>> 1
+      if (matches[tails[middle]][1] < target) {
+        low = middle + 1
+      } else {
+        high = middle
+      }
+    }
+    previous[i] = low > 0 ? tails[low - 1] : -1
+    tails[low] = i
+  }
+  const result: [number, number][] = []
+  for (let i = tails.length > 0 ? tails[tails.length - 1] : -1; i !== -1; i = previous[i]) {
+    result.push(matches[i])
+  }
+  return result.reverse()
 }
 
 /**
