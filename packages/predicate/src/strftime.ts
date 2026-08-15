@@ -62,7 +62,7 @@ type Token =
 
 const tokens =
   function *(value: string): Generator<Token> {
-    let j = 0
+    let j = -1
     let i = 0
     for (i = 0; i < value.length; i++) {
       if (value[i] === '%') {
