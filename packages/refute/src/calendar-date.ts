@@ -15,7 +15,9 @@ const calendarDate: Refute<string> =
     const year = Number(match[1])
     const month = Number(match[2])
     const day = Number(match[3])
-    const date = new Date(Date.UTC(year, month - 1, day))
+    // Date.UTC maps years 0..99 to 1900..1999; set the full year explicitly.
+    const date = new Date(0)
+    date.setUTCFullYear(year, month - 1, day)
     if (
       isNaN(date.getTime()) ||
       date.getUTCFullYear() !== year ||
