@@ -24,3 +24,11 @@ new Promise(resolve => setTimeout(() => resolve(42), 10))
   }
   assert.deepEqual(results, [2, 42])
 })
+
+await test('extractCode handles a closing fence at end of input and CRLF endings', () => {
+  assert.deepEqual(EvalJs.extractCode('```!js\n1+1\n```'), [ '1+1' ])
+  assert.deepEqual(EvalJs.extractCode('```!js\r\n1+1\r\n```\r\n'), [ '1+1' ])
+  assert.deepEqual(EvalJs.extractCode('```!javascript\r\nconst a = 1\r\na + 1\r\n```\r\ntext\r\n```!js\r\n2\r\n```'), [ 'const a = 1\r\na + 1', '2' ])
+  assert.deepEqual(EvalJs.extractCode('```js\n1+1\n```\n'), [])
+  assert.deepEqual(EvalJs.extractCode('```!js\n1+1\n```   \nrest'), [ '1+1' ])
+})
