@@ -2,9 +2,10 @@ export type t = Date
 export const constructor = Date
 export const name = 'Date'
 
+/** Invalid dates (structured clone supports them) are encoded as the string `Invalid Date`, which `Date` parses back to an invalid date. */
 export const encode =
   (value: t) =>
-    ({ '^Date$': value.toISOString() })
+    ({ '^Date$': Number.isNaN(value.getTime()) ? 'Invalid Date' : value.toISOString() })
 
 export const decode =
   (value: unknown): t => {
