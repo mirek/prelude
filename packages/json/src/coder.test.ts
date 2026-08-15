@@ -103,3 +103,21 @@ await test('empty and tag-like keys are ordinary data', () => {
   assert.throws(() => Json.stringify({ nested: { '^Date$': 'x' } }), /reserved for encoded values/)
   assert.deepEqual(Json.parse(Json.stringify({ 'a$': 1, '^b': 2, 'c^d': 3 })), { 'a$': 1, '^b': 2, 'c^d': 3 })
 })
+
+await test('null-prototype objects are encoded like plain objects', () => {
+  const input = Object.create(null) as { d: Date, s: Set<number> }
+  input.d = new Date(0)
+  input.s = new Set([ 1 ])
+  assert.deepEqual(Json.parse(Json.stringify(input)), { d: new Date(0), s: new Set([ 1 ]) })
+})
+
+await test('circular structures are reported as TypeError instead of overflowing the stack', () => {
+  const circular: { a: number, self?: unknown } = { a: 1 }
+  circular.self = circular
+  assert.throws(() => Json.stringify(circular), TypeError)
+  const array: unknown[] = [ 1 ]
+  array.push(array)
+  assert.throws(() => Json.stringify({ array }), TypeError)
+  const shared = { d: new Date(0) }
+  assert.deepEqual(Json.parse(Json.stringify([ shared, shared ])), [ shared, shared ], 'shared references are fine')
+})

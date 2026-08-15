@@ -1,5 +1,6 @@
 import * as Codecs from './coders.js'
 import * as Coder from './coder.js'
+import * as Constructor from './constructor.js'
 
 export const global = Coder.of()
 Coder.register(global, Codecs.Array)
@@ -15,6 +16,9 @@ Coder.register(global, Codecs.Uint8Array)
 
 // Other
 global.encoders.set(Object, Codecs.Object.encode)
+// Objects without a prototype (Object.create(null), JSON.parse results in some runtimes) hold
+// ordinary data too; encode their properties like plain objects.
+global.encoders.set(Constructor.NullPrototype, Codecs.Object.encode)
 global.decoders.set('Json', Codecs.Json.decode)
 
 export const parse =
