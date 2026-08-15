@@ -413,3 +413,16 @@ await test('a child whose stop or kill rejects does not hang the supervisor', as
     process.off('unhandledRejection', onUnhandled)
   }
 })
+
+await test('an actor created with the supervisor option is adopted on its first failure', async () => {
+  const root = Supervisor.of({ maxRestarts: 5 })
+  const actor = new Actor.Actor<string, WorkerState, number>({ ...worker('direct'), supervisor: root })
+  await assert.rejects(actor.ask('boom'), /boom/)
+  await tick()
+  assert.equal(actor.status, 'running')
+  assert.equal(actor.restarts, 1)
+  assert.deepEqual(root.children, [ actor ])
+  assert.equal(await actor.ask('x'), 1)
+  await root.stop()
+  assert.equal(actor.status, 'stopped')
+})

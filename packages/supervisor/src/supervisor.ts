@@ -228,8 +228,16 @@ export class Supervisor implements A.Supervisor, A.Supervised {
   }
 
   async #decide(child: A.Supervised, error: unknown, message: unknown): Promise<A.Directive> {
-    if (this.#final || !this.#children.includes(child)) {
+    if (this.#final) {
       return 'stop'
+    }
+    if (!this.#children.includes(child)) {
+      // A child that names us as its supervisor (e.g. `new Actor({ supervisor })`) without having
+      // been passed to `supervise()`: adopt it now rather than silently stopping it.
+      if (this.#status !== 'running' || terminal(child)) {
+        return 'stop'
+      }
+      this.supervise(child)
     }
     this.#onFailure?.(child, error, message)
 
