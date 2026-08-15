@@ -1,7 +1,7 @@
 import * as Ch from '@prelude/channel'
+import assertConcurrency from './assert-concurrency.js'
 import type { Transformer } from './prelude.js'
 import pool from './pool.js'
-import unwrapIndexed from './unwrap-indexed.js'
 import withIndex from './with-index.js'
 
 type F<T, R> = (value: T, index: number, worker: number) => R
@@ -60,15 +60,51 @@ function ordered<T, R>(f: F<T, R>, concurrency: number): Transformer<T, Awaited<
   return async function* (values: AsyncIterable<T>) {
     let index = 0
     const input = Ch.ofAsyncIterable(withIndex(values))
-    const output = Ch.of<{ index: number, value: Awaited<R> }>()
+    const output = Ch.of<Awaited<R>>()
+
+    // Results are written to the (unbuffered) output in input order: a worker holding result i
+    // waits for its turn, so a slow head-of-line item blocks the workers behind it instead of
+    // letting them drain the source and buffer results without bound.
+    let turn = 0
+    let released = false
+    const waiters = new Map<number, () => void>()
+    const waitTurn =
+      (i: number) =>
+        i === turn || released ?
+          Promise.resolve() :
+          new Promise<void>(resolve => waiters.set(i, resolve))
+    const advance =
+      () => {
+        turn++
+        const waiter = waiters.get(turn)
+        if (waiter) {
+          waiters.delete(turn)
+          waiter()
+        }
+      }
+    // Once the output is closed (completion, failure or the consumer stopping) nobody's turn will come.
+    output.onceDoneWriting(() => {
+      released = true
+      for (const waiter of waiters.values()) {
+        waiter()
+      }
+      waiters.clear()
+    })
+
     pool(input, output, concurrency, async (value, worker) => {
-      await output.write({
-        index: value.index,
-        value: await f(value.value, index++, worker)
-      })
+      const result = await f(value.value, index++, worker)
+      await waitTurn(value.index)
+      if (released) {
+        return
+      }
+      try {
+        await output.write(result)
+      } finally {
+        advance()
+      }
     })
     try {
-      yield* unwrapIndexed(output)
+      yield* output
     } finally {
       if (!input.doneWriting) {
         input.close()
@@ -114,6 +150,7 @@ export function map<T, R>(f: F<T, R>, { concurrency = 1, preserveOrder = true }:
   concurrency?: number,
   preserveOrder?: boolean
 } = {}): Transformer<T, Awaited<R>> {
+  assertConcurrency(concurrency)
   if (concurrency === 1) {
     return serial(f)
   }
