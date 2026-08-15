@@ -34,8 +34,13 @@ export const max = <T>(key: Key<T>, a: T, b: T): T => (key.cmp(a, b) > 0 ? a : b
  * Key operations for closed intervals with integer boundaries.
  * In closed intervals, both start and end boundaries are inclusive.
  */
+/** Compares numbers without subtracting: `Infinity - Infinity` is NaN, which breaks every branch. */
+const cmp =
+  (a: number, b: number): number =>
+    a < b ? -1 : a > b ? 1 : 0
+
 export const closed: Key<number> = {
-  cmp: (a, b) => a - b,
+  cmp,
   next: a => a + 1,
   prev: a => a - 1
 }
@@ -45,7 +50,7 @@ export const closed: Key<number> = {
  * In half-open intervals, the start is inclusive and the end is exclusive.
  */
 export const halfOpen: Key<number> = {
-  cmp: (a, b) => a - b,
+  cmp,
   next: a => a,
   prev: a => a
 }

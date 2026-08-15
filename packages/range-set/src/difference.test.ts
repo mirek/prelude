@@ -380,3 +380,12 @@ await test('difference with half-open keys does not emit empty ranges', () => {
   assert.deepEqual(RangeSet.difference({ ...halfOpen, ranges: [ r(0, 10, 1) ] }, { ranges: [ r(2, 4, 9), r(6, 8, 9) ] }).ranges, [ r(0, 2, 1), r(4, 6, 1), r(8, 10, 1) ])
   assert.deepEqual(RangeSet.difference({ ...halfOpen, ranges: [ r(0, 10, 1) ] }, { ranges: [ r(0, 5, 9), r(5, 10, 9) ] }).ranges, [])
 })
+
+await test('unbounded ranges (Infinity) work with the built-in keys', () => {
+  const closed = { key: RangeSet.Key.closed, value: RangeSet.Value.sum }
+  assert.deepEqual(RangeSet.difference({ ...closed, ranges: [ r(0, Infinity, 1) ] }, { ranges: [ r(5, Infinity, 0) ] }).ranges, [ r(0, 4, 1) ])
+  assert.deepEqual(RangeSet.union({ ...closed, ranges: [ r(0, Infinity, 1) ] }, { ranges: [ r(5, Infinity, 1) ] }).ranges, [ r(0, 4, 1), r(5, Infinity, 2) ])
+  assert.deepEqual(RangeSet.intersection({ ...closed, ranges: [ r(-Infinity, Infinity, 1) ] }, { ranges: [ r(5, Infinity, 1) ] }).ranges, [ r(5, Infinity, 2) ])
+  assert.equal(RangeSet.Key.closed.cmp(Infinity, Infinity), 0)
+  assert.equal(RangeSet.Key.halfOpen.cmp(-Infinity, -Infinity), 0)
+})
