@@ -185,6 +185,7 @@ export class Emitter<T extends Events> implements Interface<T> {
       })
       off = this.on(name, (...values) => {
         if (predicate(...values)) {
+          off?.()
           off = null
           offTimeout?.()
           offTimeout = null

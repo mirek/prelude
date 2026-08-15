@@ -195,6 +195,22 @@ await test('eventually should resolve when event is emitted', async () => {
   assert.equal(result, 'async response')
 })
 
+await test('eventually removes its listener once resolved', async () => {
+  const emitter = Emitter.of<TestEvents>()
+  for (let i = 0; i < 5; i++) {
+    const pending = emitter.eventually('message', 1000)
+    emitter.emit('message', `m${i}`)
+    assert.deepEqual(await pending, [ `m${i}` ])
+    assert.equal(emitter.listeners('message'), undefined)
+  }
+  const pending = emitter.eventuallyIf('data', data => data.id === 2, 1000)
+  emitter.emit('data', { id: 1, value: 'first' })
+  assert.equal(emitter.listeners('data')?.size, 1)
+  emitter.emit('data', { id: 2, value: 'second' })
+  await pending
+  assert.equal(emitter.listeners('data'), undefined)
+})
+
 await test('eventually should reject on timeout', async () => {
   const emitter = Emitter.of<TestEvents>()
 
