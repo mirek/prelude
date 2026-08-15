@@ -18,7 +18,10 @@ export function all<T>(parser: Parser.t<T>) {
         break
       }
       values.push(result.value)
-      reader_ = result.reader
+      // A zero-width match must still advance, or the same position would match forever.
+      reader_ = result.reader.offset === reader_.offset ?
+        Reader.of(reader_.input, reader_.offset + 1) :
+        result.reader
     }
     return Result.ok(Reader.of(reader.input, reader.input.length), values)
   }
