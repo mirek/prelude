@@ -83,10 +83,11 @@ export const insert =
       edge.P = prefix
 
       // If the prefix being created is the same as the value being inserted, then mark it as an end of string.
-      // Otherwise, keep it as not an end of string.
+      // Otherwise, keep it as not an end of string and insert the remainder below the split.
       edge.E = (prefix === value)
-
-      insert(edge.N, value.slice(n))
+      if (n < value.length) {
+        insert(edge.N, value.slice(n))
+      }
     }
   }
 
