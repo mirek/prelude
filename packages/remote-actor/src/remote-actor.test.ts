@@ -308,3 +308,31 @@ await test('fromPort carries frames over a real MessageChannel with structured c
     await local.stop()
   }
 })
+
+await test('an undeliverable reply rejects the ask instead of hanging it', async () => {
+  const local = Actor.of(() => null, (message: string) => {
+    if (message === 'fn') {
+      return () => 1 // not structured-cloneable
+    }
+    if (message === 'bad-error') {
+      throw Object.assign(new Error('bad'), { code: () => 1 })
+    }
+    return message
+  }, { onError: () => 'resume' })
+  const { port1, port2 } = new MessageChannel()
+  try {
+    const stop = Remote.serve(local, Remote.fromPort(port1))
+    const remote = new Remote.RemoteActor<string, unknown>(Remote.fromPort(port2))
+    await assert.rejects(remote.ask('fn'), (error: unknown) =>
+      error instanceof Remote.RemoteError && /DataCloneError|could not be cloned/.test(`${error.remote?.name} ${error.message}`))
+    await assert.rejects(remote.ask('bad-error'), (error: unknown) => error instanceof Remote.RemoteError)
+    assert.equal(await remote.ask('ok'), 'ok', 'the actor keeps serving afterwards')
+    assert.equal(remote.pending, 0)
+    remote.close()
+    stop()
+  } finally {
+    port1.close()
+    port2.close()
+    await local.stop()
+  }
+})
