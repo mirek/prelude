@@ -19,3 +19,10 @@ await test('special timeout', async () => {
     ), /Actually reject\./)
 
 })
+
+await test('a synchronously throwing f rejects without firing g later', async () => {
+  let fired = false
+  await assert.rejects(F.timeout(20, () => { throw new Error('sync') }, () => { fired = true }), /sync/)
+  await F.sleep(40)
+  assert.equal(fired, false)
+})

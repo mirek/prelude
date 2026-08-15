@@ -8,7 +8,16 @@ const timeout =
           reject(err)
         }
       }, wait)
-      f()
+      let pending: Promise<T>
+      try {
+        pending = f()
+      } catch (err: unknown) {
+        // A synchronous throw must not leave the timer running (g would still fire later).
+        clearTimeout(id)
+        reject(err)
+        return
+      }
+      pending
         .finally(() => clearTimeout(id))
         .then(resolve)
         .catch(reject)
