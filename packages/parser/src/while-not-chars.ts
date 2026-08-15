@@ -1,5 +1,5 @@
 import type * as Parser from './parser.js'
-import * as Reader from './reader.js'
+import { peekCodePoint } from './chars.js'
 import * as Result from './result.js'
 
 /**
@@ -8,11 +8,13 @@ import * as Result from './result.js'
  * Parser must match at least `min` (default `0`) characters to succeed.
  */
 export function whileNotChars(chars: string, min = 0): Parser.t<string> {
+  const set = new Set(Array.from(chars))
   return function (reader) {
     let i = 0
-    let char = Reader.peek(reader, i)
-    while (char && !chars.includes(char)) {
-      char = Reader.peek(reader, ++i)
+    let char = peekCodePoint(reader, i)
+    while (char !== undefined && !set.has(char)) {
+      i += char.length
+      char = peekCodePoint(reader, i)
     }
     return i >= min ?
       Result.eat(reader, i) :

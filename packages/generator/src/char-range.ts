@@ -17,10 +17,11 @@
  */
 export const charRange =
   function* (firstChar: string, lastChar: string): Generator<string> {
-    const firstCharCode = firstChar.charCodeAt(0)
-    const lastCharCode = lastChar.charCodeAt(0)
-    for (let charCode = firstCharCode; charCode <= lastCharCode; charCode++) {
-      yield String.fromCharCode(charCode)
+    // Code points rather than code units, so astral ranges (emoji) yield whole characters.
+    const firstCodePoint = firstChar.codePointAt(0) as number
+    const lastCodePoint = lastChar.codePointAt(0) as number
+    for (let codePoint = firstCodePoint; codePoint <= lastCodePoint; codePoint++) {
+      yield String.fromCodePoint(codePoint)
     }
   }
 
