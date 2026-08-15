@@ -30,10 +30,15 @@
 export const generator =
   <T>(values: Iterator<T>): Generator<T> =>
     new Proxy(values, {
-      get(target, key) {
-        return key === Symbol.iterator ?
-          () => this :
-          target[key as keyof typeof target]
+      get(target, key, receiver) {
+        if (key === Symbol.iterator) {
+          return () => receiver
+        }
+        const value = Reflect.get(target, key)
+        // Native iterator methods (`next` of array/map iterators) require the real iterator as `this`.
+        return typeof value === 'function' ?
+          value.bind(target) :
+          value
       },
       has(target, key) {
         return key === Symbol.iterator || key in target
