@@ -51,7 +51,7 @@ const delete_ =
           case Cmp.eq:
             return i >= k ?
               [ z, k - i, mk(B, E, y, j, E) ] :
-              [ z, k - i, mk(B, mk(R, E, y, j, E), z, k - i, E) ]
+              [ undefined, k - i, mk(B, mk(R, E, y, j, E), z, k - i, E) ]
           case Cmp.dsc:
             return [ undefined, 0, _ ]
           default:
@@ -72,8 +72,11 @@ const delete_ =
             return [ v, n, rotate(mk(c, r, y, j, b)) ]
           }
           case Cmp.eq: {
+            if (j > i) {
+              return [ undefined, j - i, mk(c, a, y, j - i, b) ]
+            }
             const [ y_, j_, b_ ] = shift<T>(b)
-            return [ y, j_, rotate(mk(c, a, y_!, j_, b_)) ]
+            return [ y, j - i, rotate(mk(c, a, y_!, j_, b_)) ]
           }
           case Cmp.dsc: {
             const [ v, n, r ] = delete_(b, key, cmpB, i)

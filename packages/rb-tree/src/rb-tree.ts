@@ -1,4 +1,4 @@
-import { R, B, E, N, M } from './prelude.js'
+import { R, B, E, EE, N, M } from './prelude.js'
 import * as Cmp from '@prelude/cmp'
 import blacken from './blacken.js'
 import delete__ from './delete.js'
@@ -88,8 +88,8 @@ export const maybeShiftCount =
       return [ undefined, 0]
     }
     const [ x, i, a ] = shift_(tree.root)
-    tree.root = a
-    // ??
+    // Shifting the last (black) element yields the double-black nil sentinel; the root must be plain nil.
+    tree.root = a === EE ? E : a
     if (tree.root) {
       tree.root.c = B
     }
@@ -169,10 +169,16 @@ export const count =
     return n - x - y
   }
 
+/**
+ * Deletes `i` occurrences of the element with the provided `key`.
+ * @returns tuple of removed element (`undefined` when the key is missing or only some of its occurrences were removed)
+ * and remaining count (negative when more occurrences were requested than existed, `0` when the key was missing).
+ */
 const delete_ =
   <T, K>(tree: RbTree<T, K>, key: K, i = 1): [ undefined | T, number ] => {
     const [ v, n, r ] = delete__(redden(tree.root), tree.key, b => tree.cmp(key, b), i)
-    tree.root = r
+    // Deleting the last (black) element yields the double-black nil sentinel; the root must be plain nil.
+    tree.root = r === EE ? E : r
     return [ v, n ]
   }
 
