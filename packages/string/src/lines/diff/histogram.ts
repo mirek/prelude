@@ -31,7 +31,7 @@ function matchesOf(sourceLines: string[], targetLines: string[]): [number, numbe
  */
 function longestIncreasingByTarget(matches: [number, number][]): [number, number][] {
   const tails: number[] = [] // tails[k] = index into matches of the smallest target ending an increasing run of length k + 1
-  const previous: number[] = new Array<number>(matches.length).fill(-1)
+  const previous: number[] = Array.from({ length: matches.length }, () => -1)
   for (let i = 0; i < matches.length; i++) {
     const target = matches[i][1]
     let low = 0
