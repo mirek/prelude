@@ -56,20 +56,25 @@ export const ansi = {
 
 export const spinnerChars = '◐◓◑◒'
 
+/** Clamps progress into 0..1; NaN and other non-finite values render as no progress. */
+const clampProgress =
+  (progress: number) =>
+    Number.isFinite(progress) ? Math.min(1, Math.max(0, progress)) : 0
+
 export function bar(length: number, progress: number) {
   const chars = ' ▏▎▍▌▋▊▉█'
+  const k = Math.floor(clampProgress(progress) * length * 8)
   return Array
     .from({ length })
     .map((_, i) => {
       const j = i * 8
-      const k = Math.floor(progress * length * 8)
       return chars[k <= j ? 0 : k >= (j + 8) ? 8 : k - j]
     })
     .join('')
 }
 
 export function percentage(progress: number) {
-  return (progress * 100).toFixed(1).padStart(5, ' ') + '%'
+  return (clampProgress(progress) * 100).toFixed(1).padStart(5, ' ') + '%'
 }
 
 export function progressBar(progress: number, text: string): string {
@@ -94,7 +99,8 @@ export class Progress {
   }
 
   text(index = 0) {
-    return this.#workers[index].text
+    // Consistent with update(): an unknown worker index is ignored rather than a TypeError.
+    return this.#workers[index]?.text ?? ''
   }
 
   update({ index = 0, progress, target, text }: Partial<{ index: number } & Worker>) {
