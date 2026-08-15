@@ -3,6 +3,8 @@ import between from './between.js'
 import charRange from './char-range.js'
 import either from './either.js'
 import join from './join.js'
+import lit from './lit.js'
+import ltrim from './ltrim.js'
 import jsonString from './rfc8259/string.js'
 import sep0 from './sep0.js'
 import star from './star.js'
@@ -20,8 +22,9 @@ export type t =
 export const lparen =
   trim()('(')
 
+/** Eats whitespace before `)` only: whitespace after it separates the list from a following element. */
 export const rparen =
-  trim()(')')
+  ltrim()(lit(')'))
 
 export const unquoted =
   join(star(charRange('09azAZ'), 1))
@@ -34,6 +37,6 @@ export function sexp(reader: Reader.t): Result.t<Sexp> {
 }
 
 export const parser =
-  P.parser(sexp)
+  P.parser(trim()(sexp))
 
 export default parser
