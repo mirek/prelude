@@ -25,7 +25,8 @@ import generator from './generator.js'
  */
 export const lift =
   <T>(values: Iterator<T> | Iterable<T>): Iterable<T> =>
-    Symbol.iterator in values ?
+    // Not `Symbol.iterator in values`: the `in` operator throws for primitives such as strings.
+    typeof (values as Partial<Iterable<T>>)[Symbol.iterator] === 'function' ?
       values as Iterable<T> :
       generator(values as Iterator<T>)
 

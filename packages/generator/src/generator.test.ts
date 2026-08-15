@@ -50,3 +50,8 @@ await test('forwards return to the wrapped iterator', () => {
   }
   assert.deepEqual(closed, [ 'closed' ])
 })
+
+await test('lift and of accept primitive strings', () => {
+  assert.deepEqual([ ...G.lift('abc') ], [ 'a', 'b', 'c' ])
+  assert.deepEqual([ ...G.of('ab') ], [ 'a', 'b' ])
+})

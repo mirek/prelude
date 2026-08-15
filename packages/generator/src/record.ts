@@ -38,7 +38,7 @@ const firstWins =
  */
 const lastWins =
   <T, K extends number | string | symbol>(result: Record<K, undefined | T>, value: T, key: K) => {
-    result[key] = value
+    Object.defineProperty(result, key, { value, enumerable: true, writable: true, configurable: true })
   }
 
 /**
@@ -75,7 +75,8 @@ export const record =
         if (Object.hasOwn(maplike, key)) {
           conflict(maplike, value, key)
         } else {
-          maplike[key] = value
+          // Plain assignment of '__proto__' would set the prototype instead of an own property.
+          Object.defineProperty(maplike, key, { value, enumerable: true, writable: true, configurable: true })
         }
       }
       return maplike

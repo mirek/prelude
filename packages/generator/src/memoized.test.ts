@@ -21,3 +21,14 @@ await test('memoized', () => {
   assert.deepEqual(G.array(g_()), expected)
   assert.deepEqual(generated, expected)
 })
+
+await test('a source that throws keeps throwing on later iterations', () => {
+  const source = function* () {
+    yield 1
+    throw new Error('source boom')
+  }
+  const cached = G.memoized(source())
+  assert.throws(() => [ ...cached() ], /source boom/)
+  assert.throws(() => [ ...cached() ], /source boom/)
+  assert.deepEqual(cached.values, [ 1 ])
+})
