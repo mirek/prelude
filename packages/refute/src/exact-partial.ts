@@ -30,7 +30,7 @@ const exactPartial =
 
       // Confirm exactness.
       for (const key of Object.keys(value)) {
-        if (key in kvs) {
+        if (Object.hasOwn(kvs, key)) {
           continue
         }
         return fail(value, `unexpected key ${key}`)

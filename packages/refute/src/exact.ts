@@ -25,7 +25,7 @@ const exact =
       // Confirm exactness.
       const keys = Object
         .keys(value as object)
-        .filter(_ => !(_ in kvs))
+        .filter(_ => !Object.hasOwn(kvs, _)) // `in` would accept inherited names such as `constructor`
       if (keys.length > 0) {
         const keys_ = keys.length === 1 ? 'key' : 'keys'
         return fail(value, `has unexpected extra ${keys_} ${keys.map(String).join(', ')}`)
