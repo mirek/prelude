@@ -1,3 +1,4 @@
+import type * as Key from './key.js'
 import type * as Range from './range.js'
 import type * as RangeSet from './range-set.js'
 
@@ -12,21 +13,24 @@ import type * as RangeSet from './range-set.js'
  * @template V - The type of range values
  * @param xs - Object containing the first array of ranges
  * @param ys - Object containing the second array of ranges
+ * @param key - Key operations used to order range starts
  * @yields Ranges from both arrays in sorted order by start position
  */
 export const overBoth = function* <K, V>(
   { ranges: xs }: Pick<RangeSet.T<K, V>, 'ranges'>,
-  { ranges: ys }: Pick<RangeSet.T<K, V>, 'ranges'>
+  { ranges: ys }: Pick<RangeSet.T<K, V>, 'ranges'>,
+  key: Pick<Key.T<K>, 'cmp'>
 ): Generator<Range.T<K, V>> {
   let i = 0
   let j = 0
   while (i < xs.length && j < ys.length) {
     const x = xs[i]
     const y = ys[j]
-    if (x.start < y.start) {
+    const order = key.cmp(x.start, y.start)
+    if (order < 0) {
       yield x
       i++
-    } else if (x.start > y.start) {
+    } else if (order > 0) {
       yield y
       j++
     } else {
