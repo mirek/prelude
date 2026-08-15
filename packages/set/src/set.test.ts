@@ -62,3 +62,13 @@ await test('disjoint', () => {
     S.of([ 6, 0 ])
   ), true)
 })
+
+await test('range rejects non-positive steps instead of running away', () => {
+  for (const step of [ 0, -1, NaN ]) {
+    assert.throws(() => S.range(0, 5, step), RangeError)
+    assert.throws(() => S.range1(0, 5, step), RangeError)
+  }
+  assert.deepEqual([ ...S.range(0, 5, 2) ], [ 0, 2, 4 ])
+  assert.deepEqual([ ...S.range1(0, 5, 2) ], [ 0, 2, 4 ])
+  assert.deepEqual([ ...S.range(5, 0) ], [ 0, 1, 2, 3, 4 ])
+})
