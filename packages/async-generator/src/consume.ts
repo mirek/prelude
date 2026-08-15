@@ -60,8 +60,12 @@ export function consume<T>(
 ): Consumer<T, void> {
   return async function (values) {
     let index = 0
+    // Share one iterator between workers; iterating `values` per worker would replay
+    // re-iterable async iterables `concurrency` times.
+    const iterator = values[Symbol.asyncIterator]()
+    const shared: AsyncIterable<T> = { [Symbol.asyncIterator]: () => iterator }
     await Promise.all(Array.from({ length: concurrency }, async (_, worker) => {
-      for await (const value of values) {
+      for await (const value of shared) {
         if (callback) {
           await Promise.resolve(callback(value, index++, worker))
         }
