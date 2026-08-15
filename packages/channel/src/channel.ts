@@ -65,10 +65,10 @@ export class Channel<T> implements AsyncIterableIterator<T> {
   #failure: undefined | { error: unknown }
 
   constructor(cap = 0) {
-    // A negative or non-integer capacity (NaN, 1.5, Infinity) makes the buffer bookkeeping
-    // misbehave: writes hang or throw deep inside consume().
-    if (!Number.isSafeInteger(cap) || cap < 0) {
-      throw new RangeError(`Expected capacity to be a non-negative integer, got ${cap}.`)
+    // A negative or non-integer capacity (NaN, 1.5) makes the buffer bookkeeping misbehave:
+    // writes hang or throw deep inside consume(). Infinity means unbounded.
+    if (cap !== Infinity && (!Number.isSafeInteger(cap) || cap < 0)) {
+      throw new RangeError(`Expected capacity to be a non-negative integer or Infinity, got ${cap}.`)
     }
     this.#cap = cap
     this.#doneWriting = false
