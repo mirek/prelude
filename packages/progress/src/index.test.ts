@@ -72,3 +72,20 @@ await test('animation should converge to exact target', async () => {
   const last = percentages[percentages.length - 1]
   assert.equal(last, 100.0, `Expected final frame to be 100.0% but got ${last}%`)
 })
+
+await test('non-finite or out-of-range progress renders as an empty/full bar instead of garbage', () => {
+  assert.equal(Progress.bar(4, NaN), '    ')
+  assert.equal(Progress.bar(4, NaN).length, 4)
+  assert.equal(Progress.percentage(NaN), '  0.0%')
+  assert.equal(Progress.bar(4, 2), '████')
+  assert.equal(Progress.percentage(1.5), '100.0%')
+  assert.equal(Progress.bar(4, -1), '    ')
+  assert.equal(Progress.bar(4, 0.5), '██  ')
+})
+
+await test('text() of an unknown worker index is empty', () => {
+  const progress = Progress.of(2)
+  progress.update({ index: 1, text: 'b' })
+  assert.equal(progress.text(1), 'b')
+  assert.equal(progress.text(5), '')
+})
