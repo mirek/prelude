@@ -54,3 +54,16 @@ await test('convoluted date', () => {
   assert.deepEqual(P.parse(dd2, '01'), 1)
   assert.deepEqual(P.parse(p, '20210501'), [ 2021, 4, 1 ])
 })
+
+await test('a group that did not participate is a parse failure, a missing group is an error', () => {
+  const second = P.regexp(/(a)|(b)/, 2)
+  assert.equal(P.Result.failed(second(P.Reader.of('a'))), true)
+  assert.deepEqual(P.parse(second, 'b'), 'b')
+  const named = P.regexp(/(?<x>a)|(?<y>b)/, 'y')
+  assert.equal(P.Result.failed(named(P.Reader.of('a'))), true)
+  assert.deepEqual(P.parse(named, 'b'), 'b')
+  assert.throws(() => P.regexp(/(a)/, 3)(P.Reader.of('a')), /invalid value group 3/)
+  assert.throws(() => P.regexp(/(?<x>a)/, 'nope')(P.Reader.of('a')), /invalid value group nope/)
+  // Failing on a non-participating group lets alternatives take over.
+  assert.deepEqual(P.parse(P.first(second, P.regexp(/(a)|(b)/, 1)), 'a'), 'a')
+})

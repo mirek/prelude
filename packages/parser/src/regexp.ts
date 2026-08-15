@@ -21,12 +21,25 @@ export function regexp(
     if (!match) {
       return Result.fail(reader, `regexp ${re} did not match`)
     }
+    // A group that does not exist is a programming error; one that exists but did not
+    // participate in this match (e.g. the other side of an alternation) is a parse failure.
+    const hasGroup =
+      (group: number | string) =>
+        typeof group === 'string' ?
+          match.groups !== undefined && group in match.groups :
+          group >= 0 && group < match.length
+    if (!hasGroup(valueGroup)) {
+      throw new Error(`invalid value group ${String(valueGroup)}`)
+    }
+    if (!hasGroup(advanceGroup)) {
+      throw new Error(`invalid advance group ${String(advanceGroup)}`)
+    }
     const valueString =
       typeof valueGroup === 'string' ?
         match.groups?.[valueGroup] :
         match[valueGroup]
     if (typeof valueString !== 'string') {
-      throw new Error('invalid value group')
+      return Result.fail(reader, `regexp ${re} matched but group ${String(valueGroup)} did not participate`)
     }
     const indices = match['indices'] as undefined | Indices
     if (!indices) {
@@ -37,7 +50,7 @@ export function regexp(
         indices.groups?.[advanceGroup] :
         indices[advanceGroup]
     if (!advanceIndices) {
-      throw new Error('invalid advance indices')
+      return Result.fail(reader, `regexp ${re} matched but group ${String(advanceGroup)} did not participate`)
     }
     return Result.ok(reader, valueString, advanceIndices[1] - reader.offset)
   }
