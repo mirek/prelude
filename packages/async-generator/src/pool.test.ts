@@ -102,3 +102,26 @@ await test('successful concurrent map and tap are unaffected', async () => {
 })
 
 process.off('unhandledRejection', onUnhandled)
+
+await test('a failing source still delivers the results already in flight', async () => {
+  const failingSlowly = async function* () {
+    yield 0
+    yield 1
+    yield 2
+    throw new Error('source boom')
+  }
+  for (const preserveOrder of [ true, false ]) {
+    const got: number[] = []
+    await assert.rejects((async () => {
+      for await (const value of G.map(async (v: number) => {
+        await new Promise(resolve => setTimeout(resolve, 5))
+        return v
+      }, { concurrency: 3, preserveOrder })(failingSlowly())) {
+        got.push(value)
+      }
+    })(), /source boom/)
+    assert.deepEqual(got.toSorted((a, b) => a - b), [ 0, 1, 2 ], `preserveOrder ${preserveOrder}`)
+  }
+  await settle()
+  assert.deepEqual(unhandled, [])
+})
