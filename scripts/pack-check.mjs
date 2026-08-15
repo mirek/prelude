@@ -11,6 +11,7 @@ import { createRequire } from 'node:module'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { readPackages, sortByDependencies } from './workspace.mjs'
 
 const require = createRequire(import.meta.url)
 const tsc = require.resolve('typescript/bin/tsc')
@@ -195,18 +196,15 @@ function findSubpath(packageName, manifest, files) {
   return file ? `${packageName}/${file.slice('mjs/'.length)}` : undefined
 }
 
-const packageDirectories = readdirSync(packages, { withFileTypes: true })
-  .filter(entry => entry.isDirectory())
-  .map(entry => path.join(packages, entry.name))
-  .filter(directory => existsSync(path.join(directory, 'package.json')))
-  .filter(directory => {
-    const manifest = JSON.parse(readFileSync(path.join(directory, 'package.json'), 'utf8'))
-    return manifest.private !== true && (
+// Dependency order: `prepack` builds each package against its siblings' built
+// declarations, so dependencies must be packed (and therefore built) first.
+const packageDirectories = sortByDependencies(readPackages())
+  .filter(({ directory, manifest }) =>
+    manifest.private !== true && (
       existsSync(path.join(directory, 'tsconfig.lib.json')) ||
       manifest.name === '@prelude/tsconfig'
-    )
-  })
-  .sort()
+    ))
+  .map(({ directory }) => directory)
 
 if (packageDirectories.length === 0) {
   throw new Error('No publishable packages found')
