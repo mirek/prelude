@@ -66,4 +66,28 @@ await test('error cause is encoded and decoded recursively', () => {
   assert.deepEqual(withMap.cause, new Map([ [ 'k', new Date(0) ] ]))
   const withoutCause = Json.parse(Json.stringify(new Error('plain'))) as Error
   assert.equal('cause' in withoutCause, false)
+
+await test('large Uint8Array values are encoded without overflowing the stack', () => {
+  const bytes = new Uint8Array(200_000)
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = i % 256
+  }
+  assert.deepEqual(Json.parse(Json.stringify(bytes)), bytes)
+  assert.deepEqual(Json.parse(Json.stringify(new Uint8Array(0))), new Uint8Array(0))
+})
+
+await test('map keys keep their types while string-keyed maps keep the object encoding', () => {
+  const map = new Map<unknown, unknown>([ [ 1, 'a' ], [ { x: 1 }, new Set([ 2 ]) ], [ new Date(0), 3n ] ])
+  assert.deepEqual(Json.parse(Json.stringify(map)), map)
+  assert.equal(Json.stringify(new Map([ [ 'k', 'v' ] ])), '{"^Map$":{"k":"v"}}')
+  assert.equal(Json.stringify(new Map<unknown, string>([ [ 'k', 'v' ], [ 1, 'w' ] ])), '{"^Map$":[["k","v"],[1,"w"]]}')
+  assert.deepEqual(Json.parse('{"^Map$":{"foo":"bar","n":{"^Set$":[1]}}}'), new Map<string, unknown>([ [ 'foo', 'bar' ], [ 'n', new Set([ 1 ]) ] ]))
+  assert.deepEqual(Json.parse(Json.stringify(new Map([ [ 1, 'a' ] ]))), new Map([ [ 1, 'a' ] ]))
+})
+
+await test('invalid dates round-trip', () => {
+  const decoded = Json.parse(Json.stringify({ d: new Date(NaN) })) as { d: Date }
+  assert.ok(decoded.d instanceof Date)
+  assert.ok(Number.isNaN(decoded.d.getTime()))
+  assert.deepEqual(Json.parse(Json.stringify(new Date(0))), new Date(0))
 })
