@@ -3,13 +3,25 @@ export interface Waiter {
   reject(err: unknown): void
 }
 
-export default class WaitGroup {
-  #counter = 0
-  #waiters: Waiter[] = []
+interface Failure {
+  error: unknown
+}
 
-  /** Creates new wait group with optional initial counter. */
+function assertDelta(value: number, name: string) {
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new RangeError(`${name} must be a non-negative safe integer.`)
+  }
+}
+
+export default class WaitGroup {
+  #counter: number
+  #waiters: Waiter[] = []
+  #failure?: Failure
+
+  /** Creates a reusable wait group with an optional non-negative counter. */
   constructor(counter = 0) {
-    this.add(counter)
+    assertDelta(counter, 'counter')
+    this.#counter = counter
   }
 
   /** Pops all waiters applying provided settle function. */
@@ -21,38 +33,76 @@ export default class WaitGroup {
     }
   }
 
-  /**
-   * Resolves waiters if counter is zero.
-   * @throws if counter is negative.
-   */
-  #maybeResolve() {
+  #throwIfFailed() {
+    if (this.#failure) {
+      throw this.#failure.error
+    }
+  }
+
+  #fail(error: unknown) {
+    if (this.#failure) {
+      return this.#failure.error
+    }
+    this.#failure = { error }
+    this.#settle(waiter => { waiter.reject(error) })
+    return error
+  }
+
+  #resolveIfZero() {
     if (this.#counter === 0) {
       this.#settle(waiter => { waiter.resolve() })
     }
-    if (this.#counter < 0) {
-      throw new Error('negative counter')
-    }
-  }
-
-  /** Adds positive or negative delta to the counter maybe settling waiters. */
-  add(delta = 1) {
-    this.#counter += delta
-    this.#maybeResolve()
-  }
-
-  /** Subtracts delta from the counter maybe settling waiters. */
-  done(delta = 1) {
-    this.#counter -= delta
-    this.#maybeResolve()
   }
 
   /**
-   * Waits for wait group to settle.
-   * Resolves if counter hits zero.
-   * Rejects if counter becomes negative.
-   * Rejects if rejection was explicitly invoked.
+   * Adds a non-negative safe-integer delta.
+   *
+   * A group can be reused by adding work after it reaches zero. A failed group
+   * is terminal and rethrows its original failure from every mutation.
+   */
+  add(delta = 1) {
+    this.#throwIfFailed()
+    assertDelta(delta, 'delta')
+
+    const counter = this.#counter + delta
+    if (!Number.isSafeInteger(counter)) {
+      const error = new RangeError('WaitGroup counter overflow.')
+      this.#fail(error)
+      throw error
+    }
+
+    this.#counter = counter
+    this.#resolveIfZero()
+  }
+
+  /**
+   * Completes a non-negative safe-integer amount of work.
+   *
+   * Underflow is rejected atomically: the previous counter is retained, all
+   * existing waiters reject, and the group enters a terminal failed state.
+   */
+  done(delta = 1) {
+    this.#throwIfFailed()
+    assertDelta(delta, 'delta')
+
+    if (delta > this.#counter) {
+      const error = new RangeError('WaitGroup counter underflow.')
+      this.#fail(error)
+      throw error
+    }
+
+    this.#counter -= delta
+    this.#resolveIfZero()
+  }
+
+  /**
+   * Waits for the counter to reach zero.
+   *
+   * Repeated waits at zero resolve immediately. Existing and future waits reject
+   * with the original error after underflow, overflow, or explicit rejection.
    */
   async wait() {
+    this.#throwIfFailed()
     if (this.#counter === 0) {
       return
     }
@@ -61,8 +111,11 @@ export default class WaitGroup {
     })
   }
 
-  /** Rejects all waiters. */
+  /**
+   * Transitions the group into a terminal failed state and rejects all waiters.
+   * Repeated rejection preserves the first error.
+   */
   reject(err: unknown) {
-    this.#settle(waiter => { waiter.reject(err) })
+    this.#fail(err)
   }
 }

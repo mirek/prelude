@@ -15,11 +15,4 @@ test:
 update:
 	pnpm npm-check --update --save-exact
 
-preversion: rebuild test
-
-postversion:
-	git push
-	git push --tags
-	pnpm publish --access public
-
 .PHONY: test

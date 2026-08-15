@@ -7,12 +7,21 @@
   "files": [
     "base.json",
     "isomorphic.json",
+    "isomorphic.d.ts",
     "backend.json",
     "javascript-backend.json",
-    "test.json",
-    "types/"
+    "test.json"
   ],
   "devDependencies": {
     "@types/node": "^25.6.0"
+  },
+  "exports": {
+    "./base.json": "./base.json",
+    "./isomorphic.json": "./isomorphic.json",
+    "./isomorphic.d.ts": "./isomorphic.d.ts",
+    "./backend.json": "./backend.json",
+    "./javascript-backend.json": "./javascript-backend.json",
+    "./test.json": "./test.json",
+    "./package.json": "./package.json"
   }
 }

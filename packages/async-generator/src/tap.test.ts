@@ -1,19 +1,43 @@
 import * as G from './index.js'
-import sleep from './sleep.js'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
-await test('concurrent', async () => {
-  let taps = 0
-  assert.deepEqual(await G.pipe(
-    G.ofInterval(100),
-    G.tap(async () => {
-      await sleep(Math.random() * 10) // NOSONAR
-      taps++
-    }, { concurrency: 10 }),
-    G.map(_ => _.index),
-    G.take(20),
+function deferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void
+  const promise = new Promise<T>(resolve_ => {
+    resolve = resolve_
+  })
+  return { promise, resolve }
+}
+
+await test('concurrent tap reaches the configured concurrency and settles', async () => {
+  const release = deferred<void>()
+  const saturated = deferred<void>()
+  const tapped: number[] = []
+  let active = 0
+  let maximumActive = 0
+
+  const result = G.pipe(
+    G.ofIterable(Array.from({ length: 20 }, (_, index) => index)),
+    G.tap(async value => {
+      active += 1
+      maximumActive = Math.max(maximumActive, active)
+      if (active === 3) {
+        saturated.resolve()
+      }
+      await release.promise
+      tapped.push(value)
+      active -= 1
+    }, { concurrency: 3 }),
     G.array
-  ), Array.from({ length: 20 }, (_, i) => i))
-  assert.equal(taps, 20)
+  )
+
+  await saturated.promise
+  assert.equal(active, 3)
+  assert.equal(maximumActive, 3)
+
+  release.resolve()
+  assert.deepEqual(await result, Array.from({ length: 20 }, (_, index) => index))
+  assert.deepEqual(tapped.toSorted((left, right) => left - right), Array.from({ length: 20 }, (_, index) => index))
+  assert.equal(active, 0)
 })

@@ -1,8 +1,12 @@
 import sendJson from './send-json.js'
-import type { Sendable } from './prelude.js'
+import type { Notification, Params, Sendable } from './prelude.js'
 
 const sendNotification =
-  (ws: Sendable, method: string, params: unknown): Promise<void> =>
-    sendJson(ws, { jsonrpc: '2.0', method, params: params ?? null })
+  (transport: Sendable, method: string, params?: Params): Promise<void> => {
+    const notification: Notification = params === undefined ?
+      { jsonrpc: '2.0', method } :
+      { jsonrpc: '2.0', method, params }
+    return sendJson(transport, notification)
+  }
 
 export default sendNotification

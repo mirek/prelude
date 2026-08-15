@@ -6,8 +6,7 @@
   "packageManager": "pnpm@10.6.3",
   "scripts": {
     "test": "make test",
-    "preversion": "make test",
-    "postversion": "make postversion"
+    "prepack": "node ../../scripts/build-package.mjs"
   },
   "keywords": [
     "prelude",
@@ -30,14 +29,24 @@
   "module": "./mjs/index.js",
   "exports": {
     ".": {
+      "types": "./mjs/index.d.ts",
       "import": "./mjs/index.js"
     },
     "./*.js": {
+      "types": "./mjs/*.d.ts",
       "import": "./mjs/*.js"
     }
   },
   "dependencies": {
     "@prelude/err": "workspace:*",
     "@prelude/log": "workspace:*"
-  }
+  },
+  "files": [
+    "mjs",
+    "Readme.md",
+    "README.md",
+    "License.md",
+    "LICENSE"
+  ],
+  "types": "./mjs/index.d.ts"
 }

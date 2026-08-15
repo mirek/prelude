@@ -8,13 +8,25 @@
   ],
   "scripts": {
     "lint": "oxlint --type-aware packages",
+    "typecheck": "node scripts/typecheck.mjs",
+    "test:check": "node scripts/check-tests.mjs",
     "test:r": "pnpm -r test",
-    "test": "tsx --test 'packages/*/src/**/*.test.ts'"
+    "test": "tsx --test 'packages/*/src/**/*.test.ts'",
+    "build": "node scripts/build.mjs",
+    "manifests:check": "node scripts/normalize-package-manifests.mjs --check",
+    "manifests:write": "node scripts/normalize-package-manifests.mjs --write",
+    "release-hooks:check": "node scripts/normalize-release-hooks.mjs --check",
+    "release-hooks:write": "node scripts/normalize-release-hooks.mjs --write",
+    "release:plan": "node scripts/release-plan.mjs",
+    "release:prepare": "node scripts/release-prepare.mjs",
+    "release:publish": "node scripts/release-publish.mjs",
+    "pack:check": "node scripts/pack-check.mjs",
+    "verify": "pnpm manifests:check && pnpm release-hooks:check && pnpm test:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm pack:check"
   },
   "keywords": [],
   "author": "",
   "license": "CC0-1.0",
-  "packageManager": "pnpm@10.31.0",
+  "packageManager": "pnpm@11.1.3",
   "devDependencies": {
     "@swc/core": "^1.15.24",
     "@tsconfig/node24": "^24.0.4",

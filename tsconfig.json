@@ -1,20 +1,3 @@
 {
-  "extends": "./packages/tsconfig/backend.json",
-  "compilerOptions": {
-    "noEmit": true,
-    "paths": {
-      "@prelude/*": ["./packages/*/src/index.ts"]
-    }
-  },
-  "include": [
-    "packages/*/src/**/*.ts"
-  ],
-  "exclude": [
-    "**/node_modules",
-    "**/mjs",
-    "**/dts",
-    "packages/docs/**",
-    "packages/graph/**",
-    "packages/*/src/**/*.test.ts"
-  ]
+  "files": []
 }

@@ -8,8 +8,7 @@
   },
   "scripts": {
     "test": "make test",
-    "preversion": "make preversion",
-    "postversion": "make postversion"
+    "prepack": "node ../../scripts/build-package.mjs"
   },
   "keywords": [
     "prelude",
@@ -29,14 +28,25 @@
   "module": "./mjs/index.js",
   "exports": {
     ".": {
+      "types": "./mjs/index.d.ts",
       "import": "./mjs/index.js"
     },
     "./*.js": {
+      "types": "./mjs/*.d.ts",
       "import": "./mjs/*.js"
     },
     "./*": {
+      "types": "./mjs/*.d.ts",
       "import": "./mjs/*.js"
     }
   },
-  "packageManager": "pnpm@10.6.5"
+  "packageManager": "pnpm@10.6.5",
+  "files": [
+    "mjs",
+    "Readme.md",
+    "README.md",
+    "License.md",
+    "LICENSE"
+  ],
+  "types": "./mjs/index.d.ts"
 }

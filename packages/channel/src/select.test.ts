@@ -1,4 +1,4 @@
-import { sleep, spawn } from './test.js'
+import { spawn } from './test.js'
 import * as Ch from './index.js'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
@@ -18,30 +18,34 @@ await test('simple', async () => {
   }
 })
 
-await test('select', async () => {
+await test('select drains both channels and settles every worker', async () => {
   const a = Ch.of<number>()
   const b = Ch.of<string>()
-  const results: string[] = []
+  const results: Array<number | string> = []
 
-  void spawn(3, async worker => {
+  const workers = spawn(3, async () => {
     for await (const value of Ch.select(a, b)) {
-      results.push(`${worker} ${value}`)
-      if (Math.random() > 0.5) {
-        await sleep(Math.round(Math.random() * 10))
-      }
+      results.push(value)
     }
   })
 
-  for (let i = 0; i < 100; i++) {
-    if (Math.random() > 0.5) {
-      a.writeIgnore(i)
-    } else {
-      b.writeIgnore(i.toString())
-    }
+  const writes: Promise<void>[] = []
+  for (let index = 0; index < 100; index += 1) {
+    writes.push(index % 2 === 0 ? a.write(index) : b.write(String(index)))
   }
+  await Promise.all(writes)
 
-  await sleep(3 * 1000)
+  a.closeWriting()
+  b.closeWriting()
 
-  assert.deepEqual(results.length, 100)
-
-}, 10_000)
+  const settlements = await workers
+  assert.ok(settlements.every(result => result.status === 'fulfilled'))
+  assert.equal(a.pendingReads, 0)
+  assert.equal(a.pendingWrites, 0)
+  assert.equal(b.pendingReads, 0)
+  assert.equal(b.pendingWrites, 0)
+  assert.deepEqual(
+    results.map(String).toSorted((left, right) => Number(left) - Number(right)),
+    Array.from({ length: 100 }, (_, index) => String(index))
+  )
+})

@@ -1,5 +1,5 @@
 {
-  "extends": "@prelude/tsconfig/backend.json",
+  "extends": "@prelude/tsconfig/workspace-backend.json",
   "include": [
     "src/**/*.ts"
   ],

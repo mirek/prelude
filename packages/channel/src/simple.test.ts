@@ -1,24 +1,26 @@
 import * as Ch from './index.js'
-import { sleep } from './test.js'
 import * as Cmp from '@prelude/cmp'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
 await test('simple', async () => {
-  const ch = Ch.of<number>()
+  const channel = Ch.of<number>()
   const timeline: unknown[] = []
 
-  void ch.write(3).then(() => timeline.push([ 'enqueued', 3 ]))
-  void ch.write(5).then(() => timeline.push([ 'enqueued', 5 ]))
-  void ch.write(7).then(() => timeline.push([ 'enqueued', 7 ]))
+  const writes = [ 3, 5, 7 ].map(value =>
+    channel.write(value).then(() => {
+      timeline.push([ 'enqueued', value ])
+    })
+  )
 
-  let i = 0
-  for await (const value of ch) {
+  let index = 0
+  for await (const value of channel) {
     timeline.push([ 'processed', value ])
-    if (++i === 3) {
+    if (++index === 3) {
       break
     }
   }
+  await Promise.all(writes)
 
   assert.deepEqual(timeline, [
     [ 'enqueued', 3 ],
@@ -28,49 +30,52 @@ await test('simple', async () => {
     [ 'enqueued', 7 ],
     [ 'processed', 7 ]
   ])
+  assert.equal(channel.pendingReads, 0)
+  assert.equal(channel.pendingWrites, 0)
 })
 
 await test('delayed receive', async () => {
   const delayedNumber =
     (value: number) => {
-      const ch = Ch.of<number>()
-      void Promise.resolve().then(() => ch.write(value))
-      return ch
+      const channel = Ch.of<number>()
+      const write = Promise.resolve().then(() => channel.write(value))
+      return { channel, write }
     }
 
   const a = delayedNumber(3)
   const b = delayedNumber(5)
 
-  assert.deepEqual(await a.read() + await b.read(), 8)
+  assert.deepEqual(await a.channel.read() + await b.channel.read(), 8)
+  await Promise.all([ a.write, b.write ])
 })
 
-await test('two delayed writes, two reads', async () => {
-  const a = Ch.of<number>()
-  // Use immediate writes instead of random delays to avoid timing issues
-  void Promise.resolve().then(() => a.write(3))
-  void Promise.resolve().then(() => a.write(5))
-  assert.deepEqual(await a.read() + await a.read(), 8)
+await test('two queued writes, two reads', async () => {
+  const channel = Ch.of<number>()
+  const writes = [ channel.write(3), channel.write(5) ]
+
+  assert.deepEqual(await channel.read() + await channel.read(), 8)
+  await Promise.all(writes)
+  assert.equal(channel.pendingWrites, 0)
 })
 
 await test('async iterable consumer', async () => {
-  const ch = Ch.of<number>()
-  // Use promise chain to ensure order without timing dependencies
-  void Promise.resolve()
-    .then(() => ch.write(3))
-    .then(() => ch.write(5))
+  const channel = Ch.of<number>()
+  const producer = Promise.resolve()
+    .then(() => channel.write(3))
+    .then(() => channel.write(5))
     .then(async () => {
-      await ch.write(7)
-      ch.closeWriting()
+      await channel.write(7)
+      channel.closeWriting()
     })
   const values: number[] = []
-  for await (const value of ch) {
+  for await (const value of channel) {
     values.push(value)
   }
+  await producer
   assert.deepEqual(values, [ 3, 5, 7 ])
 })
 
-await test('concurrent map', async () => {
-
+await test('concurrent map settles all workers without timers', async () => {
   type F<T, U> = (value: T, index: number, worker: number) => U | Promise<U>
 
   function unordered<T, U>(f: F<T, U>, concurrency: number) {
@@ -78,7 +83,7 @@ await test('concurrent map', async () => {
       let index = 0
       const input = Ch.ofIterable(values)
       const output = Ch.of<U>()
-      void Promise
+      const workers = Promise
         .allSettled(Array.from({ length: concurrency }, async (_, worker) => {
           for await (const value of input) {
             await output.write(await Promise.resolve(f(value, index++, worker)))
@@ -88,19 +93,17 @@ await test('concurrent map', async () => {
           output.closeWriting()
         })
       yield* output
+      assert.ok((await workers).every(result => result.status === 'fulfilled'))
     }
-  }
-
-  const f = async (value: number) => {
-    await sleep(10)
-    return value * 2
   }
 
   const values = [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
   const result: number[] = []
-  for await (const value of unordered(f, 3)(values)) {
+  for await (const value of unordered(async input => {
+    await Promise.resolve()
+    return input * 2
+  }, 3)(values)) {
     result.push(value)
   }
-  assert.deepEqual(result.toSorted(Cmp.number), values.map(v => v * 2))
-
+  assert.deepEqual(result.toSorted(Cmp.number), values.map(value => value * 2))
 })

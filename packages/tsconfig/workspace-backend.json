@@ -1,0 +1,8 @@
+{
+  "extends": "./backend.json",
+  "compilerOptions": {
+    "paths": {
+      "@prelude/*": ["../*/src/index.ts"]
+    }
+  }
+}

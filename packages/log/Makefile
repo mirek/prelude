@@ -18,9 +18,4 @@ update:
 prepack:
 	make test
 
-postversion:
-	@git push
-	@git push --tags
-	@pnpm publish --access public
-
 .PHONY: test
