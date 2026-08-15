@@ -15,17 +15,25 @@ export function pool<T, R>(
   concurrency: number,
   work: (value: T, worker: number) => Promise<void>
 ): void {
+  const workers = Array.from({ length: concurrency }, async (_, worker) => {
+    for await (const value of input) {
+      await work(value, worker)
+    }
+  })
   Promise
-    .all(Array.from({ length: concurrency }, async (_, worker) => {
-      for await (const value of input) {
-        await work(value, worker)
-      }
-    }))
+    .all(workers)
     .then(() => {
       if (!output.doneWriting) {
         output.closeWriting()
       }
     }, err => {
+      if (input.failed) {
+        // The source failed: values already handed to workers are still legitimate results
+        // (as with serial processing), so let in-flight work deliver before failing the output.
+        void Promise.allSettled(workers).then(() => output.fail(input.error))
+        return
+      }
+      // A worker failed: stop the others and fail fast.
       if (!input.doneWriting) {
         input.close(err)
       }
