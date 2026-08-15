@@ -70,8 +70,9 @@ export const record =
     (values: Iterable<T>) => {
       const maplike = {} as Record<K, undefined | T>
       for (const value of values) {
-        const key = keyOfValue(value);
-        if (maplike.hasOwnProperty(key)) {
+        const key = keyOfValue(value)
+        // Object.hasOwn: a key like 'hasOwnProperty' would otherwise shadow the method after being set.
+        if (Object.hasOwn(maplike, key)) {
           conflict(maplike, value, key)
         } else {
           maplike[key] = value

@@ -5,7 +5,8 @@ export const groupObject =
       const record = {} as Record<K, undefined | (T[])>
       for (const value of values) {
         const key = keyOfValue(value)
-        const recordValues = record[key]
+        // Keys such as 'constructor' resolve to Object.prototype members on a plain object; only own entries count.
+        const recordValues = Object.hasOwn(record, key) ? record[key] : undefined
         if (recordValues) {
           recordValues.push(value)
         } else {

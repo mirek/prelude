@@ -30,3 +30,10 @@ await test('on conflict last wins', () => {
     '3': 3
   })
 })
+
+await test('keys named after Object.prototype members are recorded like any other', () => {
+  assert.deepEqual(G.record((x: string) => x)([ 'hasOwnProperty', 'a' ]), { hasOwnProperty: 'hasOwnProperty', a: 'a' })
+  assert.deepEqual(G.record((x: string) => x)([ 'constructor', 'toString' ]), { constructor: 'constructor', toString: 'toString' })
+  assert.throws(() => G.record((x: string) => x)([ 'hasOwnProperty', 'hasOwnProperty' ]), /duplicate key hasOwnProperty/)
+  assert.deepEqual(G.record((x: string) => x, G.record.lastWins)([ 'valueOf', 'valueOf' ]), { valueOf: 'valueOf' })
+})
