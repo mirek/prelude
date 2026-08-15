@@ -60,3 +60,48 @@ await test('queue continues after rejection and drains cleanly', async () => {
   assert.deepEqual(started, [ 0, 1 ])
   assert.equal(queue.entries.length, 0)
 })
+
+await test('a long run of synchronously throwing entries settles without overflowing the stack', async () => {
+  const gate = deferred<void>()
+  const queue = Q.of((value: number) => {
+    if (value === 0) {
+      return gate.promise.then(() => 0)
+    }
+    throw new Error(`sync ${value}`)
+  })
+  const tasks = Array.from({ length: 20000 }, (_, value) => Q.push(queue, value))
+  gate.resolve()
+  assert.equal(await tasks[0], 0)
+  const settled = await Promise.allSettled(tasks.slice(1))
+  assert.ok(settled.every(result => result.status === 'rejected'))
+  assert.equal((settled.at(-1) as PromiseRejectedResult).reason.message, 'sync 19999')
+  assert.equal(queue.entries.length, 0)
+})
+
+await test('push after rejectAll waits for the in-flight entry to settle', async () => {
+  const gate = deferred<void>()
+  let running = 0
+  let maximumRunning = 0
+  const started: number[] = []
+  const queue = Q.of(async (value: number) => {
+    running += 1
+    maximumRunning = Math.max(maximumRunning, running)
+    started.push(value)
+    if (value === 0) {
+      await gate.promise
+    }
+    running -= 1
+    return value
+  })
+  const first = Q.push(queue, 0)
+  Q.rejectAll(queue, new Error('reset'))
+  await assert.rejects(first, /reset/)
+  const second = Q.push(queue, 1)
+  await Promise.resolve()
+  assert.deepEqual(started, [ 0 ])
+  gate.resolve()
+  assert.equal(await second, 1)
+  assert.equal(maximumRunning, 1)
+  assert.deepEqual(started, [ 0, 1 ])
+  assert.equal(queue.entries.length, 0)
+})

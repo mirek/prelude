@@ -8,5 +8,7 @@ export type Entry<Args, R> = {
 export type SerialQueue<Args extends unknown[], R> = {
   f: (...args: Args) => Promise<R>,
   entries: Entry<Args, R>[],
-  drained?: () => void
+  drained?: () => void,
+  /** Entry whose `f` is currently in flight, if any. */
+  running?: Entry<Args, R>
 }
