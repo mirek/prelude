@@ -28,15 +28,19 @@ export const zip =
     if (iterators.length === 0) {
       return
     }
-    while (true) {
-      const results = iterators.map(_ => _.next())
-      if (results.some(_ => _.done)) {
-        break
+    try {
+      while (true) {
+        const results = iterators.map(_ => _.next())
+        if (results.some(_ => _.done)) {
+          break
+        }
+        yield results.map(_ => _.value) as { [K in keyof Args]: Value<Args[K]> }
       }
-      yield results.map(_ => _.value) as { [K in keyof Args]: Value<Args[K]> }
-    }
-    for (const iterator of iterators) {
-      iterator.return?.()
+    } finally {
+      // Close every source whether we finished or the consumer stopped early.
+      for (const iterator of iterators) {
+        iterator.return?.()
+      }
     }
   }
 

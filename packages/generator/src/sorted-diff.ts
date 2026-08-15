@@ -26,31 +26,37 @@ export const sortedDiff =
     function* (lhsValues: Iterable<Lhs>): Generator<[lhs: undefined | Lhs, rhs: undefined | Rhs]> {
       const lhsIterator = lhsValues[Symbol.iterator]()
       const rhsIterator = rhsValues[Symbol.iterator]()
-      let lhsValue = lhsIterator.next()
-      let rhsValue = rhsIterator.next()
-      while (!lhsValue.done && !rhsValue.done) {
-        switch (cmp(lhsValue.value, rhsValue.value)) {
-          case Cmp.eq:
-            yield [lhsValue.value, rhsValue.value]
-            lhsValue = lhsIterator.next()
-            rhsValue = rhsIterator.next()
-            break
-          case direction:
-            yield [lhsValue.value, undefined]
-            lhsValue = lhsIterator.next()
-            break
-          default:
-            yield [undefined, rhsValue.value]
-            rhsValue = rhsIterator.next()
+      try {
+        let lhsValue = lhsIterator.next()
+        let rhsValue = rhsIterator.next()
+        while (!lhsValue.done && !rhsValue.done) {
+          switch (cmp(lhsValue.value, rhsValue.value)) {
+            case Cmp.eq:
+              yield [lhsValue.value, rhsValue.value]
+              lhsValue = lhsIterator.next()
+              rhsValue = rhsIterator.next()
+              break
+            case direction:
+              yield [lhsValue.value, undefined]
+              lhsValue = lhsIterator.next()
+              break
+            default:
+              yield [undefined, rhsValue.value]
+              rhsValue = rhsIterator.next()
+          }
         }
-      }
-      while (!lhsValue.done) {
-        yield [lhsValue.value, undefined]
-        lhsValue = lhsIterator.next()
-      }
-      while (!rhsValue.done) {
-        yield [undefined, rhsValue.value]
-        rhsValue = rhsIterator.next()
+        while (!lhsValue.done) {
+          yield [lhsValue.value, undefined]
+          lhsValue = lhsIterator.next()
+        }
+        while (!rhsValue.done) {
+          yield [undefined, rhsValue.value]
+          rhsValue = rhsIterator.next()
+        }
+      } finally {
+        // Close both sources whether we finished or the consumer stopped early.
+        lhsIterator.return?.()
+        rhsIterator.return?.()
       }
     }
 

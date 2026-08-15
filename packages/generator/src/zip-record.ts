@@ -27,15 +27,19 @@ export const zipRecord =
     if (iterators.length === 0) {
       return
     }
-    while (true) {
-      const results = iterators.map(_ => _.next())
-      if (results.some(_ => _.done)) {
-        break
+    try {
+      while (true) {
+        const results = iterators.map(_ => _.next())
+        if (results.some(_ => _.done)) {
+          break
+        }
+        yield Object.fromEntries(keys.map((_, i) => [ _, results[i].value ])) as { [K in keyof Arg]: Value<Arg[K]> }
       }
-      yield Object.fromEntries(keys.map((_, i) => [ _, results[i].value ])) as { [K in keyof Arg]: Value<Arg[K]> }
-    }
-    for (const iterator of iterators) {
-      iterator.return?.()
+    } finally {
+      // Close every source whether we finished or the consumer stopped early.
+      for (const iterator of iterators) {
+        iterator.return?.()
+      }
     }
   }
 

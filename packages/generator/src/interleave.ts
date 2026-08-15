@@ -31,17 +31,21 @@ export const interleave =
     if (iterators.length === 0) {
       return
     }
-    while (true) {
-      const results = iterators.map(_ => _.next())
-      if (results.some(_ => _.done)) {
-        break
+    try {
+      while (true) {
+        const results = iterators.map(_ => _.next())
+        if (results.some(_ => _.done)) {
+          break
+        }
+        for (const result of results) {
+          yield result.value
+        }
       }
-      for (const result of results) {
-        yield result.value
+    } finally {
+      // Close every source whether we finished or the consumer stopped early.
+      for (const iterator of iterators) {
+        iterator.return?.()
       }
-    }
-    for (const iterator of iterators) {
-      iterator.return?.()
     }
   }
 

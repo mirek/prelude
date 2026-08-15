@@ -29,16 +29,20 @@ export const pair =
     function* (lhsIterable: Iterable<A>): Generator<[ A, B ]> {
       const lhsIterator = lhsIterable[Symbol.iterator]()
       const rhsIterator = rhsIterable[Symbol.iterator]()
-      while (true) {
-        const lhsResult = lhsIterator.next()
-        const rhsResult = rhsIterator.next()
-        if (lhsResult.done || rhsResult.done) {
-          break
+      try {
+        while (true) {
+          const lhsResult = lhsIterator.next()
+          const rhsResult = rhsIterator.next()
+          if (lhsResult.done || rhsResult.done) {
+            break
+          }
+          yield [ lhsResult.value, rhsResult.value ]
         }
-        yield [ lhsResult.value, rhsResult.value ]
+      } finally {
+        // Close both sources whether we finished or the consumer stopped early.
+        lhsIterator.return?.()
+        rhsIterator.return?.()
       }
-      lhsIterator.return?.()
-      rhsIterator.return?.()
     }
 
 export default pair
