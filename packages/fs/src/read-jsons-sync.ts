@@ -11,6 +11,11 @@ export const readJsonsSync =
       a = b + 1
       b = buffer.indexOf('\n', a)
     }
+    // A last record without a trailing newline is still a record.
+    const tail = buffer.subarray(a).toString()
+    if (tail.trim() !== '') {
+      result.push(JSON.parse(tail))
+    }
     return result
   }
 
