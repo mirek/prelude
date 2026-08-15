@@ -62,6 +62,7 @@ export class Channel<T> implements AsyncIterableIterator<T> {
   #reads: Read<T>[]
   #writes: Write<T>[]
   #doneWritingCallbacks: Done[]
+  #failure: undefined | { error: unknown }
 
   constructor(cap = 0) {
     this.#cap = cap
@@ -69,6 +70,7 @@ export class Channel<T> implements AsyncIterableIterator<T> {
     this.#reads = []
     this.#writes = []
     this.#doneWritingCallbacks = []
+    this.#failure = undefined
   }
 
   get cap() {
@@ -104,9 +106,19 @@ export class Channel<T> implements AsyncIterableIterator<T> {
     return this.#doneWriting && this.#writes.length === 0
   }
 
-  /** @returns  */
+  /** @returns `true` if channel has been closed for writing. */
   get doneWriting() {
     return this.#doneWriting
+  }
+
+  /** @returns `true` if channel has been failed through {@link fail}. */
+  get failed() {
+    return this.#failure !== undefined
+  }
+
+  /** @returns error passed to {@link fail}, `undefined` if channel has not failed. */
+  get error() {
+    return this.#failure?.error
   }
 
   /**
@@ -168,6 +180,23 @@ export class Channel<T> implements AsyncIterableIterator<T> {
   }
 
   /**
+   * Fails the channel: closes it for reading and writing, settles pending writes with `err`
+   * and rejects pending and subsequent reads with `err`.
+   *
+   * Unlike {@link close}, which completes readers normally, this propagates a producer error
+   * to consumers (`next()`, `read()`, `maybeRead()` and `for await` reject with `err`).
+   *
+   * No-op if the channel is already closed for writing.
+   */
+  fail(err: unknown) {
+    if (this.#doneWriting) {
+      return
+    }
+    this.#failure = { error: err }
+    this.close(err)
+  }
+
+  /**
    * Registers callback to be called when channel has done writing.
    * Callback is called immediatelly if channel is already closed for writing.
    * @returns undo function that unregisters callback.
@@ -188,12 +217,22 @@ export class Channel<T> implements AsyncIterableIterator<T> {
   }
 
   next(): Promise<IteratorResult<T>> {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
+      if (this.#failure) {
+        reject(this.#failure.error)
+        return
+      }
       if (this.done) {
         resolve({ done: true, value: undefined })
         return
       }
-      this.#reads.push(resolve)
+      this.#reads.push(result => {
+        if (result.done && this.#failure) {
+          reject(this.#failure.error)
+        } else {
+          resolve(result)
+        }
+      })
       if (this.#writes.length > 0) {
         this.#consume()
       }
