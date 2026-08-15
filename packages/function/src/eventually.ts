@@ -22,9 +22,13 @@ const eventually =
       if (predicate(r)) {
         return r
       }
+      // Only wait if another attempt will actually be made.
+      if (!retry(i, Date.now() - before)) {
+        break
+      }
       await sleep(delay)
     }
-    return reject(undefined)
+    return reject(new Error(`Expected predicate to hold within ${i} attempt(s).`))
   }
 
 export default eventually
