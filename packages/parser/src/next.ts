@@ -12,14 +12,17 @@ export function next<T extends Parser.Liftable>(parser: T): Parser.t<Parser.Pars
   const parser_ = lift(parser)
   return (reader: Reader.t) => {
     const reader_ = Reader.mutable(reader)
-    while (!Reader.end(reader_)) {
+    // Try every offset up to and including the end of input (parsers such as `end` match there).
+    while (true) {
       const result = parser_(reader_)
       if (!Result.failed(result)) {
         return result as Result.t<Parser.Parsed<T>>
       }
+      if (Reader.end(reader_)) {
+        return Result.fail(reader, 'next match not found')
+      }
       reader_.offset++
     }
-    return Result.fail(reader, 'next match not found')
   }
 }
 

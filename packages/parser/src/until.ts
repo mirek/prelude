@@ -9,19 +9,22 @@ export const until =
     const parser_ = lift(parser)
     return (reader: Reader.t) => {
       const reader_ = Reader.mutable(reader)
-      while (!Reader.end(reader_)) {
+      // Try every offset up to and including the end of input, so parsers that match there
+      // (`end`, `eol`, `maybe`) can terminate the head.
+      while (true) {
         const result = parser_(reader_)
-        if (Result.failed(result)) {
-          reader_.offset++
-          continue
+        if (!Result.failed(result)) {
+          const length = reader_.offset - reader.offset
+          return Result.ok(result.reader, {
+            head: Reader.slice(reader, 0, length),
+            tail: result.value as Parser.Parsed<T>
+          })
         }
-        const length = reader_.offset - reader.offset
-        return Result.ok(result.reader, {
-          head: Reader.slice(reader, 0, length),
-          tail: result.value as Parser.Parsed<T>
-        })
+        if (Reader.end(reader_)) {
+          return Result.fail(reader, 'reached end of input')
+        }
+        reader_.offset++
       }
-      return Result.fail(reader, 'reached end of input')
     }
   }
 
