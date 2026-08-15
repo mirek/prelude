@@ -33,3 +33,31 @@ await test('negative', () => {
   assert.deepEqual(rotate(-3), [ 1, 2, 3 ])
   assert.deepEqual(rotate(-4), [ 3, 1, 2 ])
 })
+
+await test('re-iterable inputs are rotated once', () => {
+  assert.deepEqual(G.pipe([ 1, 2, 3 ], G.rotate(1), G.array), [ 2, 3, 1 ])
+  assert.deepEqual(G.pipe([ 1, 2, 3, 4, 5 ], G.rotate(2), G.array), [ 3, 4, 5, 1, 2 ])
+  assert.deepEqual(G.pipe(new Set([ 1, 2, 3 ]), G.rotate(4), G.array), [ 2, 3, 1 ])
+  assert.deepEqual(G.pipe([ 1, 2, 3 ], G.rotate(0), G.array), [ 1, 2, 3 ])
+  assert.deepEqual(G.pipe([], G.rotate(2), G.array), [])
+})
+
+await test('documented example', () => {
+  assert.deepEqual(G.pipe(G.range(1, 5), G.rotate(2), G.array), [ 3, 4, 5, 1, 2 ])
+})
+
+await test('closes the source on early break', () => {
+  const closed: string[] = []
+  const source = function* () {
+    try {
+      yield* [ 1, 2, 3, 4 ]
+    } finally {
+      closed.push('closed')
+    }
+  }
+  for (const value of G.rotate(1)(source())) {
+    assert.equal(value, 2)
+    break
+  }
+  assert.deepEqual(closed, [ 'closed' ])
+})
