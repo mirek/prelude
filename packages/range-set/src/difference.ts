@@ -33,17 +33,17 @@ export const difference = <K, V>(
     let k = j
 
     // Process overlapping subtraction ranges
-    while (k < ys.length && ys[k].start < key.next(x.end)) {
+    while (k < ys.length && key.cmp(ys[k].start, key.next(x.end)) < 0) {
       const y = ys[k]
 
       // Skip if subtraction range is entirely before current range
-      if (key.next(y.end) <= x.start) {
+      if (key.cmp(key.next(y.end), x.start) <= 0) {
         k++
         continue
       }
 
       // Keep the part of x before y starts
-      if (x.start < y.start) {
+      if (key.cmp(x.start, y.start) < 0) {
         ranges.push({
           ...x,
           start: x.start,

@@ -15,14 +15,14 @@ const reduction = <K, V>(
   }
 
   // There is no overlap, both ranges stay as is.
-  if (key.next(r.end) < x.start) {
+  if (key.cmp(key.next(r.end), x.start) < 0) {
     rs.push(r)
     rs.push(x)
     return rs
   }
 
   // Ranges are touching but not overlapping.
-  if (key.next(r.end) === x.start) {
+  if (key.cmp(key.next(r.end), x.start) === 0) {
     if (value.eq(r.value, x.value)) {
       // Both ranges have the same values, merge into one.
       rs.push({ ...r, start: r.start, end: x.end })
@@ -35,7 +35,7 @@ const reduction = <K, V>(
   }
 
   // First part. Never mutate `r`: it may be one of the caller's input ranges.
-  if (x.start > r.start) {
+  if (key.cmp(x.start, r.start) > 0) {
     rs.push({ ...r, end: key.prev(x.start) })
     r = { ...r, start: x.start }
   }
@@ -48,12 +48,12 @@ const reduction = <K, V>(
   })
 
   // Remaining part covered by current range.
-  if (x.end > r.end) {
+  if (key.cmp(x.end, r.end) > 0) {
     rs.push({ ...x, start: key.next(r.end) })
   }
 
   // Remaining part covered by last range.
-  if (x.end < r.end) {
+  if (key.cmp(x.end, r.end) < 0) {
     rs.push({ ...r, start: key.next(x.end) })
   }
 
@@ -86,7 +86,7 @@ export const union = <K, V>(
   otherRangeSet: { ranges: Range.T<K, V>[] }
 ): RangeSet.T<K, V> => {
   let ranges: Range.T<K, V>[] = []
-  for (const range of overBoth(rangeSet, otherRangeSet)) {
+  for (const range of overBoth(rangeSet, otherRangeSet, rangeSet.key)) {
     ranges = reduction(rangeSet, ranges, range)
   }
   return { ...rangeSet, ranges }

@@ -34,7 +34,7 @@ export const intersection = <K, V>(
     const start = Key.max(key, x.start, y.start)
     const end = Key.min(key, xEndNext, yEndNext)
 
-    if (start < end) {
+    if (key.cmp(start, end) < 0) {
       ranges.push({
         start,
         end: rangeSet.key.prev(end),
@@ -42,7 +42,7 @@ export const intersection = <K, V>(
       })
     }
 
-    if (xEndNext < yEndNext) {
+    if (key.cmp(xEndNext, yEndNext) < 0) {
       i++
     } else {
       j++
