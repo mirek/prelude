@@ -27,5 +27,5 @@ export const string =
     if (format === 'local') {
       return S.maybeWithPrefix(node.name, prefix)
     }
-    return S.maybeWithPrefix(`${node.namespace}:${node.name}`)
+    return S.maybeWithPrefix(`${node.namespace}:${node.name}`, prefix)
   }
