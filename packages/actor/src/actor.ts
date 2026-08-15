@@ -47,6 +47,60 @@ function assertCap(cap: number) {
 }
 
 /**
+ * The handler-facing view of an actor. Lifecycle methods only *request* the
+ * change and return nothing: the caller is the very handler (or hook) that
+ * termination or restart has to wait for, so a promise here could never be
+ * awaited safely.
+ */
+class SelfHandle<M, S, R> implements Self<M, S> {
+
+  readonly #actor: Actor<M, S, R>
+
+  constructor(actor: Actor<M, S, R>) {
+    this.#actor = actor
+  }
+
+  get name(): string | undefined {
+    return this.#actor.name
+  }
+
+  get status(): Status {
+    return this.#actor.status
+  }
+
+  get state(): S {
+    return this.#actor.state
+  }
+
+  get restarts(): number {
+    return this.#actor.restarts
+  }
+
+  get pending(): number {
+    return this.#actor.pending
+  }
+
+  send(message: M): Promise<void> {
+    return this.#actor.send(message)
+  }
+
+  stop(): void {
+    void this.#actor.stop()
+  }
+
+  kill(reason?: unknown): void {
+    void this.#actor.kill(reason)
+  }
+
+  restart(): void {
+    // Rejections (terminated, or init failing) are already reported through
+    // `done`; nothing to surface here.
+    this.#actor.restart().catch(() => {})
+  }
+
+}
+
+/**
  * An actor owns a piece of state and processes messages from its mailbox one at
  * a time. It starts processing as soon as it is constructed.
  *
@@ -54,7 +108,7 @@ function assertCap(cap: number) {
  * @typeparam S - State type.
  * @typeparam R - Reply type returned by the handler and resolved by {@link ask}.
  */
-export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Self<M, S>, Supervised {
+export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Supervised {
 
   readonly name?: string
 
@@ -67,6 +121,7 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Self<M, S>,
   readonly #onDeadLetter?: Options<M, S, R>['onDeadLetter']
   readonly #inbox: Channel.Channel<Envelope<M, R>>
   readonly #done = deferred<void>()
+  readonly #self: Self<M, S>
 
   #state: S
   #status: Status = 'running'
@@ -87,7 +142,8 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Self<M, S>,
     this.#onError = options.onError
     this.#onDeadLetter = options.onDeadLetter
     this.#inbox = Channel.of<Envelope<M, R>>(cap)
-    this.#context = { self: this, signal: this.#controller.signal }
+    this.#self = this.#createSelf()
+    this.#context = { self: this.#self, signal: this.#controller.signal }
     this.#state = this.#init()
     // `done` rejects on failure; observe it here so an unawaited actor never
     // surfaces as an unhandled rejection.
@@ -150,7 +206,7 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Self<M, S>,
     const { promise, resolve, reject } = deferred<R>()
     if (this.#status !== 'running') {
       const reason = this.#stopReason()
-      this.#onDeadLetter?.(message, reason, this)
+      this.#onDeadLetter?.(message, reason, this.#self)
       reject(reason)
       return promise
     }
@@ -196,7 +252,7 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Self<M, S>,
     this.#inbox
       .write(envelope)
       .catch(reason => {
-        this.#onDeadLetter?.(message, reason, this)
+        this.#onDeadLetter?.(message, reason, this.#self)
         envelope.reject!(reason)
       })
     return promise
@@ -251,6 +307,10 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Self<M, S>,
     await this.stop()
   }
 
+  #createSelf(): Self<M, S> {
+    return new SelfHandle(this)
+  }
+
   #stopReason(): unknown {
     return this.#final?.reason ?? new ActorError('Actor stopped.', 'stopped')
   }
@@ -260,7 +320,7 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Self<M, S>,
   }
 
   #deadLetter(message: M, reason: unknown): Promise<never> {
-    this.#onDeadLetter?.(message, reason, this)
+    this.#onDeadLetter?.(message, reason, this.#self)
     return Promise.reject(reason)
   }
 
@@ -273,7 +333,7 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Self<M, S>,
       if (this.#final) {
         // Terminated between the mailbox handing the message over and us
         // getting to run: it is a dead letter, not work.
-        this.#onDeadLetter?.(next.value.message, this.#final.reason, this)
+        this.#onDeadLetter?.(next.value.message, this.#final.reason, this.#self)
         next.value.reject?.(this.#final.reason)
         continue
       }
@@ -356,7 +416,7 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Self<M, S>,
 
   async #decide(error: unknown, message: M): Promise<Directive> {
     let directive: Directive = this.#onError ?
-      await this.#onError(error, message, this) :
+      await this.#onError(error, message, this.#self) :
       'escalate'
     if (directive === 'escalate') {
       directive = this.supervisor ?
@@ -379,7 +439,7 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Self<M, S>,
     const controller = new AbortController()
     const state = this.#init()
     this.#controller = controller
-    this.#context = { self: this, signal: controller.signal }
+    this.#context = { self: this.#self, signal: controller.signal }
     this.#state = state
     this.#restarts += 1
     const waiters = this.#restartWaiters
@@ -406,7 +466,7 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Self<M, S>,
       this.#inbox.closeWriting(final.reason)
     }
     for (const envelope of this.#inbox.consumeWrites()) {
-      this.#onDeadLetter?.(envelope.message, final.reason, this)
+      this.#onDeadLetter?.(envelope.message, final.reason, this.#self)
       envelope.reject?.(final.reason)
     }
     // Wake the run loop if it is waiting for a message.

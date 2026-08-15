@@ -170,6 +170,25 @@ await test('close rejects pending asks and refuses further traffic', async () =>
   await local.stop()
 })
 
+await test('close honours falsy reasons and stays idempotent', async () => {
+  let posts = 0
+  const [ , client ] = Remote.pair()
+  const remote = new Remote.RemoteActor<string, string>({
+    post: () => { posts += 1 },
+    subscribe: listener => client.subscribe(listener)
+  })
+  const pending = remote.ask('x')
+  await tick()
+  remote.close(null)
+  remote.close(null)
+  assert.equal(remote.closed, true)
+  await assert.rejects(pending, (reason: unknown) => reason === null)
+  await assert.rejects(remote.send('y'), (reason: unknown) => reason === null)
+  await assert.rejects(remote.ask('z'), (reason: unknown) => reason === null)
+  assert.equal(posts, 1, 'nothing is posted after close')
+  assert.equal(remote.pending, 0)
+})
+
 await test('stopping the server stops answering', async () => {
   mock.timers.enable({ apis: [ 'setTimeout' ] })
   try {
