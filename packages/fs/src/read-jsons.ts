@@ -7,7 +7,11 @@ export const readJsons =
     let b = buffer.indexOf('\n')
     const result: T[] = []
     while (b !== -1) {
-      result.push(JSON.parse(buffer.subarray(a, b).toString()))
+      const line = buffer.subarray(a, b).toString()
+      // Blank lines (including a CR left by CRLF endings) separate records; they are not records.
+      if (line.trim() !== '') {
+        result.push(JSON.parse(line))
+      }
       a = b + 1
       b = buffer.indexOf('\n', a)
     }

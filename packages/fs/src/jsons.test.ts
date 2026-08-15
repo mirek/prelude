@@ -39,3 +39,10 @@ await test('readers accept a final record without a trailing newline and empty f
   assert.deepEqual(Fs.readJsonsSync(empty), [])
   assert.deepEqual(await Fs.readJsons(empty), [])
 }))
+
+await test('readers skip blank lines and CRLF endings between records', () => withDir(async dir => {
+  const path = Fs.Path.join(dir, 'blank.jsonl')
+  Fs.writeStringSync(path, '{"a":1}\n\n{"b":2}\r\n   \n{"c":3}\n')
+  assert.deepEqual(Fs.readJsonsSync(path), records)
+  assert.deepEqual(await Fs.readJsons(path), records)
+}))
