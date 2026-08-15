@@ -150,7 +150,8 @@ async function processRequest(request: Request, options: HandleOptions): Promise
 
   try {
     const result = await options.call(request.method, request.params, request)
-    return { jsonrpc: '2.0', id: request.id, result }
+    // JSON drops undefined members and a response must carry `result` (or `error`); use null like sendResult.
+    return { jsonrpc: '2.0', id: request.id, result: result === undefined ? null : result }
   } catch (error: unknown) {
     return errorResponse(request.id, error)
   }
