@@ -15,3 +15,9 @@ await test('basic', () => {
 await test('quoted', () => {
   assert.deepEqual(Rfc4180.parse('"a""b\nc"'), [ [ 'a"b\nc' ] ])
 })
+
+await test('leading spaces are part of the first field', () => {
+  assert.deepEqual(Rfc4180.parse(' a,b'), [ [ ' a', 'b' ] ])
+  assert.deepEqual(Rfc4180.parse('a,b '), [ [ 'a', 'b ' ] ])
+  assert.deepEqual(Rfc4180.parse('  x'), [ [ '  x' ] ])
+})
