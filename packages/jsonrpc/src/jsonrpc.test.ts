@@ -49,7 +49,7 @@ class MockAbortSignal implements Jsonrpc.AbortSignalLike {
   abort(reason: unknown) {
     this.aborted = true
     this.reason = reason
-    for (const listener of [ ...this.listeners ]) {
+    for (const listener of this.listeners) {
       listener()
     }
   }

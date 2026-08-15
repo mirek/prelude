@@ -13,7 +13,8 @@ const precedence = [
   '1.0.0'
 ]
 
-const sign = (value: number) => Math.sign(value)
+// `+ 0` folds -0 into 0: strict assertions use Object.is, and -sign(0) is -0.
+const sign = (value: number) => Math.sign(value) + 0
 
 await test('matches the SemVer 2.0 precedence example', () => {
   assert.deepEqual(precedence.toReversed().sort(Semver.stringCmp), precedence)
@@ -60,7 +61,7 @@ await test('parsed and string comparators obey comparator laws', () => {
       const parsedResult = Semver.cmp(Semver.parse(left), Semver.parse(right))
 
       assert.equal(sign(stringResult), sign(parsedResult))
-      assert.equal(sign(stringResult), -sign(Semver.stringCmp(right, left)))
+      assert.equal(sign(stringResult), sign(-Semver.stringCmp(right, left)))
     }
   }
 

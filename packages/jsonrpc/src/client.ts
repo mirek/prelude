@@ -214,7 +214,7 @@ export default class Client {
       return
     }
     this.#closed = true
-    for (const id of [ ...this.#pending.keys() ]) {
+    for (const id of this.#pending.keys()) {
       this.#reject(id, reason)
     }
   }
