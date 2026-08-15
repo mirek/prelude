@@ -242,6 +242,38 @@ await test('listeners added during emit run from the next emit', () => {
   assert.deepEqual(seen, [ 'first:a', 'first:b', 'added:b' ])
 })
 
+await test('an infinite timeout waits instead of timing out immediately', async () => {
+  const emitter = Emitter.of<TestEvents>()
+  const pending = emitter.eventually('message', Infinity)
+  await new Promise(resolve => setTimeout(resolve, 5))
+  emitter.emit('message', 'late')
+  assert.deepEqual(await pending, [ 'late' ])
+  let fired = false
+  const cancel = Emitter.after(Infinity, () => { fired = true })
+  await new Promise(resolve => setTimeout(resolve, 5))
+  assert.equal(fired, false)
+  cancel()
+})
+
+await test('a throwing predicate rejects eventuallyIf and cleans up', async () => {
+  const emitter = Emitter.of<TestEvents>()
+  const pending = emitter.eventuallyIf('message', () => { throw new Error('bad predicate') }, 1000)
+  emitter.emit('message', 'x')
+  await assert.rejects(pending, /bad predicate/)
+  assert.equal(emitter.hasListener('message'), false)
+})
+
+await test('off and hasListener accept a listener registered through once', () => {
+  const emitter = Emitter.of<TestEvents>()
+  const listener = mock.fn()
+  emitter.once('message', listener)
+  assert.equal(emitter.hasListener('message', listener), true)
+  assert.equal(emitter.off('message', listener), 1)
+  assert.equal(emitter.hasListener('message', listener), false)
+  emitter.emit('message', 'x')
+  assert.equal(listener.mock.callCount(), 0)
+})
+
 await test('eventually should reject on timeout', async () => {
   const emitter = Emitter.of<TestEvents>()
 

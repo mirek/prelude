@@ -16,6 +16,10 @@ export { log as afterLog }
  */
 export const after =
   (milliseconds: number, callback: () => void) => {
+    // setTimeout clamps delays beyond 2^31-1 ms (and Infinity) to ~1ms; a non-finite delay means never.
+    if (!Number.isFinite(milliseconds)) {
+      return () => {}
+    }
     let id: null | ReturnType<typeof setTimeout> = setTimeout(callback, milliseconds)
     return () => {
       if (id == null) {
