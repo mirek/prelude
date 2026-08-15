@@ -233,7 +233,8 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Supervised 
       reject: reason => settle(() => reject(reason))
     }
 
-    if (options.timeout !== undefined) {
+    // A non-finite timeout means "wait forever": setTimeout would clamp it to ~1ms and time out at once.
+    if (options.timeout !== undefined && Number.isFinite(options.timeout)) {
       const timer = setTimeout(
         () => envelope.reject!(new ActorError(`Ask timed out after ${options.timeout}ms.`, 'timeout')),
         options.timeout
