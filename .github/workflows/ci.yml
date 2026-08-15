@@ -17,6 +17,11 @@ jobs:
   verify:
     name: Verify (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        # GitHub's default shell runs `bash -e` without pipefail, so
+        # `pnpm X | tee X.log` reported success whatever X did.
+        shell: bash
     strategy:
       fail-fast: false
       matrix:

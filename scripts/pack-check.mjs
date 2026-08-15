@@ -259,7 +259,7 @@ try {
     dependencies,
     devDependencies: {
       '@types/node': rootManifest.devDependencies['@types/node']
-    }
+    },
   }
 
   writeFileSync(
@@ -270,6 +270,14 @@ try {
   writeFileSync(
     path.join(fixtureDirectory, 'package.json'),
     readFileSync(path.join(temporaryDirectory, 'fixture-package.json'))
+  )
+  // Tarballs depend on each other by version. Route those transitive
+  // dependencies to the local tarballs too, so the check exercises the
+  // artifacts being produced rather than whatever the registry holds.
+  // (pnpm ≥ 10 reads `overrides` from pnpm-workspace.yaml.)
+  writeFileSync(
+    path.join(fixtureDirectory, 'pnpm-workspace.yaml'),
+    `overrides:\n${Object.entries(dependencies).map(([name, target]) => `  '${name}': '${target}'\n`).join('')}`
   )
 
   runPnpm(['install', '--ignore-scripts', '--no-frozen-lockfile'], fixtureDirectory)
