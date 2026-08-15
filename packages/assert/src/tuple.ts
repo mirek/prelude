@@ -13,7 +13,8 @@ const tuple =
           value
         })
       }
-      for (let i = 0; i < value.length; i++) {
+      // Check every declared position: a missing trailing element is only fine if its assert accepts undefined.
+      for (let i = 0; i < as.length; i++) {
         try {
           as[i]!(value[i])
         } catch (err) {

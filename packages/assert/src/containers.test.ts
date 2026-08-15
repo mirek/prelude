@@ -97,3 +97,12 @@ await test('exact and exactPartial reject keys named after Object.prototype memb
   assert.throws(() => p({ hasOwnProperty: 1 }), /no extra keys/)
   assert.deepEqual(p({}), {})
 })
+
+await test('tuple rejects arrays missing required positions but allows optional tails', () => {
+  const a = $.tuple($.string, $.number)
+  assert.throws(() => a([ 'a' ]), /Expected \.1 to be a number/)
+  assert.throws(() => a([]), /Expected \.0 to be a string/)
+  const optional = $.tuple($.string, $.undefinedOr($.number))
+  assert.deepEqual(optional([ 'a' ]), [ 'a' ])
+  assert.deepEqual(optional([ 'a', 1 ]), [ 'a', 1 ])
+})

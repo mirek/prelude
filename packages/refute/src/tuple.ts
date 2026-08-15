@@ -15,9 +15,8 @@ const tuple =
         return fail(value, `expected array not longer than ${as.length}`)
       }
 
-      // Allow shorter arrays in case tail is optional.
-
-      for (let i = 0; i < value.length; i++) {
+      // Check every declared position: a shorter array is fine only where the tail refutes accept undefined.
+      for (let i = 0; i < as.length; i++) {
         const r = as[i](value[i])
         if (failed(r)) {
           return refail(r, `at index ${i}`)
