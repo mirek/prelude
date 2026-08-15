@@ -243,7 +243,7 @@ export class Channel<T> implements AsyncIterableIterator<T> {
         return
       }
       if (this.#cap === 0 && this.#reads.length > 0) {
-        this.consumeRead({ value })
+        this.consumeRead({ done: false, value })
         resolve(undefined)
         return
       } else if (this.#writes.length < this.#cap) {
@@ -380,7 +380,7 @@ export class Channel<T> implements AsyncIterableIterator<T> {
     } else if (this.#writes.length >= this.#cap) {
       this.#writes[this.#cap - 1].enqueued?.call(this)
     }
-    read.call(this, { value: write.value })
+    read.call(this, { done: false, value: write.value })
   }
 
 }

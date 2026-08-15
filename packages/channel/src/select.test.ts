@@ -49,3 +49,15 @@ await test('select drains both channels and settles every worker', async () => {
     Array.from({ length: 100 }, (_, index) => String(index))
   )
 })
+
+await test('select completes at once when a channel is already done', async () => {
+  const done = Ch.of<number>()
+  const idle = Ch.of<string>()
+  done.closeWriting()
+  assert.deepEqual(await Ch.selectNext(done, idle), { done: true, value: undefined })
+  assert.equal(idle.pendingReads, 0, 'no read is left registered on the other channel')
+  assert.deepEqual(
+    await Ch.selectNext(done.readAttempt(result => ({ done: result.done, value: `read:${String(result.done)}` }))),
+    { done: true, value: 'read:true' }
+  )
+})
