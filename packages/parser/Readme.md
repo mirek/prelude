@@ -33,11 +33,10 @@ import * as P from '@prelude/parser'
 ## Top level rules
 
 * char-range
-* char-ranges
 * either
-* enclosed
-* exhaustive
-* literal
+* between
+* parser
+* lit
 * map
 * maybe
 * pair
@@ -49,8 +48,8 @@ import * as P from '@prelude/parser'
 * star
 * times
 * trim
-* union
-* utf8
+* first
+* chars
 * ws0
 * ws1
 
@@ -124,15 +123,11 @@ import * as P from '@prelude/parser'
 
 * `either: <A, B>(a: Parser<A>, b: Parser<B>) => Parser<A | B>`
 
-* `exhaustive: <A>(a: Parser<A>) => (inputString: string) => A`
+* `parser: <A>(a: Parser<A>) => (inputString: string) => A`
 
   Returns top level string to result parser asserting all input has been parsed.
 
   Throws If parser fails or input is not fully exhausted.
-
-* `exhaustiveEmpty: (input: any) => Fail | Ok<any>`
-
-  Returns parser that matches empty string exhaustively.
 
 * `join: (a: Parser<string[]>, glue?: string) => Parser<string>`
 
@@ -140,7 +135,7 @@ import * as P from '@prelude/parser'
 
 * `Json`
 
-* `literal: (expected: string) => Parser<string>`
+* `lit: <T extends string>(...literals: T[]) => Parser<T>` (alias: `literal`)
 
 * `map: <A, B>(a: Parser<A>, f: (_: A) => B) => Parser<B>`
 
@@ -164,13 +159,13 @@ import * as P from '@prelude/parser'
 
 * `seq: <T extends Parser<unknown>[]>(...as: T) => Parser<{ [K in keyof T]: Parsed<T[K]>; }>`
 
-* `sorrounded: <A>(lhs: Parser<unknown>, rhs: Parser<unknown>, a: Parser<A>) => Parser<A>`
+* `between: <A>(lhs: Parser<unknown>, rhs: Parser<unknown>, a: Parser<A>) => Parser<A>`
 
-  Returns `a` parser sorrounded by `lhs` and `rhs`.
+  Returns `a` parser surrounded by `lhs` and `rhs`.
 
-* `sorrounded1: <A>(s: Parser<unknown>, a: Parser<A>) => Parser<A>`
+* `between1: <A>(s: Parser<unknown>, a: Parser<A>) => Parser<A>`
 
-  Returns `a` parser sorrounded by `s` at the beginning and at the end.
+  Returns `a` parser surrounded by `s` at the beginning and at the end.
 
 * `star: <A>(a: Parser<A>, min?: number) => Parser<A[]>`
 
@@ -180,13 +175,13 @@ import * as P from '@prelude/parser'
 
 * `trim: <A>(a: Parser<A>) => Parser<A>`
 
-* `union: <T extends Parser<unknown>[]>(...as: T) => T[number]`
+* `first: <T extends Parser<unknown>[]>(...as: T) => T[number]`
 
-* `utf8: (chars: string) => Parser<string>`
+* `chars: (chars: string) => Parser<string>`
 
   Returns parser matching one of provided chars.
 
-* `whileChar: (chars: string, min?: number) => Parser<string>`
+* `whileChars: (chars: string, min?: number) => Parser<string>`
 
   Matches any char listed in `chars` at least `min` (default `0`) times.
 

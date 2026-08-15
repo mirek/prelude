@@ -27,7 +27,7 @@ import sortedDiff from './sorted-diff.js'
  *
  * @example
  * // Compare two arrays
- * const differences = [...diff([4, 5, 6], Cmp.primitive)([1, 2, 3])]
+ * const differences = [...diff([4, 5, 6], Cmp.number)([1, 2, 3])]
  * // Result: [[1, undefined], [2, undefined], [3, undefined], [undefined, 4], [undefined, 5], [undefined, 6]]
  */
 export const diff =

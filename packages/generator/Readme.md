@@ -27,7 +27,7 @@ npm i -E @prelude/generator
 ```ts
 import * as G from '@prelude/generator'
 
-console.log(G.pipe1(
+console.log(G.pipe(
   G.charRange('a', 'c'),
   G.cycle,
   G.take(10),
