@@ -20,8 +20,8 @@ export const properDivisors =
     if (n <= 1) {
       return
     }
+    // Expanding prime factors produces divisors out of order (12 -> 1, 2, 4, 3, 6); collect and sort first.
     const divisors = [1]
-    yield 1
     for (const [ prime, exponent ] of primeFactors(n)) {
       const m = divisors.length
       let factor = 1
@@ -30,12 +30,13 @@ export const properDivisors =
         for (let i = 0; i < m; i++) {
           const divisor = divisors[i] * factor
           if (divisor < n) {
-            yield divisor
             divisors.push(divisor)
           }
         }
       }
     }
+    divisors.sort((a, b) => a - b)
+    yield* divisors
   }
 
 export default properDivisors
