@@ -1,116 +1,59 @@
 # Actor TODO
 
-Roadmap from the current minimal `of/run/send/stop` toward a production-ready
-actor. Phases are ordered by value-per-effort; each phase should leave the
-package shippable.
+Outstanding work only. The `of/run/send/stop` toy has been replaced by the
+`Actor` class (send/ask/stop/kill/restart, failure directives, bounded
+mailboxes, dead letters, abort signals), `@prelude/supervisor` (one-for-one /
+all-for-one / rest-for-one, restart limits, escalation) and
+`@prelude/remote-actor` (send/ask over any frame transport). Phases below are
+what is left, ordered by value-per-effort.
 
-## Phase 1 — Pragmatic core (next)
+## Phase 1 — Messaging patterns
 
-The smallest set that turns the toy into something usable in real code.
-
-- [ ] `ask(actor, message, { timeout, signal })` — request/reply with
-      correlation id, timeout, and `AbortSignal` support. Handler can return a
-      reply value; `ask` rejects on timeout or abort.
-- [ ] Error isolation + `onError` hook — handler throws no longer kill the
-      run loop. Default: log + dead-letter. Hook can override.
-- [ ] Bounded mailbox with overflow policy — `cap` + `overflow: 'block' |
-      'drop-newest' | 'drop-oldest' | 'fail'`. Default stays unbounded for
-      back-compat.
-- [ ] `AbortSignal` threaded into handler — second arg or context object, so
-      handlers can cooperatively cancel on stop/kill.
-- [ ] Dead-letter hook — `onDeadLetter(message, reason)` for dropped/failed
-      messages (overflow, post-stop sends, handler errors, ask timeouts).
-- [ ] Test probe — `probe()` helper that returns an actor recording every
-      message for assertions; virtual-clock friendly.
-
-Exit criteria: counter example still works unchanged; `ask` round-trip test;
-overflow policy test; handler-throws test doesn't crash the loop.
-
-## Phase 2 — Lifecycle & supervision
-
-Make failure recoverable rather than just survivable.
-
-- [ ] Explicit states: `idle | running | stopping | stopped | crashed`, with
-      idempotent transitions and a `stopped` promise.
-- [ ] `kill(actor)` — immediate stop, drops inbox to dead-letter, aborts
-      in-flight handler via signal.
-- [ ] Graceful `stop({ drainTimeout })` — drain then force-kill on timeout.
-- [ ] Restart strategies — `restart: 'never' | 'on-error' | { max, windowMs,
-      backoff }`. Fresh state via `init()` factory rather than captured value.
-- [ ] Supervisor actor — owns children, applies `one-for-one` /
-      `rest-for-one` / `all-for-one` strategies. Parent/child links.
-- [ ] Lifecycle hooks — `onStart`, `onStop`, `onCrash`, `onRestart`.
-
-Exit criteria: crash-restart test with backoff; supervisor test with
-one-for-one across 3 children.
-
-## Phase 3 — Messaging patterns
-
-Compose actors into systems without hand-rolling plumbing every time.
-
-- [ ] Actor refs — opaque `Ref<M>` handle (send/ask only) distinct from the
-      actor object (which exposes state + lifecycle). Prevents callers from
-      poking at `state` directly.
 - [ ] Registry — named actors, `lookup(name)`, scoped to a `System`.
 - [ ] Routers — `roundRobin`, `broadcast`, `consistentHash`, `random` over a
-      pool of child actors. Router is itself an actor-ref.
+      pool of child actors. Router is itself a `Ref`.
 - [ ] Pub/sub — topic bus with `subscribe` / `publish`. Built on routers.
 - [ ] Pipe / forward — `pipe(from, to)`, `forward(actor, message)` preserving
-      original sender for `ask`.
+      the original asker.
 - [ ] Become / behavior switching — handler can return a new handler to
       implement state machines without `switch`-on-phase.
 
-Exit criteria: round-robin router test; pub/sub fan-out test; ping-pong via
-`ask` + `forward`.
+## Phase 2 — Observability
 
-## Phase 4 — Observability
-
-You can't run what you can't see.
-
-- [ ] Actor id + optional name, propagated through hooks and errors.
-- [ ] Metrics surface — `queueDepth`, `processed`, `errors`,
-      `handlerLatencyMs` (histogram or just running stats). Pull-based, no
-      hard dep on a metrics lib.
+- [ ] Metrics surface — `processed`, `errors`, `handlerLatencyMs` (running
+      stats) alongside the existing `pending` and `restarts`.
 - [ ] `onMessage(before/after)` hook for tracing / structured logging.
-- [ ] `onIdle` — fires when mailbox drains; useful for tests and shutdown.
+- [ ] `onIdle` — fires when the mailbox drains; useful for tests and shutdown.
 - [ ] Dead-letter queue inspection — iterate or drain the DLQ.
 
-Exit criteria: metrics snapshot test; tracing hook fires in order
-before/after per message.
+## Phase 3 — Correctness & ergonomics
 
-## Phase 5 — Correctness & ergonomics
-
-Sharp edges that bite once real users show up.
-
-- [ ] Reentrancy guard — handler cannot be invoked concurrently on the same
-      actor; document FIFO-per-sender ordering.
 - [ ] Typed dispatch helper — `match<M>({ type1: fn, type2: fn })` with
       exhaustiveness check, so users don't hand-roll `switch` + `never`.
-- [ ] Immutable-state variant — `handler(state, msg) => newState | Promise<
-      newState>`, alongside the mutable variant. Pick per-actor.
-- [ ] Unhandled-message policy — `throw | log | deadLetter` (default
-      deadLetter).
+- [ ] Immutable-state variant — `receive(message, state) => newState`,
+      alongside the mutable variant. Pick per-actor.
 - [ ] Per-message timeout independent of `ask`.
+- [ ] Bounded mailbox overflow policies beyond blocking —
+      `'drop-newest' | 'drop-oldest' | 'fail'`.
+- [ ] Restart backoff in `@prelude/supervisor` (Erlang has none; Akka's
+      `BackoffSupervisor` is the reference).
 
-Exit criteria: exhaustiveness test (TS compile error on missing case);
-immutable counter example.
-
-## Phase 6 — Testing kit
-
-Make actor code as easy to test as pure functions.
+## Phase 4 — Testing kit
 
 - [ ] `TestKit.createProbe()` — probe actor with `expectMessage(pred,
       timeout)`, `expectNoMessage(windowMs)`, `receiveN(n)`.
-- [ ] Virtual clock — swap `setTimeout` / `Date.now` so timeout tests are
-      deterministic. Likely lives in a sibling package.
 - [ ] Deterministic scheduler — single-stepping the run loop for property
       tests.
-- [ ] Snapshot helpers for state + inbox.
 
-Exit criteria: probe-based test for the ping-pong example; timeout test
-runs in <5ms wall clock.
+## Phase 5 — Remote
 
-## Phase 7 — Persistence (optional, event-sourced actors)
+- [ ] Ask cancellation frames so a timed-out/aborted `ask` can be dropped from
+      the remote mailbox before it is processed.
+- [ ] Ready-made transports: WebSocket, Node `Worker` (`on('message')` rather
+      than `addEventListener`), `BroadcastChannel`.
+- [ ] Optional message codec (superstruct/zod-style validation at the boundary).
+
+## Phase 6 — Persistence (optional, event-sourced actors)
 
 Only if there's demand — this is a big surface.
 
@@ -121,12 +64,7 @@ Only if there's demand — this is a big surface.
 - [ ] In-memory + filesystem journal reference implementations (via
       `@prelude/fs`).
 
-Exit criteria: crash-and-recover test that replays events and matches
-pre-crash state.
-
 ## Non-goals (for now)
 
-- Distributed / remote actors (network transport, serialization, cluster
-  membership). Out of scope until the local story is solid.
-- Location transparency. Same reason.
+- Cluster membership, discovery, failure detection across nodes.
 - Custom scheduler beyond what the JS event loop provides.

@@ -1,11 +1,18 @@
-import * as Channel from '@prelude/channel'
-import type { Actor, Handler } from './prelude.js'
+import { Actor } from './actor.js'
+import type { Options, Receive } from './prelude.js'
 
-export const of =
-  <M, S>(state: S, handler: Handler<S, M>, cap = Infinity): Actor<M, S> => ({
-    inbox: Channel.of<M>(cap),
-    state,
-    handler
-  })
+/**
+ * Creates an actor.
+ * @param init - Creates the initial state; also called on restart.
+ * @param receive - Message handler; its return value is the reply for `ask`.
+ * @param options - Remaining {@link Options}.
+ */
+export function of<M, S = undefined, R = void>(
+  init: () => S,
+  receive: Receive<M, S, R>,
+  options: Omit<Options<M, S, R>, 'init' | 'receive'> = {}
+): Actor<M, S, R> {
+  return new Actor<M, S, R>({ ...options, init, receive })
+}
 
 export default of

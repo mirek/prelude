@@ -291,6 +291,16 @@ importers:
         specifier: workspace:*
         version: link:../tsconfig
 
+  packages/remote-actor:
+    dependencies:
+      '@prelude/actor':
+        specifier: workspace:*
+        version: link:../actor
+    devDependencies:
+      '@prelude/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+
   packages/remote-clock:
     devDependencies:
       '@prelude/tsconfig':
@@ -368,6 +378,16 @@ importers:
       '@babel/preset-typescript':
         specifier: ^7.28.5
         version: 7.28.5(@babel/core@7.29.0)
+      '@prelude/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+
+  packages/supervisor:
+    dependencies:
+      '@prelude/actor':
+        specifier: workspace:*
+        version: link:../actor
+    devDependencies:
       '@prelude/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig

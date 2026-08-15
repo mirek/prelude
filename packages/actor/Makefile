@@ -1,25 +1,15 @@
+test:
+	pnpm t
+
 clean:
-	@rm -Rf mjs test/*.js
+	rm -Rf mjs
 
 build-mjs:
-	@rm -Rf mjs
-	@pnpm tsc -p tsconfig.lib.json -d --sourceMap --outDir mjs --rootDir src
+	rm -Rf mjs
+	pnpm exec tsc -p tsconfig.lib.json -d --sourceMap --outDir mjs --rootDir src
 
 build: build-mjs
 
 rebuild: clean build
 
-test: rebuild
-	pnpm tsx --test src/**/*.test.ts
-
-update:
-	@pnpm npm-check --update --save-exact
-
-preversion: test rebuild
-
-postversion:
-	@git push
-	@git push --tags
-	@npm publish
-
-.PHONY: test
+.PHONY: test clean build build-mjs rebuild
