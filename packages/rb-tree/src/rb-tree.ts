@@ -226,14 +226,15 @@ export const assertGlobal =
 export const assertMonotonic =
   <T, K>(tree: RbTree<T, K>): void => {
     let k: undefined | K = undefined
+    let first = true
     for (const _ of each(tree)) {
       const k_ = tree.key(_)
-      if (k === undefined) {
-        k = k_
-      }
-      if (tree.cmp(k, k_) === Cmp.dsc) {
+      if (!first && tree.cmp(k as K, k_) === Cmp.dsc) {
         throw new Error('Monotonic invariant violated.')
       }
+      // Advance the running key; comparing everything against the first key missed [1, 3, 2].
+      k = k_
+      first = false
     }
   }
 
