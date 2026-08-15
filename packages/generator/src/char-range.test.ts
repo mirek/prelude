@@ -7,3 +7,7 @@ await test('charRange', () => {
     'a', 'b', 'c', 'd'
   ])
 })
+
+await test('astral ranges yield whole characters', () => {
+  assert.deepEqual([ ...G.charRange('😀', '😂') ], [ '😀', '😁', '😂' ])
+})
