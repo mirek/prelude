@@ -22,6 +22,14 @@ export const primeFactors =
       return []
     }
     for (const prime of primes()) {
+      // Once prime² exceeds the remaining value, that value is itself prime (or 1): stop sieving,
+      // otherwise a large prime factor would drag the shared prime sieve up to its own size.
+      if (prime * prime > value) {
+        if (value > 1) {
+          yield [ value, 1 ]
+        }
+        return
+      }
       let exponent = 0
       while (value % prime === 0) {
         value /= prime
@@ -31,7 +39,7 @@ export const primeFactors =
         yield [ prime, exponent ]
       }
       if (value <= 1) {
-        break
+        return
       }
     }
   }
