@@ -66,6 +66,7 @@ await test('error cause is encoded and decoded recursively', () => {
   assert.deepEqual(withMap.cause, new Map([ [ 'k', new Date(0) ] ]))
   const withoutCause = Json.parse(Json.stringify(new Error('plain'))) as Error
   assert.equal('cause' in withoutCause, false)
+})
 
 await test('large Uint8Array values are encoded without overflowing the stack', () => {
   const bytes = new Uint8Array(200_000)
