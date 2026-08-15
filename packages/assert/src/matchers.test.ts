@@ -54,3 +54,14 @@ await test('unique', () => {
   assert.deepEqual(a([1, 2, 3]), [1, 2, 3])
   assert.throws(() => a([1, 2, 1]), /Expected \.2 to be a unique value/)
 })
+
+await test('regexp with a global or sticky flag is stateless across calls', () => {
+  const global = $.regexp(/a/g)
+  for (let i = 0; i < 3; i++) {
+    assert.equal(global('a'), 'a')
+  }
+  assert.throws(() => global('b'), /matching/)
+  const sticky = $.regexp(/a/y)
+  assert.equal(sticky('a'), 'a')
+  assert.equal(sticky('a'), 'a')
+})
