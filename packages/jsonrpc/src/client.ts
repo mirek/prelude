@@ -74,10 +74,13 @@ export default class Client {
     this.close(error instanceof Error ? error : new TransportClosedError())
   }
 
+  readonly #options: ClientOptions
+
   constructor(
     readonly transport: EventTransport,
-    readonly #options: ClientOptions = {}
+    options: ClientOptions = {}
   ) {
+    this.#options = options
     transport.on('message', this.#messageListener)
     transport.on('close', this.#closeListener)
     transport.on('error', this.#errorListener)

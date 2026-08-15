@@ -55,6 +55,7 @@ make clean
 
 | Directory | Package | Description |
 | --- | --- | --- |
+| `packages/actor` | `@prelude/actor` | Actor module: stateful message processors with ask/reply, bounded mailboxes, failure directives and supervision hooks. |
 | `packages/array` | `@prelude/array` | Array module. |
 | `packages/assert` | `@prelude/assert` | Assert module. |
 | `packages/async-generator` | `@prelude/async-generator` | Async generator module. |
@@ -79,12 +80,14 @@ make clean
 | `packages/rb-tree` | `@prelude/rb-tree` | Red-black tree module. |
 | `packages/refute` | `@prelude/refute` | Refute module. |
 | `packages/remote-clock` | `@prelude/remote-clock` | Remote clock module. |
+| `packages/remote-actor` | `@prelude/remote-actor` | Remote actor module: send/ask to an actor over any message transport (MessagePort, workers, sockets). |
 | `packages/repl` | `@prelude/repl` | Repl package. |
 | `packages/semver` | `@prelude/semver` | Semver module. |
 | `packages/serial-queue` | `@prelude/serial-queue` | Serial queue module. |
 | `packages/set` | `@prelude/set` | Set module. |
 | `packages/sorted-array` | `@prelude/sorted-array` | Sorted array module. |
 | `packages/string` | `@prelude/string` | String module. |
+| `packages/supervisor` | `@prelude/supervisor` | Supervisor module: restart strategies (one-for-one, all-for-one, rest-for-one) and restart limits for @prelude/actor. |
 | `packages/tsconfig` | `@prelude/tsconfig` | Shared TypeScript configurations for the prelude monorepo. |
 | `packages/wait-group` | `@prelude/wait-group` | WaitGroup module. |
 | `packages/xml` | `@prelude/xml` | Xml module. |

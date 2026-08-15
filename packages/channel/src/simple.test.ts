@@ -99,7 +99,7 @@ await test('concurrent map settles all workers without timers', async () => {
 
   const values = [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
   const result: number[] = []
-  for await (const value of unordered(async input => {
+  for await (const value of unordered(async (input: number) => {
     await Promise.resolve()
     return input * 2
   }, 3)(values)) {

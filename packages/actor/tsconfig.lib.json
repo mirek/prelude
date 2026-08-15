@@ -1,0 +1,11 @@
+{
+  "extends": "@prelude/tsconfig/workspace-isomorphic.json",
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/test.ts",
+    "node_modules"
+  ]
+}

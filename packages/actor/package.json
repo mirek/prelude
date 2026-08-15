@@ -1,0 +1,57 @@
+{
+  "name": "@prelude/actor",
+  "version": "0.0.1",
+  "description": "Actor module: stateful message processors with ask/reply, bounded mailboxes, failure directives and supervision hooks.",
+  "type": "module",
+  "files": [
+    "mjs",
+    "Readme.md",
+    "README.md",
+    "License.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "pnpm tsx --test src/**/*.test.ts",
+    "prepack": "node ../../scripts/build-package.mjs"
+  },
+  "keywords": [
+    "prelude",
+    "std",
+    "lib",
+    "stdlib",
+    "library",
+    "actor",
+    "actors",
+    "actor-model",
+    "concurrency",
+    "async",
+    "asynchronous",
+    "message",
+    "mailbox",
+    "inbox",
+    "ask",
+    "supervision",
+    "channel",
+    "csp"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "@prelude/tsconfig": "workspace:*"
+  },
+  "dependencies": {
+    "@prelude/channel": "workspace:*"
+  },
+  "module": "./mjs/index.js",
+  "exports": {
+    ".": {
+      "types": "./mjs/index.d.ts",
+      "import": "./mjs/index.js"
+    },
+    "./*.js": {
+      "types": "./mjs/*.d.ts",
+      "import": "./mjs/*.js"
+    }
+  },
+  "types": "./mjs/index.d.ts"
+}

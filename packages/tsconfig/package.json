@@ -22,6 +22,20 @@
     "./backend.json": "./backend.json",
     "./javascript-backend.json": "./javascript-backend.json",
     "./test.json": "./test.json",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./workspace-isomorphic.json": "./workspace-isomorphic.json",
+    "./workspace-backend.json": "./workspace-backend.json",
+    "./workspace-test.json": "./workspace-test.json"
+  },
+  "publishConfig": {
+    "exports": {
+      "./base.json": "./base.json",
+      "./isomorphic.json": "./isomorphic.json",
+      "./isomorphic.d.ts": "./isomorphic.d.ts",
+      "./backend.json": "./backend.json",
+      "./javascript-backend.json": "./javascript-backend.json",
+      "./test.json": "./test.json",
+      "./package.json": "./package.json"
+    }
   }
 }

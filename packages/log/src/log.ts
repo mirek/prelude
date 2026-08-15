@@ -4,10 +4,12 @@ import * as Target from './target.js'
 /**
  * Default log level, determined from process.env.LOG or fallback to 'error'.
  */
+const environmentLevel =
+  (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.LOG
+
 const defaultLevel =
-  'process' in globalThis &&
-  (Severity.values as readonly unknown[]).includes(process?.env?.LOG) ?
-    process?.env?.LOG as Severity.t :
+  (Severity.values as readonly unknown[]).includes(environmentLevel) ?
+    environmentLevel as Severity.t :
     'error'
 
 /**

@@ -1,0 +1,53 @@
+{
+  "name": "@prelude/remote-actor",
+  "version": "0.0.1",
+  "description": "Remote actor module: send/ask to an actor over any message transport (MessagePort, workers, sockets).",
+  "type": "module",
+  "files": [
+    "mjs",
+    "Readme.md",
+    "README.md",
+    "License.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "pnpm tsx --test src/**/*.test.ts",
+    "prepack": "node ../../scripts/build-package.mjs"
+  },
+  "keywords": [
+    "prelude",
+    "std",
+    "lib",
+    "stdlib",
+    "library",
+    "actor",
+    "actors",
+    "actor-model",
+    "remote",
+    "rpc",
+    "transport",
+    "message-port",
+    "worker",
+    "location-transparency"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "@prelude/tsconfig": "workspace:*"
+  },
+  "dependencies": {
+    "@prelude/actor": "workspace:*"
+  },
+  "module": "./mjs/index.js",
+  "exports": {
+    ".": {
+      "types": "./mjs/index.d.ts",
+      "import": "./mjs/index.js"
+    },
+    "./*.js": {
+      "types": "./mjs/*.d.ts",
+      "import": "./mjs/*.js"
+    }
+  },
+  "types": "./mjs/index.d.ts"
+}
