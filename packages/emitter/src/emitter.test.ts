@@ -274,6 +274,14 @@ await test('off and hasListener accept a listener registered through once', () =
   assert.equal(listener.mock.callCount(), 0)
 })
 
+await test('a newListener listener is not notified about itself', () => {
+  const emitter = Emitter.of<TestEvents>()
+  const seen: unknown[] = []
+  emitter.on('newListener', name => seen.push(name))
+  emitter.on('message', () => {})
+  assert.deepEqual(seen, [ 'message' ])
+})
+
 await test('eventually should reject on timeout', async () => {
   const emitter = Emitter.of<TestEvents>()
 

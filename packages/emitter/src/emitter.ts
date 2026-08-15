@@ -156,8 +156,10 @@ export class Emitter<T extends Events> implements Interface<T> {
     if (listeners.has(listener as Listener)) {
       throw Err.error('duplicate', `Expected listener to not be already registered for ${String(name)} event.`)
     }
-    listeners.add(listener as Listener)
+    // Announce before adding (like Node's EventEmitter): a 'newListener' listener must not be
+    // told about its own registration.
     this.emit('newListener', name, listener as Listener)
+    listeners.add(listener as Listener)
     const n = listeners.size
     if (n > errorLogThreshold) {
       log.error(`Expected less than ${errorLogThreshold} listeners for ${String(name)} event, got ${n}.`)
