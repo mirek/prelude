@@ -88,6 +88,15 @@ await test('classifies requests without params and with string IDs', () => {
   }), 'error')
 })
 
+await test('a handler returning undefined produces a null result', async () => {
+  const response = await Jsonrpc.processMessage(
+    { jsonrpc: '2.0', id: 1, method: 'noop' },
+    { call: () => undefined }
+  )
+  assert.deepEqual(response, { jsonrpc: '2.0', id: 1, result: null })
+  assert.equal(Jsonrpc.isSuccessResponse(JSON.parse(JSON.stringify(response))), true)
+})
+
 await test('matches normative request and response examples', async () => {
   assert.deepEqual(await Jsonrpc.processMessage({
     jsonrpc: '2.0',
