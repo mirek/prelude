@@ -4,7 +4,7 @@ export const name = 'BigInt'
 
 export const encode =
   (value: t) =>
-    ({ '^bigint$': value.toString() })
+    ({ '^BigInt$': value.toString() })
 
 export const decode =
   (value: unknown): t => {

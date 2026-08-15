@@ -35,3 +35,9 @@ await test('non json serializable', () => {
   t(new Uint8Array([ 1, 2, 3 ]))
   t([ undefined, null, NaN, Infinity, -Infinity, -0, 0 ])
 })
+
+await test('bigint round-trips through the global coder', () => {
+  assert.equal(Json.parse(Json.stringify(1n)), 1n)
+  assert.deepEqual(Json.parse(Json.stringify({ a: 123456789012345678901234567890n })), { a: 123456789012345678901234567890n })
+  assert.deepEqual(Json.parse(Json.stringify([ -1n, 0n ])), [ -1n, 0n ])
+})

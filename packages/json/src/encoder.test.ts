@@ -10,7 +10,7 @@ Json.register(custom, Json.Codecs.Undefined)
 Json.register(custom, Json.Codecs.Number)
 
 await test('bigint', () => {
-  assert.equal(Json.stringify(1n), '{"^bigint$":"1"}')
+  assert.equal(Json.stringify(1n), '{"^BigInt$":"1"}')
 })
 
 await test('Date', () => {
