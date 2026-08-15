@@ -33,13 +33,21 @@ export const interleave =
     }
     try {
       while (true) {
-        const results = iterators.map(_ => _.next())
-        if (results.some(_ => _.done)) {
+        // Pull one source at a time and stop at the first exhausted one (see zip).
+        const values: unknown[] = []
+        let done = false
+        for (const iterator of iterators) {
+          const result = iterator.next()
+          if (result.done) {
+            done = true
+            break
+          }
+          values.push(result.value)
+        }
+        if (done) {
           break
         }
-        for (const result of results) {
-          yield result.value
-        }
+        yield* values as Value<Args[number]>[]
       }
     } finally {
       // Close every source whether we finished or the consumer stopped early.
