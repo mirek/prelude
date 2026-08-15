@@ -12,8 +12,11 @@
  * // Result: [[1, 2, 3], [4, 5, 6], [7]]
  */
 export const batch =
-  (n: number) =>
-    function* <T>(values: Iterable<T>): Generator<T[]> {
+  (n: number) => {
+    if (!Number.isSafeInteger(n) || n < 1) {
+      throw new RangeError(`Expected batch size to be a positive integer, got ${n}.`)
+    }
+    return function* <T>(values: Iterable<T>): Generator<T[]> {
       let range: T[] = []
       for (const value of values) {
         if (range.push(value) >= n) {
@@ -25,5 +28,6 @@ export const batch =
         yield range
       }
     }
+  }
 
 export default batch

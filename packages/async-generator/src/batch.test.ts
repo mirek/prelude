@@ -31,5 +31,5 @@ await test('batch with single item batches', async () => {
 })
 
 await test('batch throws for invalid length', async () => {
-  assert.throws(() => G.batch(0), /Expected batch length to be at least 1/)
+  assert.throws(() => G.batch(0), /Expected batch length to be a positive integer/)
 })

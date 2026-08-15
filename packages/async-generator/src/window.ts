@@ -55,6 +55,9 @@
  * ```
  */
 export function window<T>(n: number, yieldsShorter = false) {
+  if (!Number.isSafeInteger(n) || n < 1) {
+    throw new RangeError(`Expected window size to be a positive integer, got ${n}.`)
+  }
   return async function* (values: AsyncIterable<T>): AsyncGenerator<T[]> {
     const range: T[] = []
     for await (const value of values) {

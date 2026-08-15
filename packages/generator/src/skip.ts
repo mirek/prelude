@@ -14,8 +14,11 @@
  * ```
  */
 export const skip =
-  <T>(n: number) =>
-    function* (values: Iterable<T>): Generator<T> {
+  <T>(n: number) => {
+    if (n !== Infinity && (!Number.isSafeInteger(n) || n < 0)) {
+      throw new RangeError(`Expected skip count to be a non-negative integer, got ${n}.`)
+    }
+    return function* (values: Iterable<T>): Generator<T> {
       let index = 0
       for (const value of values) {
         if (++index > n) {
@@ -23,5 +26,6 @@ export const skip =
         }
       }
     }
+  }
 
 export default skip

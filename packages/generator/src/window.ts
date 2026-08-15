@@ -23,8 +23,11 @@
  * ```
  */
 const window_ =
-  <T>(n: number, yieldShorter = false) =>
-    function* (values: Iterable<T>): Generator<T[]> {
+  <T>(n: number, yieldShorter = false) => {
+    if (!Number.isSafeInteger(n) || n < 1) {
+      throw new RangeError(`Expected window size to be a positive integer, got ${n}.`)
+    }
+    return function* (values: Iterable<T>): Generator<T[]> {
       const range: T[] = []
       for (const value of values) {
         switch (range.push(value)) {
@@ -38,6 +41,7 @@ const window_ =
         yield range
       }
     }
+  }
 
 export { window_ as window }
 

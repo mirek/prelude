@@ -15,8 +15,11 @@
  * ```
  */
 export const step =
-  <T>(modulo: number) =>
-    function* (values: Iterable<T>): Generator<T> {
+  <T>(modulo: number) => {
+    if (!Number.isSafeInteger(modulo) || modulo < 1) {
+      throw new RangeError(`Expected step to be a positive integer, got ${modulo}.`)
+    }
+    return function* (values: Iterable<T>): Generator<T> {
       let i = 0
       for (const value of values) {
         if (i === 0) {
@@ -27,5 +30,6 @@ export const step =
         }
       }
     }
+  }
 
 export default step

@@ -42,6 +42,9 @@
  * ```
  */
 export function skip<T>(n: number) {
+  if (n !== Infinity && (!Number.isSafeInteger(n) || n < 0)) {
+    throw new RangeError(`Expected skip count to be a non-negative integer, got ${n}.`)
+  }
   return async function* (values: AsyncIterable<T>): AsyncGenerator<T> {
     let index = 0
     for await (const value of values) {
