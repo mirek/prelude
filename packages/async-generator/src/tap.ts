@@ -1,4 +1,5 @@
 import * as Ch from '@prelude/channel'
+import assertConcurrency from './assert-concurrency.js'
 import pool from './pool.js'
 
 /**
@@ -86,6 +87,7 @@ export function tap<T>(
   f: (value: T, index: number, worker: number) => void | Promise<void>,
   { concurrency = 1 }: { concurrency?: number } = {}
 ) {
+  assertConcurrency(concurrency)
   return concurrency === 1 ?
     serialTap(f) :
     concurrentTap(f, concurrency)

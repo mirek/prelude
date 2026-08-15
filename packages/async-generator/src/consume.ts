@@ -1,4 +1,5 @@
 import type { Consumer } from './prelude.js'
+import assertConcurrency from './assert-concurrency.js'
 
 /**
  * Creates a consumer that processes all values from an async iterable without returning a result.
@@ -58,6 +59,7 @@ export function consume<T>(
   callback?: (value: T, index: number, worker: number) => unknown,
   { concurrency = 1 }: { concurrency?: number } = {}
 ): Consumer<T, void> {
+  assertConcurrency(concurrency)
   return async function (values) {
     let index = 0
     // Share one iterator between workers; iterating `values` per worker would replay
