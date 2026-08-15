@@ -16,9 +16,20 @@ export const hexdigit =
 export const escape =
   lit('\\')
 
+const escapes: Record<string, string> = {
+  '"': '"',
+  '\\': '\\',
+  '/': '/',
+  b: '\b',
+  f: '\f',
+  n: '\n',
+  r: '\r',
+  t: '\t'
+}
+
 export const escaped =
   right(escape, either(
-    chars('"\\/bfnrt'),
+    map(chars('"\\/bfnrt'), _ => escapes[_]),
     map(seq('u', join(times(4, hexdigit))), _ => String.fromCharCode(parseInt(_[1], 16)))
   ))
 
