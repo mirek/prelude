@@ -24,12 +24,12 @@ export default class WaitGroup {
     this.#counter = counter
   }
 
-  /** Pops all waiters applying provided settle function. */
+  /** Settles all waiters in arrival order (first to wait is first to be released). */
   #settle(f: (waiter: Waiter) => void) {
-    let waiter = this.#waiters.pop()
-    while (waiter) {
+    const waiters = this.#waiters
+    this.#waiters = []
+    for (const waiter of waiters) {
       f(waiter)
-      waiter = this.#waiters.pop()
     }
   }
 

@@ -99,3 +99,14 @@ await test('invalid deltas are rejected without changing a healthy group', async
   group.done()
   await waiting
 })
+
+await test('waiters are released in the order they started waiting', async () => {
+  const group = new WaitGroup(1)
+  const order: string[] = []
+  const a = group.wait().then(() => order.push('a'))
+  const b = group.wait().then(() => order.push('b'))
+  const c = group.wait().then(() => order.push('c'))
+  group.done()
+  await Promise.all([ a, b, c ])
+  assert.deepEqual(order, [ 'a', 'b', 'c' ])
+})
