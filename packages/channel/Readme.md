@@ -32,6 +32,11 @@ import * as Ch from '@prelude/channel'
 
 When a channel can contain `undefined`, `maybeRead()` cannot distinguish a queued `undefined` value from completion because both produce `undefined`. Use `next()` and inspect its `done` property when that distinction matters.
 
+## Failure
+
+- `fail(err)` closes the channel and rejects pending and subsequent reads with `err`; `failed` and `error` expose the state.
+- `ofIterable()` and `ofAsyncIterable()` fail their channel when the source throws, so consumers see the error instead of a silent completion.
+
 # License
 
 ```
