@@ -86,3 +86,14 @@ await test('exactPartial', () => {
   assert.deepEqual(a({ foo: 'a' }), { foo: 'a' })
   assert.throws(() => a({ foo: 'a', extra: 1 }), /no extra keys/)
 })
+
+await test('exact and exactPartial reject keys named after Object.prototype members', () => {
+  const a = $.exact({ a: $.number })
+  assert.throws(() => a({ a: 1, constructor: 'x' }), /no extra keys/)
+  assert.throws(() => a({ a: 1, toString: 2 }), /no extra keys/)
+  assert.deepEqual(a({ a: 1 }), { a: 1 })
+  const p = $.exactPartial({ a: $.number })
+  assert.throws(() => p({ valueOf: 1 }), /no extra keys/)
+  assert.throws(() => p({ hasOwnProperty: 1 }), /no extra keys/)
+  assert.deepEqual(p({}), {})
+})

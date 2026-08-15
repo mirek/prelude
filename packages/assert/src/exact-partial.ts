@@ -35,7 +35,8 @@ const exactPartial =
         }
       }
       for (const k in value) {
-        if (!(k in asserts)) {
+        // `in` would accept inherited names such as `constructor` or `toString` as declared keys.
+        if (!Object.hasOwn(asserts, k)) {
           throw new AssertionError({
             expected: 'no extra keys',
             value,
