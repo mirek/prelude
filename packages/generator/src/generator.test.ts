@@ -55,3 +55,18 @@ await test('lift and of accept primitive strings', () => {
   assert.deepEqual([ ...G.lift('abc') ], [ 'a', 'b', 'c' ])
   assert.deepEqual([ ...G.of('ab') ], [ 'a', 'b' ])
 })
+
+await test('return and throw exist on a wrapped plain iterator', () => {
+  let n = 0
+  const iter = { next: () => n < 2 ? { value: n++, done: false } : { value: undefined, done: true } }
+  const gen = G.generator(iter)
+  assert.deepEqual(gen.next(), { value: 0, done: false })
+  assert.deepEqual(gen.return(undefined), { done: true, value: undefined })
+  assert.throws(() => gen.throw(new Error('x')), /x/)
+  // for-of break calls return(): must not throw.
+  const iter2 = { next: () => ({ value: 1, done: false }) }
+  for (const value of G.generator(iter2)) {
+    assert.equal(value, 1)
+    break
+  }
+})

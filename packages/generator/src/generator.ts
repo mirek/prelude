@@ -35,13 +35,24 @@ export const generator =
           return () => receiver
         }
         const value = Reflect.get(target, key)
+        if (value === undefined) {
+          // Plain iterators may lack the optional protocol methods a Generator promises.
+          if (key === 'return') {
+            return (returnValue?: unknown) => ({ done: true, value: returnValue })
+          }
+          if (key === 'throw') {
+            return (error?: unknown) => {
+              throw error
+            }
+          }
+        }
         // Native iterator methods (`next` of array/map iterators) require the real iterator as `this`.
         return typeof value === 'function' ?
           value.bind(target) :
           value
       },
       has(target, key) {
-        return key === Symbol.iterator || key in target
+        return key === Symbol.iterator || key === 'return' || key === 'throw' || key in target
       }
     }) as Generator<T>
 
