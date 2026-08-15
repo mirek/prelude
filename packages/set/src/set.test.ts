@@ -72,3 +72,18 @@ await test('range rejects non-positive steps instead of running away', () => {
   assert.deepEqual([ ...S.range1(0, 5, 2) ], [ 0, 2, 4 ])
   assert.deepEqual([ ...S.range(5, 0) ], [ 0, 1, 2, 3, 4 ])
 })
+
+await test('range and range1 handle fractional steps without drift', () => {
+  assert.deepEqual([ ...S.range1(0, 0.3, 0.1) ], [ 0, 0.1, 0.2, 0.3 ])
+  assert.deepEqual([ ...S.range(0, 0.3, 0.1) ], [ 0, 0.1, 0.2 ])
+  assert.deepEqual([ ...S.range1(1, 1.3, 0.1) ], [ 1, 1.1, 1.2, 1.3 ])
+  assert.deepEqual([ ...S.range(0, 1, 0.25) ], [ 0, 0.25, 0.5, 0.75 ])
+  assert.deepEqual([ ...S.range1(0, 1, 0.25) ], [ 0, 0.25, 0.5, 0.75, 1 ])
+})
+
+await test('a step below the ulp of the start fails fast instead of stalling', () => {
+  // With `i += step` the value never changed and the loop never ended.
+  assert.throws(() => S.range(1e6, 1e6 + 1, 1e-12), RangeError)
+  assert.throws(() => S.range1(0, 1e9, 1), RangeError)
+  assert.equal(S.range(0, 1000).size, 1000)
+})
