@@ -65,3 +65,12 @@ await test('lhs, rhs having different type', () => {
   ])
 
 })
+
+await test('the returned function can be applied more than once', () => {
+  const d = G.diff([ 4, 5, 6 ], Cmp.number)
+  const first = [ ...d([ 1, 2, 3 ]) ]
+  const second = [ ...d([ 1, 2, 3 ]) ]
+  assert.deepEqual(first, second)
+  assert.equal(first.filter(([ , rhs ]) => rhs !== undefined).length, 3, 'rhs values are still there on the second run')
+  assert.deepEqual([ ...d([ 5 ]) ], [ [ undefined, 4 ], [ 5, 5 ], [ undefined, 6 ] ])
+})

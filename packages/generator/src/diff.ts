@@ -1,5 +1,4 @@
 import * as Cmp from '@prelude/cmp'
-import pipe from './pipe.js'
 import pipe0 from './pipe0.js'
 import sort from './sort.js'
 import sortedDiff from './sorted-diff.js'
@@ -53,11 +52,8 @@ export const diff =
       const rhsCmp =
         (a: Rhs, b: Rhs) =>
           directionCmp(comparableRhs(a), comparableRhs(b))
-      const rhsValues_ =
-        pipe(
-          rhsValues,
-          sort(rhsCmp)
-        )
+      // Materialise the sorted rhs: a one-shot generator would make the returned function single-use.
+      const rhsValues_ = Array.from(rhsValues).sort(rhsCmp)
       return diff(rhsValues_, cmp, { comparableLhs, comparableRhs, sortLhs, sortRhs: false, direction })
     }
     if (sortLhs) {
