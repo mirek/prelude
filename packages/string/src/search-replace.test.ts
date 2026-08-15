@@ -27,3 +27,10 @@ await test('searchReplace', () => {
   assert.deepEqual(S.searchReplace('hello\nworld', 'wrld', 'universe'), 'hello\nuniverse')
   fixture('search-replace.01')
 })
+
+await test('a search longer than the source replaces the best-effort region instead of the last line', () => {
+  assert.equal(S.searchReplace('a\nb', 'a\nb\nc', 'X'), 'X')
+  assert.equal(S.searchReplace('a', 'a\nb', 'X\nY'), 'X\nY')
+  assert.equal(S.Lines.similarIndexOf([ 'a', 'b' ], [ 'a', 'b', 'c' ]), 0)
+  assert.equal(S.Lines.similarIndexOf([ 'x', 'a', 'b' ], [ 'a', 'b' ]), 1)
+})

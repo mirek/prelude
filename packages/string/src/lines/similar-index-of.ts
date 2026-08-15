@@ -10,7 +10,8 @@ export function similarIndexOf(sourceLines: string[], searchLines: string[]): nu
   let bestDistance = Infinity
   let index = -1
 
-  const n = sourceLines.length - searchLines.length + 1
+  // A search longer than the source can still best match at index 0 (missing lines count as empty).
+  const n = Math.max(1, sourceLines.length - searchLines.length + 1)
   for (let i = 0; i < n; i++) {
     let distance = distanceAt(sourceLines, i, searchLines)
     if (distance < bestDistance) {
