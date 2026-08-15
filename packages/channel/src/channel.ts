@@ -158,10 +158,15 @@ export class Channel<T> implements AsyncIterableIterator<T> {
   /**
    * Closes channel for both reading and writing.
    *
+   * Idempotent: a channel that is already closed for writing (for example a producer that
+   * finished before the consumer stopped iterating) is drained without throwing.
+   *
    * @see {@link closeWriting} for closing channel for writing only.
    */
   close(err?: unknown) {
-    this.closeWriting(err)
+    if (!this.#doneWriting) {
+      this.closeWriting(err)
+    }
     while (true) {
       const write = this.#writes.pop()
       if (!write) {
