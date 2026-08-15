@@ -8,5 +8,5 @@
  * of('one line') // ['one line']
  */
 export function of(value: string): string[] {
-  return value.split(/\n\r?/)
+  return value.split(/\r?\n/)
 }

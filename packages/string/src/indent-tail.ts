@@ -14,7 +14,7 @@ export function indentTail(input: string, indentation = '  '): string {
   if (indentation === '') {
     return input
   }
-  return input.replace(/\n\r?/g, '\n' + indentation)
+  return input.replace(/\r?\n/g, ending => ending + indentation)
 }
 
 export default indentTail

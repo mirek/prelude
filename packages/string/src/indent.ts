@@ -10,7 +10,7 @@ export function indent(input: string, indentation = '  '): string {
   if (indentation === '') {
     return input
   }
-  return indentation + input.replace(/\n\r?/g, '\n' + indentation)
+  return indentation + input.replace(/\r?\n/g, ending => ending + indentation)
 }
 
 export default indent
