@@ -27,6 +27,10 @@ import type { Value } from './prelude.js'
 export const interleave =
   function* <Args extends Iterable<unknown>[]>(...iterables: Args): Generator<Value<Args[number]>> {
     const iterators = iterables.map(_ => _[Symbol.iterator]())
+    // With no inputs there is nothing to combine: `some(done)` would never be true and the loop would spin forever.
+    if (iterators.length === 0) {
+      return
+    }
     while (true) {
       const results = iterators.map(_ => _.next())
       if (results.some(_ => _.done)) {
