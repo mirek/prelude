@@ -1,4 +1,4 @@
-import { ok, fail, type Refute } from './index.js'
+import { ok, fail, type Refute } from './prelude.js'
 
 /**
  * Creates a refute function that checks if a value strictly equals the specified value.
