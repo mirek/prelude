@@ -34,4 +34,14 @@ await describe('truncate', async () => {
   await test('handles length less than suffix length', () => {
     assert.equal(truncate('hello', 2, '...'), '...')
   })
+
+  await test('never splits a surrogate pair', () => {
+    assert.equal(truncate('😀😀😀', 4, '…'), '😀😀😀')
+    assert.equal(truncate('😀😀😀😀', 3, '…'), '😀😀…')
+    assert.equal(truncate('😀😀😀😀😀', 4), '😀...')
+    assert.equal(truncate('a😀b😀c', 3, ''), 'a😀b')
+    for (const result of [ truncate('😀😀😀😀😀', 4), truncate('😀😀😀😀😀', 4, '…') ]) {
+      assert.equal(result.isWellFormed(), true, result)
+    }
+  })
 })
