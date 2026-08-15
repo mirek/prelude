@@ -14,10 +14,11 @@ import * as Lines from './lines.js'
  */
 export function dedent(value: string): string {
   const lines = Lines.of(value)
-  if (lines.length > 0 && isBlank(lines[0])) {
+  // Remove every blank line at the beginning and end, as documented.
+  while (lines.length > 0 && isBlank(lines[0])) {
     lines.shift()
   }
-  if (lines.length > 0 && isBlank(lines[lines.length - 1])) {
+  while (lines.length > 0 && isBlank(lines[lines.length - 1])) {
     lines.pop()
   }
   let n = Infinity
