@@ -97,6 +97,48 @@ await test('a handler returning undefined produces a null result', async () => {
   assert.equal(Jsonrpc.isSuccessResponse(JSON.parse(JSON.stringify(response))), true)
 })
 
+await test('a result JSON cannot serialise becomes an internal error instead of dropping the response', async () => {
+  const transport = new MockTransport()
+  const exceptions: unknown[] = []
+  const options: Jsonrpc.HandleOptions = {
+    call: (method: string) => {
+      if (method === 'big') {
+        return 10n
+      }
+      if (method === 'bad-data') {
+        throw new Jsonrpc.JsonRpcError(Jsonrpc.ErrorCode.invalidParams, 'bad', { fn: () => 1, big: 1n })
+      }
+      return 'ok'
+    },
+    exception: error => exceptions.push(error)
+  }
+  await Jsonrpc.handlePayload(transport, '{"jsonrpc":"2.0","id":1,"method":"big"}', options)
+  await Jsonrpc.handlePayload(transport, '[{"jsonrpc":"2.0","id":2,"method":"fine"},{"jsonrpc":"2.0","id":3,"method":"big"},{"jsonrpc":"2.0","id":4,"method":"bad-data"}]', options)
+  assert.deepEqual(transport.messages(), [
+    { jsonrpc: '2.0', id: 1, error: { code: -32603, message: 'Internal error' } },
+    [
+      { jsonrpc: '2.0', id: 2, result: 'ok' },
+      { jsonrpc: '2.0', id: 3, error: { code: -32603, message: 'Internal error' } },
+      { jsonrpc: '2.0', id: 4, error: { code: -32603, message: 'Internal error' } }
+    ]
+  ])
+  assert.equal(exceptions.length, 3)
+  assert.ok(exceptions.every(error => error instanceof TypeError))
+})
+
+await test('throwing result/error hooks are reported through exception and do not drop batch responses', async () => {
+  const transport = new MockTransport()
+  const exceptions: unknown[] = []
+  await Jsonrpc.handlePayload(transport, '[{"jsonrpc":"2.0","id":1,"method":"x"},{"jsonrpc":"2.0","id":9,"result":1},{"jsonrpc":"2.0","id":8,"error":{"code":1,"message":"m"}}]', {
+    call: () => 'ok',
+    result: () => { throw new Error('result hook') },
+    error: () => { throw new Error('error hook') },
+    exception: error => exceptions.push(error)
+  })
+  assert.deepEqual(transport.messages(), [ [ { jsonrpc: '2.0', id: 1, result: 'ok' } ] ])
+  assert.deepEqual(exceptions.map(error => (error as Error).message), [ 'result hook', 'error hook' ])
+})
+
 await test('matches normative request and response examples', async () => {
   assert.deepEqual(await Jsonrpc.processMessage({
     jsonrpc: '2.0',

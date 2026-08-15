@@ -143,6 +143,21 @@ export function standardError(
   return errorResponse(id, new JsonRpcError(code, errorMessages.get(code), data))
 }
 
+/**
+ * A response that JSON cannot serialise (a bigint result, an error `data` holding a
+ * function, …) would make the transport write throw after processing, dropping this
+ * response and every other one in the same batch. Replace it with an internal error.
+ */
+function serialisable(response: Response, options: HandleOptions): Response {
+  try {
+    JSON.stringify(response)
+    return response
+  } catch (error: unknown) {
+    options.exception?.(error)
+    return standardError(ErrorCode.internalError, response.id)
+  }
+}
+
 async function processRequest(request: Request, options: HandleOptions): Promise<Response> {
   if (!options.call) {
     return standardError(ErrorCode.methodNotFound, request.id)
@@ -151,9 +166,9 @@ async function processRequest(request: Request, options: HandleOptions): Promise
   try {
     const result = await options.call(request.method, request.params, request)
     // JSON drops undefined members and a response must carry `result` (or `error`); use null like sendResult.
-    return { jsonrpc: '2.0', id: request.id, result: result === undefined ? null : result }
+    return serialisable({ jsonrpc: '2.0', id: request.id, result: result === undefined ? null : result }, options)
   } catch (error: unknown) {
-    return errorResponse(request.id, error)
+    return serialisable(errorResponse(request.id, error), options)
   }
 }
 
@@ -177,11 +192,19 @@ async function processElement(value: unknown, options: HandleOptions): Promise<R
     return
   }
   if (isSuccessResponse(value)) {
-    await options.result?.(value.id, value.result)
+    try {
+      await options.result?.(value.id, value.result)
+    } catch (error: unknown) {
+      options.exception?.(error)
+    }
     return
   }
   if (isErrorResponse(value)) {
-    await options.error?.(value.id, value.error)
+    try {
+      await options.error?.(value.id, value.error)
+    } catch (error: unknown) {
+      options.exception?.(error)
+    }
     return
   }
   return standardError(ErrorCode.invalidRequest)
