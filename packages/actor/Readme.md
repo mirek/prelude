@@ -102,8 +102,15 @@ a failure, or refused because the actor was not running — are reported to
 Actor.of(init, async (message, state, { self, signal }) => {
   await fetch(url, { signal })     // aborted by kill, failure or restart
   await self.send(nextMessage)     // self has send/stop/kill/restart, but no ask
+  if (done) {
+    self.stop()                    // takes effect once this handler returns
+  }
 })
 ```
+
+`self` has no `ask`, and its `stop`/`kill`/`restart` return nothing: the handler
+is the in-flight work those calls would have to wait for, so a promise there
+could never resolve. They take effect once the handler (or hook) returns.
 
 ## `Ref`
 

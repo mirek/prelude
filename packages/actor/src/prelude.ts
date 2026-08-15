@@ -28,9 +28,17 @@ export type Directive =
   | 'escalate'
 
 /**
- * The actor as seen from inside its own handler and hooks. Deliberately has no
- * `ask`: awaiting a reply from yourself while you are the one processing
- * messages would never resolve.
+ * The actor as seen from inside its own handler and hooks.
+ *
+ * Deliberately has no `ask`, and its lifecycle methods return nothing: the
+ * handler *is* the in-flight work that a stop, kill or restart must wait for,
+ * so awaiting termination from inside it could never resolve. Requests take
+ * effect once the current handler or hook returns; the actor's own
+ * `stop`/`kill`/`restart` remain available to outside callers who need to wait.
+ *
+ * `send` resolves once the message is enqueued. With a bounded mailbox that
+ * is full, do not await it from inside the handler — only the handler itself
+ * makes room.
  */
 export interface Self<M, S> {
   readonly name?: string
@@ -39,9 +47,9 @@ export interface Self<M, S> {
   readonly restarts: number
   readonly pending: number
   send(message: M): Promise<void>
-  stop(): Promise<void>
-  kill(reason?: unknown): Promise<void>
-  restart(): Promise<void>
+  stop(): void
+  kill(reason?: unknown): void
+  restart(): void
 }
 
 /** Per-message context passed to the handler. */

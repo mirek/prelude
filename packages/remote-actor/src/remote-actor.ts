@@ -22,7 +22,8 @@ export class RemoteActor<M, R = void> implements Ref<M, R> {
   readonly #pending = new Map<number, Pending>()
   #unsubscribe: (() => void) | undefined
   #nextId = 1
-  #closed: unknown
+  #closed = false
+  #closeReason: unknown
 
   constructor(transport: Transport, options: RemoteOptions = {}) {
     this.name = options.name
@@ -36,13 +37,13 @@ export class RemoteActor<M, R = void> implements Ref<M, R> {
   }
 
   get closed(): boolean {
-    return this.#closed !== undefined
+    return this.#closed
   }
 
   /** Posts a message. Resolves once the transport has accepted it; delivery is not acknowledged. */
   async send(message: M): Promise<void> {
     if (this.#closed) {
-      throw this.#closed
+      throw this.#closeReason
     }
     await this.#transport.post({ type: 'send', message })
   }
@@ -51,7 +52,7 @@ export class RemoteActor<M, R = void> implements Ref<M, R> {
   ask(message: M, options: AskOptions = {}): Promise<R> {
     return new Promise<R>((resolve, reject) => {
       if (this.#closed) {
-        reject(this.#closed)
+        reject(this.#closeReason)
         return
       }
       const id = this.#nextId++
@@ -106,7 +107,8 @@ export class RemoteActor<M, R = void> implements Ref<M, R> {
     if (this.#closed) {
       return
     }
-    this.#closed = reason
+    this.#closed = true
+    this.#closeReason = reason
     this.#unsubscribe?.()
     this.#unsubscribe = undefined
     for (const pending of this.#pending.values()) {

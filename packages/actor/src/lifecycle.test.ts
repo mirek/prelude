@@ -224,3 +224,62 @@ await test('done resolves for stopped actors and rejects for failed ones', async
   await assert.rejects(badDone, /bad/)
   assert.equal(bad.status, 'failed')
 })
+
+await test('self.stop() from inside the handler stops after the message without deadlocking', async () => {
+  const seen: string[] = []
+  const actor = Actor.of(() => null, async (message: string, _, { self }) => {
+    seen.push(message)
+    if (message === 'last') {
+      // Returns nothing to await: termination waits for this very handler.
+      self.stop()
+      await Promise.resolve()
+      seen.push('handler resumed')
+    }
+  })
+  await actor.send('first')
+  await actor.send('last')
+  await assert.rejects(actor.send('late'), isActorError('stopped'))
+  await actor.done
+  assert.equal(actor.status, 'stopped')
+  assert.deepEqual(seen, [ 'first', 'last', 'handler resumed' ])
+})
+
+await test('self.kill() and self.restart() from inside the handler take effect after it returns', async () => {
+  let inits = 0
+  const restarting = Actor.of(() => ({ generation: inits++ }), (message: string, state, { self, signal }) => {
+    if (message === 'restart') {
+      self.restart()
+      assert.equal(signal.aborted, true, 'the in-flight signal is aborted immediately')
+    }
+    return state.generation
+  })
+  assert.equal(await restarting.ask('restart'), 0, 'the reply of the message that requested the restart is still delivered')
+  assert.equal(await restarting.ask('after'), 1)
+  await restarting.stop()
+
+  const dead: string[] = []
+  const killing = Actor.of(() => null, (message: string, _, { self }) => {
+    if (message === 'kill') {
+      self.kill(new Error('bye'))
+    }
+    return message
+  }, { onDeadLetter: message => dead.push(message) })
+  const kill = killing.ask('kill')
+  const queued = killing.ask('queued')
+  await assert.rejects(kill, /bye/, 'the reply of the killing message is discarded like any in-flight reply')
+  await assert.rejects(queued, /bye/)
+  await killing.done
+  assert.deepEqual(dead, [ 'queued' ])
+})
+
+await test('self.stop() from an onError hook does not deadlock', async () => {
+  const actor = Actor.of(() => null, () => { throw new Error('boom') }, {
+    onError: (_, __, self) => {
+      self.stop()
+      return 'resume'
+    }
+  })
+  void actor.send('x')
+  await actor.done
+  assert.equal(actor.status, 'stopped')
+})
