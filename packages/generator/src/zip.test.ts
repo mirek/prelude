@@ -12,3 +12,9 @@ await test('zip', () => {
     [ 3, 'c' ]
   ])
 })
+
+await test('zip and zipRecord of no inputs are empty', () => {
+  assert.deepEqual([ ...G.zip() ], [])
+  assert.deepEqual([ ...G.zipRecord({}) ], [])
+  assert.deepEqual([ ...G.take(2)(G.zip()) ], [])
+})

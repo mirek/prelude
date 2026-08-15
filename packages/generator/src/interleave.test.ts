@@ -26,3 +26,8 @@ await test('interleave', () => {
     'A', 3, 'B', 5, 'A', 7
   ])
 })
+
+await test('interleave of no inputs is empty', () => {
+  assert.deepEqual([ ...G.interleave() ], [])
+  assert.deepEqual(G.interleave().next(), { done: true, value: undefined })
+})

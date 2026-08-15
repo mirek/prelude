@@ -23,6 +23,10 @@ export const zipRecord =
   function* <Arg extends { [key: string]: Iterable<unknown> }>(iterables: Arg): Generator<{ [K in keyof Arg]: Value<Arg[K]> }> {
     const keys = Object.keys(iterables)
     const iterators = keys.map(_ => iterables[_][Symbol.iterator]())
+    // With no inputs there is nothing to combine: `some(done)` would never be true and the loop would spin forever.
+    if (iterators.length === 0) {
+      return
+    }
     while (true) {
       const results = iterators.map(_ => _.next())
       if (results.some(_ => _.done)) {
