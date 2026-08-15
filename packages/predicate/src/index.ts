@@ -19,6 +19,7 @@ import number_ from './number.js'
 import object_ from './object.js'
 import oneOf from './one-of.js'
 import partial from './partial.js'
+import positive from './positive.js'
 import record from './record.js'
 import regexp from './regexp.js'
 import rpc from './rpc.js'
@@ -55,6 +56,7 @@ export {
   object_ as object,
   oneOf,
   partial,
+  positive,
   Predicate,
   Predicated,
   record,

@@ -10,6 +10,8 @@
  * await sleep(1000);
  * ```
  */
-export default function sleep(milliseconds: number) {
+export function sleep(milliseconds: number) {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
+
+export default sleep
