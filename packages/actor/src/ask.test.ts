@@ -148,3 +148,16 @@ await test('a mix of send and ask keeps FIFO order', async () => {
   await actor.stop()
   assert.deepEqual(seen, [ 1, 2, 3, 4 ])
 })
+
+await test('an infinite ask timeout waits for the reply', async () => {
+  const gate = deferred()
+  const actor = Actor.of(() => null, async (message: string) => {
+    await gate.promise
+    return message
+  })
+  const asked = actor.ask('slow', { timeout: Infinity })
+  await new Promise(resolve => setTimeout(resolve, 5))
+  gate.resolve()
+  assert.equal(await asked, 'slow')
+  await actor.stop()
+})
