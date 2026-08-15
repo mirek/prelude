@@ -19,8 +19,13 @@ export function first<T extends Parser.t[]>(...parsers: T): T[number] {
         continue
       }
       set.add(parser)
-      const result = parser(reader)
-      set.delete(parser)
+      let result: Result.t<unknown>
+      try {
+        result = parser(reader)
+      } finally {
+        // A throwing alternative must not leave its reentry mark behind (later calls would skip it).
+        set.delete(parser)
+      }
       if (!Result.failed(result)) {
         return result as Result.Ok<T[number]>
       }

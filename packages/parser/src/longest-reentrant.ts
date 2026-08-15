@@ -13,8 +13,12 @@ export function longestReentrant<T extends Liftable[]>(
       if (!Reentry.enter(reader, parser)) {
         continue
       }
-      const result_ = parser(reader)
-      Reentry.leave(reader, parser)
+      let result_: Result.t<unknown>
+      try {
+        result_ = parser(reader)
+      } finally {
+        Reentry.leave(reader, parser)
+      }
       if (Result.failed(result_)) {
         continue
       }
