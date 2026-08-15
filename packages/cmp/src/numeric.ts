@@ -22,6 +22,14 @@ const nanLike =
  */
 export const numeric =
   (a: number | bigint | string, b: number | bigint | string): R => {
+    // A bigint and a non-integer numeric string are incomparable in js (`1n < '1.5'` is false both
+    // ways); compare the string as a number instead (bigint vs number comparisons are exact).
+    if (typeof a === 'bigint' && typeof b === 'string') {
+      return numeric(a, Number(b))
+    }
+    if (typeof a === 'string' && typeof b === 'bigint') {
+      return numeric(Number(a), b)
+    }
     if (a < b) {
       return asc
     }

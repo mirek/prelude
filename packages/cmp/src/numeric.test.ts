@@ -43,3 +43,15 @@ await test('sorting a mixed array is stable and consistent', () => {
   assert.deepEqual(sorted.slice(0, 2).map(String).toSorted(), [ 'NaN', 'zzz' ])
   assert.deepEqual(sorted.slice(-1), [ 3n ].map(() => sorted.at(-1)))
 })
+
+await test('bigints compare against decimal strings by numeric value', () => {
+  assert.equal(numeric(1n, '1.5'), asc)
+  assert.equal(numeric('1.5', 1n), dsc)
+  assert.equal(numeric(2n, '1.5'), dsc)
+  assert.equal(numeric('1.5', 2n), asc)
+  assert.equal(numeric(1n, '1.0'), eq)
+  assert.equal(numeric(1n, 'x'), dsc)
+  assert.equal(numeric('x', 1n), asc)
+  const values: (number | bigint | string)[] = [ 2n, '1.5', 1n ]
+  assert.deepEqual(values.toSorted(numeric).map(String), [ '1', '1.5', '2' ])
+})
