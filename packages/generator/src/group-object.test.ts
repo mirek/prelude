@@ -8,3 +8,8 @@ await test('groupObject', () => {
     odd: [ 1, 3, 5, 7, 9 ]
   })
 })
+
+await test('keys named after Object.prototype members are grouped like any other', () => {
+  const grouped = G.groupObject((x: string) => x)([ 'constructor', 'toString', 'constructor', 'a' ])
+  assert.deepEqual(grouped, { constructor: [ 'constructor', 'constructor' ], toString: [ 'toString' ], a: [ 'a' ] })
+})
