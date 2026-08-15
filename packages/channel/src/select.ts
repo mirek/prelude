@@ -91,7 +91,13 @@ export function selectSync<Attempts extends Attempt[]>(
         return { done: true, value: undefined }
       }
     } else if (attempt instanceof WriteAttempt) {
-      if (attempt.channel.cap === 0 && attempt.channel.pendingReads > 0) {
+      if (attempt.channel.doneWriting) {
+        // Same contract as `write()`: writing to a closed channel fails instead of
+        // silently buffering (or, for unbuffered channels, never settling).
+        throw new Error('Channel closed.')
+      }
+      if (attempt.channel.pendingReads > 0) {
+        // A waiting reader takes the value directly, whatever the capacity.
         attempt.channel.consumeRead({ done: false, value: attempt.value })
         return attempt.perform(attempt.value)
       } else if (attempt.channel.pendingWrites < attempt.channel.cap) {

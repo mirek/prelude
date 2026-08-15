@@ -61,3 +61,40 @@ await test('select completes at once when a channel is already done', async () =
     { done: true, value: 'read:true' }
   )
 })
+
+await test('a losing write attempt on an unbuffered channel is cancelled cleanly', async () => {
+  const a = Ch.of<number>()
+  const b = Ch.of<number>()
+  const selection = Ch.selectNext(a, b.writeAttempt(99, value => ({ done: false, value: `wrote:${value}` })))
+  await a.write(1)
+  assert.deepEqual(await selection, { done: false, value: 1 })
+  assert.equal(b.pendingWrites, 0, 'the losing write is removed')
+  assert.equal(a.pendingReads, 0)
+})
+
+await test('a write attempt wins asynchronously once a reader arrives', async () => {
+  const a = Ch.of<number>()
+  const b = Ch.of<number>()
+  const selection = Ch.selectNext(a, b.writeAttempt(7, value => ({ done: false, value: `wrote:${value}` })))
+  assert.equal(await b.read(), 7)
+  assert.deepEqual(await selection, { done: false, value: 'wrote:7' })
+  assert.equal(a.pendingReads, 0)
+})
+
+await test('a write attempt on a buffered channel with a pending reader delivers directly', async () => {
+  const ch = Ch.of<number>(1)
+  const read = ch.next()
+  assert.deepEqual(
+    await Ch.selectNext(ch.writeAttempt(7, value => ({ done: false, value }))),
+    { done: false, value: 7 }
+  )
+  assert.deepEqual(await read, { done: false, value: 7 })
+  assert.equal(ch.pendingWrites, 0)
+})
+
+await test('a write attempt on a closed channel rejects like write()', async () => {
+  const ch = Ch.of<number>(1)
+  ch.closeWriting()
+  await assert.rejects(Ch.selectNext(ch.writeAttempt(1, value => ({ done: false, value }))), /Channel closed/)
+  assert.equal(ch.pendingWrites, 0)
+})
