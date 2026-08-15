@@ -28,6 +28,11 @@ function terminal(child: A.Supervised) {
   return child.status === 'stopped' || child.status === 'failed'
 }
 
+/** A child that is stopping, stopped or failed is on its way out and cannot be restarted. */
+function terminating(child: A.Supervised) {
+  return child.status !== 'running'
+}
+
 /**
  * Supervises a group of children (actors or nested supervisors), deciding what
  * happens when one of them fails.
@@ -61,6 +66,8 @@ export class Supervisor implements A.Supervisor, A.Supervised {
   #restartTimes: number[] = []
   #restarts = 0
   #queue: Promise<unknown> = Promise.resolve()
+  /** Set while the queued decision awaits the parent's directive. */
+  #escalating = false
 
   constructor(options: Options = {}) {
     const maxRestarts = options.maxRestarts ?? 3
@@ -142,10 +149,17 @@ export class Supervisor implements A.Supervisor, A.Supervised {
     if (this.#final) {
       return Promise.reject(this.#final.reason)
     }
-    const run = this.#queue.then(async () => {
+    const perform = async () => {
       this.#restartTimes = []
       await this.#restartChildren(this.#children)
-    })
+    }
+    if (this.#escalating) {
+      // The queued decision is waiting for our parent, and the parent may be the one
+      // restarting us (e.g. all-for-one for a sibling of ours) before it can answer:
+      // queueing behind that decision would deadlock both supervisors.
+      return perform()
+    }
+    const run = this.#queue.then(perform)
     this.#queue = run.catch(() => {})
     return run
   }
@@ -233,10 +247,14 @@ export class Supervisor implements A.Supervisor, A.Supervised {
     return 'restart'
   }
 
-  /** Restarts children in order; a child that fails to restart aborts the whole operation. */
+  /**
+   * Restarts children in order; a child that fails to restart aborts the whole operation.
+   * Children that are already terminating (e.g. mid-`kill()`) are skipped: they will be
+   * forgotten once done and restarting them is neither possible nor wanted.
+   */
   async #restartChildren(children: readonly A.Supervised[]): Promise<void> {
     for (const child of children) {
-      if (terminal(child)) {
+      if (terminating(child)) {
         continue
       }
       await child.restart()
@@ -256,10 +274,13 @@ export class Supervisor implements A.Supervisor, A.Supervised {
     )
     if (this.supervisor) {
       let directive: A.Directive
+      this.#escalating = true
       try {
         directive = await this.supervisor.failure(this, reason, message)
       } catch (parentError) {
         return this.#fail(child, parentError)
+      } finally {
+        this.#escalating = false
       }
       if (this.#final) {
         return 'stop'

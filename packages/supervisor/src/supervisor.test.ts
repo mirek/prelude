@@ -313,3 +313,61 @@ await test('await using stops the supervisor and its children', async () => {
   }
   assert.equal(a.status, 'stopped')
 })
+
+await test('a nested supervisor escalating while its parent restarts it does not deadlock', async () => {
+  const gate = deferred()
+  const root = Supervisor.of({ name: 'root', strategy: 'all-for-one', maxRestarts: 10 })
+  const slow = root.spawn<string, null, void>({
+    name: 'slow',
+    init: () => null,
+    receive: async () => { await gate.promise }
+  })
+  const nested = root.supervise(Supervisor.of({ name: 'nested', maxRestarts: 0 }))
+  const w = nested.spawn(worker('w'))
+  const x = root.spawn(worker('x'))
+
+  // `slow` is mid-message so root's all-for-one restart (for x) blocks on it...
+  void slow.send('busy')
+  await tick()
+  const xFailure = x.ask('boom x')
+  await tick()
+  // ...meanwhile w fails, nested gives up at once and escalates to root, whose queue is busy.
+  const wFailure = w.ask('boom w')
+  await tick()
+  gate.resolve()
+
+  await assert.rejects(xFailure, /boom x/)
+  await assert.rejects(wFailure, /boom w/)
+  await tick(50)
+  assert.equal(root.status, 'running')
+  assert.equal(nested.status, 'running')
+  assert.equal(await x.ask('after'), 1)
+  assert.equal(await w.ask('after'), 1)
+  await root.stop()
+  assert.equal(root.status, 'stopped')
+})
+
+await test('a sibling that is already terminating is skipped rather than failing the restart', async () => {
+  const gate = deferred()
+  const root = Supervisor.of({ strategy: 'all-for-one', maxRestarts: 10 })
+  const a = root.spawn(worker('a'))
+  const b = root.spawn<string, null, void>({
+    name: 'b',
+    init: () => null,
+    receive: async () => { await gate.promise }
+  })
+  void b.send('busy')
+  await tick()
+  const killed = b.kill()
+  assert.equal(b.status, 'stopping')
+  await assert.rejects(a.ask('boom'), /boom/)
+  gate.resolve()
+  await killed
+  await tick()
+  assert.equal(root.status, 'running')
+  assert.equal(a.status, 'running')
+  assert.equal(a.restarts, 1)
+  assert.equal(root.restarts, 1)
+  assert.equal(await a.ask('after'), 1)
+  await root.stop()
+})
