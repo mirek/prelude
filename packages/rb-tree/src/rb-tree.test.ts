@@ -158,3 +158,18 @@ await test('count with an inverted range query is zero', () => {
   assert.equal(RbTree.count(tree, { $r: 3, $l: 3 }), 0)
   assert.equal(RbTree.count(tree), 5)
 })
+
+await test('assertMonotonic detects a violation anywhere in the order', () => {
+  const tree = numbers()
+  RbTree.insert(tree, 1)
+  RbTree.insert(tree, 2)
+  RbTree.insert(tree, 3)
+  RbTree.assertMonotonic(tree)
+  // Corrupt the in-order sequence to 1, 3, 2 by swapping stored values.
+  const nodes = [ ...RbTree.each(tree) ]
+  assert.deepEqual(nodes, [ 1, 2, 3 ])
+  const broken = RbTree.of<number, number>(RbTree.Cmp.number, _ => _)
+  broken.root = { c: 2, l: { c: 1, l: undefined, v: 1, n: 1, r: undefined, s: 1 }, v: 3, n: 1, r: { c: 1, l: undefined, v: 2, n: 1, r: undefined, s: 1 }, s: 3 }
+  assert.deepEqual([ ...RbTree.each(broken) ], [ 1, 3, 2 ])
+  assert.throws(() => RbTree.assertMonotonic(broken), /Monotonic/)
+})
