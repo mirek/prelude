@@ -16,4 +16,4 @@ export const console_: Target.t = {
 
 export { console_ as console }
 
-export default console
+export default console_
