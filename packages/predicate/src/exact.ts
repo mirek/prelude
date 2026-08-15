@@ -8,7 +8,8 @@ const exact =
         return false
       }
       for (const k in value) {
-        if (!(k in kvs)) {
+        // `in` would accept inherited names such as `constructor` or `toString` as declared keys.
+        if (!Object.hasOwn(kvs, k)) {
           return false
         }
       }

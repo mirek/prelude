@@ -7,11 +7,15 @@ import { ok, fail, type Refute } from './prelude.js'
  */
 const regexp =
   (re: RegExp): Refute<string> =>
-    (value: unknown) =>
-      typeof value !== 'string' ?
-        fail(value, 'expected string') :
-        !value.match(re) ?
-          fail(value, `expected to match ${re}.`) :
-          ok(value)
+    (value: unknown) => {
+      if (typeof value !== 'string') {
+        return fail(value, 'expected string')
+      }
+      // A sticky (or global) regexp keeps lastIndex between calls; the refute must be stateless.
+      re.lastIndex = 0
+      return re.test(value) ?
+        ok(value) :
+        fail(value, `expected to match ${re}.`)
+    }
 
 export default regexp

@@ -24,3 +24,12 @@ await test('keys named after Object.prototype members are extras', () => {
   assert.equal($.failed(p({ hasOwnProperty: 1 })), true)
   assert.equal($.failed(p({})), false)
 })
+
+await test('regexp refutes are stateless with sticky or global flags', () => {
+  const sticky = $.regexp(/^x/y)
+  assert.equal($.failed(sticky('xy')), false)
+  assert.equal($.failed(sticky('xy')), false)
+  const viaExact = $.exact({ a: /^x/y })
+  assert.equal($.failed(viaExact({ a: 'xy' })), false)
+  assert.equal($.failed(viaExact({ a: 'xy' })), false)
+})

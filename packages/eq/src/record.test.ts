@@ -23,3 +23,10 @@ await test('a missing key equals an explicit undefined value', () => {
   assert.equal(f({}, { x: undefined }), true)
   assert.equal(f({ x: 'a' }, { x: undefined }), false)
 })
+
+await test('inherited names are not treated as present keys', () => {
+  const f = $.record($.eq)
+  assert.equal(f({}, { constructor: 1 }), false)
+  assert.equal(f({ toString: 1 }, {}), false)
+  assert.equal(f({ constructor: 1 }, { constructor: 1 }), true)
+})
