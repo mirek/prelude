@@ -35,3 +35,10 @@ await test('non-existent dates are rejected instead of rolling over', () => {
   }
   assert.equal($.failed($.calendarDate('1900-02-29')), true)
 })
+
+await test('years below 100 are accepted as written', () => {
+  assert.deepEqual($.calendarDate('0099-01-01'), $.ok('0099-01-01'))
+  assert.deepEqual($.calendarDate('0001-12-31'), $.ok('0001-12-31'))
+  assert.equal($.failed($.calendarDate('0099-02-29')), true)
+  assert.deepEqual($.calendarDate('0096-02-29'), $.ok('0096-02-29'))
+})
