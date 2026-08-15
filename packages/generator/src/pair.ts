@@ -32,8 +32,12 @@ export const pair =
       try {
         while (true) {
           const lhsResult = lhsIterator.next()
+          if (lhsResult.done) {
+            break
+          }
+          // Only advance rhs once lhs produced a value, so rhs is not pulled past its pair.
           const rhsResult = rhsIterator.next()
-          if (lhsResult.done || rhsResult.done) {
+          if (rhsResult.done) {
             break
           }
           yield [ lhsResult.value, rhsResult.value ]

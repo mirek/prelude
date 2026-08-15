@@ -30,11 +30,22 @@ export const zip =
     }
     try {
       while (true) {
-        const results = iterators.map(_ => _.next())
-        if (results.some(_ => _.done)) {
+        // Pull one source at a time and stop at the first exhausted one, so later sources are
+        // not advanced past the value they would otherwise have kept.
+        const values: unknown[] = []
+        let done = false
+        for (const iterator of iterators) {
+          const result = iterator.next()
+          if (result.done) {
+            done = true
+            break
+          }
+          values.push(result.value)
+        }
+        if (done) {
           break
         }
-        yield results.map(_ => _.value) as { [K in keyof Args]: Value<Args[K]> }
+        yield values as { [K in keyof Args]: Value<Args[K]> }
       }
     } finally {
       // Close every source whether we finished or the consumer stopped early.
