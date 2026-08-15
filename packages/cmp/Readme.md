@@ -26,7 +26,7 @@ Narrow, low cardinality, precise type `-1 | 0 | 1` is easier to store, match on 
 
 # Cmp module
 
-* `arrays: <T>(cmp: Cmp<T>) => (as: T[], bs: T[]) => R`
+* `array: <T>(cmp: Cmp<T>) => (as: T[], bs: T[]) => R`
 
   Compares arrays element-wise up to common length.
 
@@ -52,9 +52,9 @@ Narrow, low cardinality, precise type `-1 | 0 | 1` is easier to store, match on 
 
   Maps comparision function to descending predicate.
 
-* `epsilon: (a: number, b: number, epsilon_?: number) => R`
+* `epsilon: (a: number, b: number, epsilon_?: number) => boolean`
 
-  Returns number comparision function with epsilon (defaults to 1e-9).
+  Returns `true` if the difference between `a` and `b` is within epsilon (defaults to `Number.EPSILON`), `false` otherwise.
 
 * `equal: <T>(cmp: Cmp<T>) => (a: T, b: T) => boolean`
 
@@ -96,11 +96,11 @@ Narrow, low cardinality, precise type `-1 | 0 | 1` is easier to store, match on 
 
   Returns composed non-nullish comparision function as nullish-handling function, nullish values are considered lower than non-nullish values.
 
-* `nulls: Cmp<unknown>`
+* `null: Cmp<unknown>`
 
   Returns `null` comparision function; `null` value is considered lower than non-`null`.
 
-* `nullsOr: <T>(cmp: Cmp<T>) => (a: T, b: T) => R`
+* `nullOr: <T>(cmp: Cmp<T>) => (a: null | T, b: null | T) => R`
 
   Returns composed non-nullable comparision function as null-handling function, `null` values are considered lower than non-`null` values.
 
@@ -128,7 +128,7 @@ Narrow, low cardinality, precise type `-1 | 0 | 1` is easier to store, match on 
 
   Throws {TypeError} if `value` is `NaN`.
 
-* `strings: Strings`
+* `string: Cmp<string>`
 
   Returns string comparision function.
 
