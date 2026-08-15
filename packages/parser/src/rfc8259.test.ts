@@ -33,3 +33,12 @@ await test('basic', () => {
     }
   })
 })
+
+await test('escape sequences decode to control characters', () => {
+  assert.equal(parse('"a\\nb"'), 'a\nb')
+  assert.equal(parse('"\\t\\b\\f\\r"'), '\t\b\f\r')
+  assert.equal(parse('"\\"\\\\\\/"'), '"\\/')
+  assert.equal(parse('"\\u0041\\u00e9"'), 'Aé')
+  const source = JSON.stringify({ text: 'line1\nline2\t"quoted"\\ /', list: [ '\b\f\r' ] })
+  assert.deepEqual(parse(source), JSON.parse(source))
+})
