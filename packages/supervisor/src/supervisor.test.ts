@@ -371,3 +371,45 @@ await test('a sibling that is already terminating is skipped rather than failing
   assert.equal(await a.ask('after'), 1)
   await root.stop()
 })
+
+await test('a child whose stop or kill rejects does not hang the supervisor', async () => {
+  const unhandled: unknown[] = []
+  const onUnhandled = (reason: unknown) => { unhandled.push(reason) }
+  process.on('unhandledRejection', onUnhandled)
+  try {
+    const stubborn = (): Actor.Supervised => {
+      let status: Actor.Status = 'running'
+      const done = new Promise<void>(() => {})
+      return {
+        get status() { return status },
+        done,
+        stop: async () => { status = 'stopping'; throw new Error('stop failed') },
+        kill: async () => { status = 'stopping'; throw new Error('kill failed') },
+        restart: async () => {}
+      }
+    }
+    const root = Supervisor.of()
+    const worker_ = root.spawn(worker('w'))
+    root.supervise(stubborn())
+    await root.stop()
+    assert.equal(root.status, 'stopped')
+    assert.equal(worker_.status, 'stopped')
+
+    const other = Supervisor.of()
+    other.supervise(stubborn())
+    const w2 = other.spawn(worker('w2'))
+    await other.kill()
+    assert.equal(other.status, 'stopped')
+    assert.equal(w2.status, 'stopped')
+
+    const failing = Supervisor.of({ maxRestarts: 0 })
+    failing.supervise(stubborn())
+    const w3 = failing.spawn(worker('w3'))
+    await assert.rejects(w3.ask('boom'), /boom/)
+    await assert.rejects(failing.done, isSupervisorError('restarts'))
+    await new Promise(resolve => setTimeout(resolve, 0))
+    assert.deepEqual(unhandled, [])
+  } finally {
+    process.off('unhandledRejection', onUnhandled)
+  }
+})

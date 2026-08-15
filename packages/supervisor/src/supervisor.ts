@@ -164,13 +164,17 @@ export class Supervisor implements A.Supervisor, A.Supervised {
     return run
   }
 
-  /** Stops children one at a time in reverse start order, then terminates. */
+  /**
+   * Stops children one at a time in reverse start order, then terminates.
+   * A child whose `stop()` rejects does not prevent the others from stopping nor the
+   * supervisor from terminating.
+   */
   stop(): Promise<void> {
     if (this.#status === 'running') {
       this.#status = 'stopping'
       void this.#queue.then(async () => {
         for (const child of [ ...this.#children ].reverse()) {
-          await child.stop()
+          await child.stop().catch(() => {})
         }
         this.#finish({ status: 'stopped', reason: new SupervisorError('Supervisor stopped.', 'stopped') })
       })
@@ -178,12 +182,12 @@ export class Supervisor implements A.Supervisor, A.Supervised {
     return this.#terminated()
   }
 
-  /** Kills every child immediately, then terminates. */
+  /** Kills every child immediately, then terminates (even if a child's `kill()` rejects). */
   kill(reason: unknown = new SupervisorError('Supervisor killed.', 'killed')): Promise<void> {
     if (!this.#final) {
       this.#status = 'stopping'
       void Promise
-        .all(this.#children.map(child => child.kill(reason)))
+        .allSettled(this.#children.map(child => child.kill(reason)))
         .then(() => this.#finish({ status: 'stopped', reason }))
     }
     return this.#terminated()
@@ -310,7 +314,7 @@ export class Supervisor implements A.Supervisor, A.Supervised {
       this.#status = 'stopping'
       const others = this.#children.filter(other => other !== child)
       void Promise
-        .all(others.map(other => other.kill(reason)))
+        .allSettled(others.map(other => other.kill(reason)))
         .then(() => this.#finish({ status: 'failed', reason }))
     }
     return 'stop'
