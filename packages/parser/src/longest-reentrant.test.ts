@@ -37,3 +37,24 @@ await test('longest', () => {
     'a'
   ])
 })
+
+await test('a throwing alternative does not poison later calls at the same reader', () => {
+  const reader = P.Reader.of('ab')
+  let boom = true
+  const throwing: P.t<string> = () => {
+    if (boom) {
+      throw new Error('boom')
+    }
+    return P.Result.ok(reader, 'recovered', 1)
+  }
+  const viaFirst = P.first(throwing, P.lit('a'))
+  assert.throws(() => viaFirst(reader), /boom/)
+  boom = false
+  assert.equal((viaFirst(reader) as P.Result.Ok<string>).value, 'recovered', 'first tries the alternative again')
+
+  boom = true
+  const viaLongest = P.longestReentrant(throwing, P.lit('a'))
+  assert.throws(() => viaLongest(reader), /boom/)
+  boom = false
+  assert.equal((viaLongest(reader) as P.Result.Ok<string>).value, 'recovered')
+})
