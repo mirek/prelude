@@ -20,12 +20,14 @@ import number_ from './number.js'
 import object from './object.js'
 import ofGt from './of-gt.js'
 import ofLt from './of-lt.js'
+import partialB from './partial-b.js'
 import reversed from './reversed.js'
 import sign from './sign.js'
 import string_ from './string.js'
 import undefinedOr from './undefined-or.js'
 
 export * from './bigint.js'
+export * from './kindof.js'
 export * from './boolean.js'
 export * from './length.js'
 export * from './maybe-pairwise.js'
@@ -66,6 +68,7 @@ export {
   object,
   ofGt,
   ofLt,
+  partialB,
   Predicate,
   reversed,
   sign,
