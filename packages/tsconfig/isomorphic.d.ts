@@ -66,3 +66,40 @@ interface Console {
 }
 
 declare const console: Console;
+
+// ---------------------------------------------------------------------------
+// Abort
+//
+// AbortController / AbortSignal are globals in every modern runtime (Node ≥ 15,
+// browsers, Deno, Bun, workers). Only the surface shared by all of them is
+// declared here so isomorphic packages can create and observe cancellation
+// without `DOM` or `@types/node`.
+
+interface AbortSignal {
+  readonly aborted: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly reason: any;
+  throwIfAborted(): void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addEventListener(type: 'abort', listener: (this: AbortSignal, event: any) => void, options?: boolean | { once?: boolean; signal?: AbortSignal }): void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  removeEventListener(type: 'abort', listener: (this: AbortSignal, event: any) => void, options?: boolean | object): void;
+}
+
+interface AbortController {
+  readonly signal: AbortSignal;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  abort(reason?: any): void;
+}
+
+declare const AbortController: {
+  prototype: AbortController;
+  new(): AbortController;
+};
+
+declare const AbortSignal: {
+  prototype: AbortSignal;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  abort(reason?: any): AbortSignal;
+  timeout(milliseconds: number): AbortSignal;
+};
