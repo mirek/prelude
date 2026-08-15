@@ -48,3 +48,15 @@ await test('cargo handles empty input', async () => {
 
   assert.deepEqual(batches, [])
 })
+
+await test('cargo never exceeds its length even when the consumer is slow', async () => {
+  const sizes: number[] = []
+  const source = G.ofIterable(Array.from({ length: 20 }, (_, i) => i))
+  for await (const batch of G.cargo(3)(source)) {
+    sizes.push(batch.length)
+    await new Promise(resolve => setTimeout(resolve, 2))
+  }
+  assert.ok(sizes.every(size => size <= 3), `batch sizes ${sizes.join(',')}`)
+  assert.equal(sizes.reduce((a, b) => a + b, 0), 20)
+  assert.ok(sizes.some(size => size === 3), 'a slow consumer produces full batches')
+})

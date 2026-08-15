@@ -63,7 +63,13 @@ export function cargo<T>(length = Infinity): Transformer<T, T[]> {
   return async function* (values) {
     const input = Ch.ofAsyncIterable(values, length)
     for await (const value of input) {
-      yield [ value, ...input.consumeWrites() ]
+      // The buffer can hold `length` values plus one blocked writer that becomes ready as we
+      // read, so drain at most `length - 1` extra to honour the maximum batch size.
+      const batch = [ value ]
+      while (batch.length < length && input.pendingWrites > 0) {
+        batch.push(input.consumeWrite())
+      }
+      yield batch
     }
   }
 }
