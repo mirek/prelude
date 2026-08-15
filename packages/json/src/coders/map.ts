@@ -1,5 +1,6 @@
 import * as Encoder from '../encoder.js'
 import * as Decoder from '../decoder.js'
+import { isTagLike } from './object.js'
 
 export type t = Map<unknown, unknown>
 
@@ -14,7 +15,8 @@ export const name = 'Map'
 export const encode =
   (value: t, encoder: Encoder.t) => {
     for (const key of value.keys()) {
-      if (typeof key !== 'string') {
+      // Non-string keys, and string keys that would be mistaken for encoded values, need the pair form.
+      if (typeof key !== 'string' || isTagLike(key)) {
         return { ['^Map$']: Encoder.encode(Array.from(value), encoder) }
       }
     }

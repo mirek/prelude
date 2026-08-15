@@ -7,6 +7,11 @@ export const constructor = Object
 
 export const name = null
 
+/** Keys ending in `^Name$` are the wire syntax for encoded values; user data cannot use them. */
+export const isTagLike =
+  (key: string): boolean =>
+    key.endsWith('$') && key.includes('^')
+
 export const encode =
   (input: t, encoder: Encoder.t) => {
     if (typeof input !== 'object' || input === null) {
@@ -14,6 +19,10 @@ export const encode =
     }
     let output: object = input
     for (const key in input) {
+      if (isTagLike(key)) {
+        // Such a key would be decoded as an encoded value (or fail decoding); refuse it up front.
+        throw new Error(`Cannot encode property ${JSON.stringify(key)}: keys ending in ^Type$ are reserved for encoded values.`)
+      }
       const inputValue = input[key]
       const value = Encoder.encode(inputValue, encoder)
       if (inputValue === value) {
@@ -74,6 +83,7 @@ export const decode =
     let count = 0
     let key: null | string = null
     let value: unknown = null
+    let replaced = false
     for (const inputKey in mutableInput as object) {
       count++
 
@@ -92,6 +102,7 @@ export const decode =
           // Replacement.
           ;[ key, value ] = decodeProperty(decoder, fakeKey, fakeIndex, (mutableInput as object)[inputKey])
           replaceProperty(mutableInput as object, inputKey, key, value)
+          replaced = true
 
           continue
         }
@@ -112,11 +123,12 @@ export const decode =
       // Replacement.
       ;[ key, value ] = decodeProperty(decoder, inputKey, index, (mutableInput as object)[inputKey])
       replaceProperty(mutableInput as object, inputKey, key, value)
+      replaced = true
 
     }
 
-    // Maybe unnest.
-    if (count === 1 && (key === '' || (decoder.legacyDecoder && key === '$'))) {
+    // Maybe unnest: a lone `^Type$` key stands for the value itself. A plain `""` key is ordinary data.
+    if (count === 1 && replaced && (key === '' || (decoder.legacyDecoder && key === '$'))) {
       return (mutableInput as object)[key]
     }
 

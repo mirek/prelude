@@ -92,3 +92,14 @@ await test('invalid dates round-trip', () => {
   assert.ok(Number.isNaN(decoded.d.getTime()))
   assert.deepEqual(Json.parse(Json.stringify(new Date(0))), new Date(0))
 })
+
+await test('empty and tag-like keys are ordinary data', () => {
+  assert.deepEqual(Json.parse(Json.stringify({ '': 1 })), { '': 1 })
+  assert.deepEqual(Json.parse(Json.stringify(new Map([ [ '', 1 ] ]))), new Map([ [ '', 1 ] ]))
+  assert.deepEqual(Json.parse(Json.stringify(new Map([ [ '^Set$', [ 1 ] ] ]))), new Map([ [ '^Set$', [ 1 ] ] ]))
+  assert.deepEqual(Json.parse(Json.stringify(new Map([ [ '^Date$', 'x' ] ]))), new Map([ [ '^Date$', 'x' ] ]))
+  // A plain object cannot carry such keys on the wire without being misread; refuse it at encode time.
+  assert.throws(() => Json.stringify({ 'a^Foo$': 1 }), /reserved for encoded values/)
+  assert.throws(() => Json.stringify({ nested: { '^Date$': 'x' } }), /reserved for encoded values/)
+  assert.deepEqual(Json.parse(Json.stringify({ 'a$': 1, '^b': 2, 'c^d': 3 })), { 'a$': 1, '^b': 2, 'c^d': 3 })
+})
