@@ -44,3 +44,11 @@ await test('closeWriting twice is still rejected as a programming error', () => 
   ch.closeWriting()
   assert.throws(() => ch.closeWriting(), /already closed for writing/)
 })
+
+await test('invalid capacities are rejected up front', () => {
+  for (const cap of [ -1, 1.5, NaN, Infinity ]) {
+    assert.throws(() => Ch.of(cap), RangeError, String(cap))
+  }
+  assert.equal(Ch.of(0).cap, 0)
+  assert.equal(Ch.of(3).cap, 3)
+})
