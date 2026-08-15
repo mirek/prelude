@@ -166,7 +166,8 @@ export const count =
     const d = '$re' in query ? cl(query.$re, false) : 0
     const x = Math.max(a, b)
     const y = Math.max(c, d)
-    return n - x - y
+    // An inverted query (left bound above right bound) selects nothing rather than a negative count.
+    return Math.max(0, n - x - y)
   }
 
 /**
