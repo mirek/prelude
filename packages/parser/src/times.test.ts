@@ -12,5 +12,5 @@ await test('times', () => {
 await test('the failure message reports how many repetitions matched', () => {
   const result = P.times(3, 'a')(P.Reader.of('aa'))
   assert.equal(P.Result.failed(result), true)
-  assert.match(String((result as { reason?: unknown }).reason ?? JSON.stringify(result)), /Expected 3 times, got 2 times only/)
+  assert.match(result.reason ?? '', /Expected 3 times, got 2 times only/)
 })
