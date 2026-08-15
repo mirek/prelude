@@ -13,6 +13,9 @@ import type {
   Supervisor
 } from './prelude.js'
 
+/** Passed to the mailbox on termination; senders map it back to the actual reason. */
+const closedOnTermination = new ActorError('Actor terminated.', 'stopped')
+
 interface Envelope<M, R> {
   readonly message: M
   readonly resolve?: (value: R) => void
@@ -194,7 +197,7 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Supervised 
     }
     return this.#inbox
       .write({ message })
-      .catch(reason => this.#deadLetter(message, reason))
+      .catch(reason => this.#deadLetter(message, this.#closedReason(reason)))
   }
 
   /**
@@ -206,7 +209,7 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Supervised 
     const { promise, resolve, reject } = deferred<R>()
     if (this.#status !== 'running') {
       const reason = this.#stopReason()
-      this.#onDeadLetter?.(message, reason, this.#self)
+      this.#reportDeadLetter(message, reason)
       reject(reason)
       return promise
     }
@@ -252,8 +255,9 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Supervised 
     this.#inbox
       .write(envelope)
       .catch(reason => {
-        this.#onDeadLetter?.(message, reason, this.#self)
-        envelope.reject!(reason)
+        const reason_ = this.#closedReason(reason)
+        this.#reportDeadLetter(message, reason_)
+        envelope.reject!(reason_)
       })
     return promise
   }
@@ -312,16 +316,35 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Supervised 
   }
 
   #stopReason(): unknown {
-    return this.#final?.reason ?? new ActorError('Actor stopped.', 'stopped')
+    // The termination reason may legitimately be falsy (kill(null), throw undefined).
+    return this.#final ? this.#final.reason : new ActorError('Actor stopped.', 'stopped')
   }
 
   #terminated(): Promise<void> {
     return this.#done.promise.then(() => {}, () => {})
   }
 
+  /** Reports a dead letter; a throwing hook must not break the actor's own bookkeeping. */
+  #reportDeadLetter(message: M, reason: unknown): void {
+    try {
+      this.#onDeadLetter?.(message, reason, this.#self)
+    } catch {
+      // A misbehaving observer cannot be allowed to leave the actor half-terminated.
+    }
+  }
+
   #deadLetter(message: M, reason: unknown): Promise<never> {
-    this.#onDeadLetter?.(message, reason, this.#self)
+    this.#reportDeadLetter(message, reason)
     return Promise.reject(reason)
+  }
+
+  /**
+   * Blocked writers see this marker when the mailbox is closed on termination and map it
+   * back to the real reason: the channel treats a falsy `err` as a clean close and would
+   * resolve them (silently dropping the message) for reasons such as `kill(null)`.
+   */
+  #closedReason(reason: unknown): unknown {
+    return reason === closedOnTermination ? this.#stopReason() : reason
   }
 
   async #run(): Promise<void> {
@@ -333,7 +356,7 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Supervised 
       if (this.#final) {
         // Terminated between the mailbox handing the message over and us
         // getting to run: it is a dead letter, not work.
-        this.#onDeadLetter?.(next.value.message, this.#final.reason, this.#self)
+        this.#reportDeadLetter(next.value.message, this.#final.reason)
         next.value.reject?.(this.#final.reason)
         continue
       }
@@ -462,11 +485,12 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Supervised 
     }
     this.#controller.abort(final.reason)
     if (!this.#inbox.doneWriting) {
-      // Rejects senders blocked on a full mailbox and refuses further writes.
-      this.#inbox.closeWriting(final.reason)
+      // Rejects senders blocked on a full mailbox and refuses further writes. Always a truthy
+      // marker: the channel would resolve blocked writes for a falsy reason such as kill(null).
+      this.#inbox.closeWriting(closedOnTermination)
     }
     for (const envelope of this.#inbox.consumeWrites()) {
-      this.#onDeadLetter?.(envelope.message, final.reason, this.#self)
+      this.#reportDeadLetter(envelope.message, final.reason)
       envelope.reject?.(final.reason)
     }
     // Wake the run loop if it is waiting for a message.

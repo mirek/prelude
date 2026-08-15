@@ -283,3 +283,65 @@ await test('self.stop() from an onError hook does not deadlock', async () => {
   await actor.done
   assert.equal(actor.status, 'stopped')
 })
+
+await test('a falsy kill reason still rejects blocked senders and asks', async () => {
+  const gate = deferred()
+  const dead: [ number, unknown ][] = []
+  const actor = Actor.of(() => null, async (_: number) => {
+    await gate.promise
+  }, { cap: 1, onDeadLetter: (message, reason) => dead.push([ message, reason ]) })
+
+  void actor.send(1) // in flight
+  void actor.send(2) // buffered
+  const blocked = actor.send(3) // waits for room
+  const asked = actor.ask(4) // waits for room
+  await tick()
+  assert.equal(actor.pending, 3)
+
+  const killing = actor.kill(null)
+  await assert.rejects(blocked, (reason: unknown) => reason === null)
+  await assert.rejects(asked, (reason: unknown) => reason === null)
+  await assert.rejects(actor.send(5), (reason: unknown) => reason === null)
+  await assert.rejects(actor.ask(6), (reason: unknown) => reason === null)
+  assert.deepEqual(dead.map(([ message ]) => message).toSorted((a, b) => a - b), [ 2, 3, 4, 5, 6 ])
+  assert.ok(dead.every(([ , reason ]) => reason === null))
+
+  gate.resolve()
+  await killing
+  assert.equal(actor.status, 'stopped')
+})
+
+await test('a throwing dead-letter hook does not break termination or senders', async () => {
+  const gate = deferred()
+  const actor = Actor.of(() => null, async (message: number) => {
+    await gate.promise
+    if (message === 1) {
+      throw new Error('boom')
+    }
+  }, { onDeadLetter: () => { throw new Error('hook threw') } })
+
+  const first = actor.ask(1)
+  const second = actor.ask(2)
+  void actor.send(3)
+  await tick()
+  gate.resolve()
+  await assert.rejects(first, /boom/)
+  await assert.rejects(second, /boom/)
+  await assert.rejects(actor.done, /boom/)
+  assert.equal(actor.status, 'failed')
+  await assert.rejects(actor.send(4), /boom/)
+  await assert.rejects(actor.ask(5), /boom/)
+
+  const otherGate = deferred()
+  const other = Actor.of(() => null, async () => { await otherGate.promise }, {
+    onDeadLetter: () => { throw new Error('hook threw') }
+  })
+  void other.send(1)
+  void other.send(2)
+  await tick()
+  const killing = other.kill()
+  assert.equal(other.status, 'stopping')
+  otherGate.resolve()
+  await killing
+  assert.equal(other.status, 'stopped')
+})
