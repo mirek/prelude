@@ -98,7 +98,7 @@ await test('successful concurrent map and tap are unaffected', async () => {
     }, { concurrency: 2 }),
     G.array
   ), [ 1, 2, 3 ])
-  assert.deepEqual(tapped.toSorted(), [ 1, 2, 3 ])
+  assert.deepEqual(tapped.toSorted((a, b) => a - b), [ 1, 2, 3 ])
 })
 
 process.off('unhandledRejection', onUnhandled)
