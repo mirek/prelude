@@ -125,3 +125,39 @@ await test('preserve prefix as valid word when splitting', () => {
   assert.equal(RadixTrie.has(trie, 'test'), true)
   assert.equal(RadixTrie.has(trie, 'testing'), true)
 })
+
+await test('inserting a proper prefix of an existing edge splits without a spurious empty child', () => {
+  const trie = RadixTrie.of([ 'abc', 'ab' ])
+  assert.deepEqual(trie, {
+    a: { P: 'ab', E: true, N: {
+      c: { P: 'c', E: true }
+    } }
+  })
+  assert.deepEqual([ ...RadixTrie.prefixes(trie, 'abcd') ], [ 'ab', 'abc' ])
+  assert.deepEqual([ ...RadixTrie.prefixLengths(trie, 'abcd') ], [ 2, 3 ])
+  assert.deepEqual(trie, RadixTrie.of([ 'ab', 'abc' ]))
+  assert.equal(RadixTrie.has(trie, 'ab'), true)
+  assert.equal(RadixTrie.has(trie, 'abc'), true)
+  assert.equal(RadixTrie.has(trie, 'a'), false)
+})
+
+await test('prefixes match a set model for generated inputs', () => {
+  let seed = 7
+  const random = (n: number) => {
+    seed = (seed * 1103515245 + 12345) % 2147483648
+    return (seed >>> 8) % n // skip the low bits: an LCG's low bits cycle with a tiny period
+  }
+  const alphabet = [ 'a', 'b', 'c' ]
+  const word = () => Array.from({ length: 1 + random(4) }, () => alphabet[random(alphabet.length)]).join('')
+  for (let trial = 0; trial < 500; trial++) {
+    const words = Array.from({ length: 1 + random(6) }, word)
+    const trie = RadixTrie.of(words)
+    const set = new Set(words)
+    const input = word() + word()
+    const expected = Array.from({ length: input.length }, (_, i) => input.slice(0, i + 1)).filter(prefix => set.has(prefix))
+    assert.deepEqual([ ...RadixTrie.prefixes(trie, input) ], expected, `trial ${trial}: ${JSON.stringify(words)} / ${input}`)
+    for (const candidate of [ ...words, input, input.slice(1) ]) {
+      assert.equal(RadixTrie.has(trie, candidate), set.has(candidate), `trial ${trial}: has ${candidate}`)
+    }
+  }
+})
