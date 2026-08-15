@@ -145,3 +145,16 @@ await test('deletes agree with a multiset model', () => {
     assert.equal(RbTree.length(tree), 1)
   }
 })
+
+await test('count with an inverted range query is zero', () => {
+  const tree = numbers()
+  for (let k = 1; k <= 5; k++) {
+    RbTree.insert(tree, k)
+  }
+  assert.equal(RbTree.count(tree, { $r: 4, $l: 2 }), 0)
+  assert.equal(RbTree.count(tree, { $re: 5, $le: 1 }), 0)
+  assert.equal(RbTree.count(tree, { $r: 2, $l: 4 }), 1)
+  assert.equal(RbTree.count(tree, { $re: 2, $le: 4 }), 3)
+  assert.equal(RbTree.count(tree, { $r: 3, $l: 3 }), 0)
+  assert.equal(RbTree.count(tree), 5)
+})
