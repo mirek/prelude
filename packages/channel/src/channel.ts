@@ -368,22 +368,16 @@ export class Channel<T> implements AsyncIterableIterator<T> {
   }
 
   /**
-   * Removes write from channel.
+   * Removes write from channel without settling it: undoing a pushed write is a
+   * cancellation (the value was never delivered), not a delivery or a failure.
    * No-op if write is not found.
    * @internal
    */
-  #removeWrite(write: Write<T>, err?: unknown) {
+  #removeWrite(write: Write<T>) {
     const i = this.#writes.lastIndexOf(write)
     if (i === -1) {
       return
     }
-
-    // TODO: make it optional? what if we want to remove without callbacks in select?
-    if (this.#cap === 0) {
-      this.#writes[i].enqueued?.call(this, err)
-    }
-    this.#writes[i].written?.call(this, err)
-
     this.#writes.splice(i, 1)
   }
 
