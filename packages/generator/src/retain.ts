@@ -29,10 +29,10 @@ export const retain =
           count_--
           return { done: true, value: undefined }
         }
-        return g_.return(value)
+        return g.return(value as never)
       },
       throw(err: unknown) {
-        return g_.throw(err)
+        return g.throw(err)
       },
       [Symbol.iterator]() {
         return g_
