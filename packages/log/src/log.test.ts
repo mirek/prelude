@@ -43,3 +43,22 @@ await test('circular and bigint entries are logged instead of throwing', () => {
   log.info('z', { a: shared, b: shared })
   assert.deepEqual(target.last, [ 'info', 'test: [info]', 'z', '{"a":{"v":1},"b":{"v":1}}' ])
 })
+
+await test('formatting never throws, whatever the entry does', () => {
+  const target = new Log.Target.Memory()
+  const log = Log.of('test', { level: 'info', target })
+  log.info('throwing toJSON', { toJSON() { throw new Error('boom') } })
+  assert.match(String((target.last as unknown[])[3]), /Unserializable: boom/)
+  const revoked = Proxy.revocable({}, {})
+  revoked.revoke()
+  log.info('revoked proxy', revoked.proxy)
+  assert.match(String((target.last as unknown[])[3]), /Unserializable/)
+  log.info('boxed bigint', { n: Object(1n) })
+  assert.deepEqual(target.last, [ 'info', 'test: [info]', 'boxed bigint', '{"n":"1n"}' ])
+  const deep: Record<string, unknown> = {}
+  let cursor = deep
+  for (let i = 0; i < 20_000; i++) {
+    cursor = cursor.next = {} as Record<string, unknown>
+  }
+  assert.doesNotThrow(() => log.info('deep', deep))
+})

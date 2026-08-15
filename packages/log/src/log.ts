@@ -42,22 +42,30 @@ export interface Interface extends Target.t {
 const stringify =
   (value: unknown): string => {
     const ancestors: unknown[] = []
-    return JSON.stringify(value, function (this: unknown, _key: string, entry: unknown) {
-      if (typeof entry === 'bigint') {
-        return `${entry}n`
-      }
-      if (typeof entry === 'object' && entry !== null) {
-        // `this` is the holder of `entry`; unwind ancestors we have left.
-        while (ancestors.length > 0 && ancestors[ancestors.length - 1] !== this) {
-          ancestors.pop()
+    try {
+      return JSON.stringify(value, function (this: unknown, _key: string, entry: unknown) {
+        if (typeof entry === 'bigint') {
+          return `${entry}n`
         }
-        if (ancestors.includes(entry)) {
-          return '[Circular]'
+        if (entry instanceof BigInt) {
+          return `${entry.valueOf()}n`
         }
-        ancestors.push(entry)
-      }
-      return entry
-    }) ?? String(value)
+        if (typeof entry === 'object' && entry !== null) {
+          // `this` is the holder of `entry`; unwind ancestors we have left.
+          while (ancestors.length > 0 && ancestors[ancestors.length - 1] !== this) {
+            ancestors.pop()
+          }
+          if (ancestors.includes(entry)) {
+            return '[Circular]'
+          }
+          ancestors.push(entry)
+        }
+        return entry
+      }) ?? String(value)
+    } catch (err) {
+      // toJSON/getters that throw, revoked proxies, ...: describe the failure rather than propagate it.
+      return `[Unserializable: ${err instanceof Error ? err.message : String(err)}]`
+    }
   }
 
 /**
@@ -67,16 +75,21 @@ const stringify =
  */
 const mapEntry =
   (value: unknown): string => {
-    if (typeof value === 'bigint') {
-      return `${value}n`
+    try {
+      if (typeof value === 'bigint') {
+        return `${value}n`
+      }
+      if (typeof value !== 'object' || value === null) {
+        return String(value)
+      }
+      if (value instanceof Error) {
+        return value.stack || value.message
+      }
+      return stringify(value)
+    } catch (err) {
+      // e.g. a revoked proxy throws on instanceof; logging must never take the caller down.
+      return `[Unserializable: ${err instanceof Error ? err.message : String(err)}]`
     }
-    if (typeof value !== 'object' || value === null) {
-      return String(value)
-    }
-    if (value instanceof Error) {
-      return value.stack || value.message
-    }
-    return stringify(value)
   }
 
 /**
