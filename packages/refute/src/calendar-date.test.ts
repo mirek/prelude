@@ -25,3 +25,13 @@ await test('not valid date string', () => {
 await test('not a valid date', () => {
   assert.deepEqual($.safeReason(range)(JSON.parse('{"from":"2001-01-01","to":"2001-13-01"}')), 'Invalid value at key to, expected valid date.')
 })
+
+await test('non-existent dates are rejected instead of rolling over', () => {
+  for (const value of [ '2025-02-30', '2023-02-29', '2025-04-31', '2025-00-10', '2025-01-00', '2025-01-32' ]) {
+    assert.deepEqual($.safeReason($.calendarDate)(value), 'Invalid value expected valid date.', value)
+  }
+  for (const value of [ '2024-02-29', '2025-01-31', '2000-02-29', '1900-02-28' ]) {
+    assert.deepEqual($.calendarDate(value), $.ok(value), value)
+  }
+  assert.equal($.failed($.calendarDate('1900-02-29')), true)
+})
