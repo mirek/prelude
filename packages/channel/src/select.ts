@@ -83,11 +83,16 @@ export function selectSync<Attempts extends Attempt[]>(
     const attempt = attempts[j] as Attempts[number]
     if (attempt instanceof Channel) {
       if (attempt.pendingWrites > 0) {
-        return { value: attempt.consumeWrite() }
+        return { done: false, value: attempt.consumeWrite() }
+      }
+      if (attempt.done) {
+        // A completed channel completes the selection; a read pushed on it
+        // asynchronously would never settle.
+        return { done: true, value: undefined }
       }
     } else if (attempt instanceof WriteAttempt) {
       if (attempt.channel.cap === 0 && attempt.channel.pendingReads > 0) {
-        attempt.channel.consumeRead({ value: attempt.value })
+        attempt.channel.consumeRead({ done: false, value: attempt.value })
         return attempt.perform(attempt.value)
       } else if (attempt.channel.pendingWrites < attempt.channel.cap) {
         attempt.channel.pushWrite({ value: attempt.value })
@@ -96,7 +101,10 @@ export function selectSync<Attempts extends Attempt[]>(
     } else if (attempt instanceof ReadAttempt) {
       if (attempt.channel.pendingWrites > 0) {
         const value = attempt.channel.consumeWrite()
-        return attempt.perform({ value })
+        return attempt.perform({ done: false, value })
+      }
+      if (attempt.channel.done) {
+        return attempt.perform({ done: true, value: undefined })
       }
     } else {
       throw new Error('Invalid attempt.')

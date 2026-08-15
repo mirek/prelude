@@ -61,10 +61,11 @@ export interface AbortSignalLike {
   removeEventListener(event: 'abort', callback: () => void): void
 }
 
+/** Handlers may return a value or a promise; both are awaited where it matters. */
 export interface HandleOptions {
-  call?: (method: string, params: Params | undefined, request: Request) => unknown | Promise<unknown>
-  notification?: (method: string, params: Params | undefined, notification: Notification) => unknown | Promise<unknown>
-  result?: (id: Id, result: unknown) => unknown | Promise<unknown>
-  error?: (id: Id, error: ErrorObject) => unknown | Promise<unknown>
+  call?: (method: string, params: Params | undefined, request: Request) => unknown
+  notification?: (method: string, params: Params | undefined, notification: Notification) => unknown
+  result?: (id: Id, result: unknown) => unknown
+  error?: (id: Id, error: ErrorObject) => unknown
   exception?: (error: unknown) => unknown
 }
