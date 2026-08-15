@@ -45,11 +45,23 @@ export function selectAsync<Attempts extends Attempt[]>(
       if (attempt instanceof Channel) {
         undos.push(attempt.pushRead(result => {
           undos.forEach(undo => undo())
+          if (result.done && attempt.failed) {
+            // A failed channel rejects its readers; select is a reader too.
+            reject(attempt.error)
+            return
+          }
           resolve(result as IteratorResult<Attempted<Attempts[number]>>)
         }))
       } else if (attempt instanceof WriteAttempt) {
+        const own = undos.length
         undos.push(attempt.channel.pushWrite({ value: attempt.value, enqueued: (err: unknown) => {
-          undos.forEach(_ => _())
+          // Cancel the other attempts only: this write has just been accepted (it may still sit in
+          // the buffer of a bounded channel) and undoing it would remove the delivered value.
+          undos.forEach((undo, index) => {
+            if (index !== own) {
+              undo()
+            }
+          })
           if (err) {
             reject(err)
             return
@@ -59,6 +71,10 @@ export function selectAsync<Attempts extends Attempt[]>(
       } else if (attempt instanceof ReadAttempt) {
         undos.push(attempt.channel.pushRead(result => {
           undos.forEach(undo => undo())
+          if (result.done && attempt.channel.failed) {
+            reject(attempt.channel.error)
+            return
+          }
           resolve(attempt.perform(result) as IteratorResult<Attempted<Attempts[number]>>)
         }))
       } else {
@@ -85,6 +101,10 @@ export function selectSync<Attempts extends Attempt[]>(
       if (attempt.pendingWrites > 0) {
         return { done: false, value: attempt.consumeWrite() }
       }
+      if (attempt.failed) {
+        // Same contract as `next()`/`read()`: a failed channel rejects (selectNext is async).
+        throw attempt.error
+      }
       if (attempt.done) {
         // A completed channel completes the selection; a read pushed on it
         // asynchronously would never settle.
@@ -108,6 +128,9 @@ export function selectSync<Attempts extends Attempt[]>(
       if (attempt.channel.pendingWrites > 0) {
         const value = attempt.channel.consumeWrite()
         return attempt.perform({ done: false, value })
+      }
+      if (attempt.channel.failed) {
+        throw attempt.channel.error
       }
       if (attempt.channel.done) {
         return attempt.perform({ done: true, value: undefined })

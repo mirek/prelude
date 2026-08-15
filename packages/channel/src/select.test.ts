@@ -98,3 +98,33 @@ await test('a write attempt on a closed channel rejects like write()', async () 
   await assert.rejects(Ch.selectNext(ch.writeAttempt(1, value => ({ done: false, value }))), /Channel closed/)
   assert.equal(ch.pendingWrites, 0)
 })
+
+await test('a write attempt that wins asynchronously on a bounded channel keeps its value buffered', async () => {
+  const ch = Ch.of<number>(1)
+  await ch.write(1)
+  const selection = Ch.selectNext(ch.writeAttempt(2, value => ({ done: false, value: `wrote:${value}` })))
+  assert.equal(await ch.read(), 1)
+  assert.deepEqual(await selection, { done: false, value: 'wrote:2' })
+  assert.equal(ch.pendingWrites, 1, 'the accepted write stays in the buffer')
+  assert.deepEqual(await ch.next(), { done: false, value: 2 })
+})
+
+await test('select rejects when a selected channel has failed', async () => {
+  const failed = Ch.of<number>()
+  const idle = Ch.of<number>()
+  failed.fail(new Error('boom'))
+  await assert.rejects(Ch.selectNext(failed, idle), /boom/)
+  await assert.rejects(Ch.selectNext(failed.readAttempt(result => result)), /boom/)
+  assert.equal(idle.pendingReads, 0)
+
+  const late = Ch.of<number>()
+  const pending = Ch.selectNext(late, idle)
+  late.fail(new Error('later'))
+  await assert.rejects(pending, /later/)
+  assert.equal(idle.pendingReads, 0, 'the losing read is undone')
+
+  const lateRead = Ch.of<number>()
+  const pendingRead = Ch.selectNext(lateRead.readAttempt(result => result), idle)
+  lateRead.fail(new Error('later read'))
+  await assert.rejects(pendingRead, /later read/)
+})
