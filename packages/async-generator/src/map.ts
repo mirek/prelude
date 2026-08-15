@@ -1,5 +1,6 @@
 import * as Ch from '@prelude/channel'
 import type { Transformer } from './prelude.js'
+import pool from './pool.js'
 import unwrapIndexed from './unwrap-indexed.js'
 import withIndex from './with-index.js'
 
@@ -34,19 +35,16 @@ function unordered<T, R>(f: F<T, R>, concurrency: number): Transformer<T, Awaite
     let index = 0
     const input = Ch.ofAsyncIterable(values)
     const output = Ch.of<Awaited<R>>()
-    Promise
-      .allSettled(Array.from({ length: concurrency }, async (_, worker) => {
-        for await (const value of input) {
-          await output.write(await f(value, index++, worker))
-        }
-      }))
-      .finally(() => {
-        output.closeWriting()
-      })
-      .catch(() => {
-        // unreachable
-      })
-    yield* output
+    pool(input, output, concurrency, async (value, worker) => {
+      await output.write(await f(value, index++, worker))
+    })
+    try {
+      yield* output
+    } finally {
+      if (!input.doneWriting) {
+        input.close()
+      }
+    }
   }
 }
 
@@ -63,22 +61,19 @@ function ordered<T, R>(f: F<T, R>, concurrency: number): Transformer<T, Awaited<
     let index = 0
     const input = Ch.ofAsyncIterable(withIndex(values))
     const output = Ch.of<{ index: number, value: Awaited<R> }>()
-    Promise
-      .allSettled(Array.from({ length: concurrency }, async (_, worker) => {
-        for await (const value of input) {
-          await output.write({
-            index: value.index,
-            value: await f(value.value, index++, worker)
-          })
-        }
-      }))
-      .finally(() => {
-        output.closeWriting()
+    pool(input, output, concurrency, async (value, worker) => {
+      await output.write({
+        index: value.index,
+        value: await f(value.value, index++, worker)
       })
-      .catch(() => {
-        // unreachable
-      })
-    yield* unwrapIndexed(output)
+    })
+    try {
+      yield* unwrapIndexed(output)
+    } finally {
+      if (!input.doneWriting) {
+        input.close()
+      }
+    }
   }
 }
 

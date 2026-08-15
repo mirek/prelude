@@ -1,4 +1,5 @@
 import * as Ch from '@prelude/channel'
+import pool from './pool.js'
 
 /**
  * Serial implementation of tap transformation.
@@ -35,20 +36,17 @@ function concurrentTap<T>(
     let index = 0
     const input = Ch.ofAsyncIterable<T>(values)
     const output = Ch.of<T>()
-    Promise
-      .allSettled(Array.from({ length: concurrency }, async (_, worker) => {
-        for await (const value of input) {
-          await Promise.resolve(f(value, index++, worker))
-          await output.write(value)
-        }
-      }))
-      .finally(() => {
-        output.closeWriting()
-      })
-      .catch(() => {
-        // unreachable
-      })
-    yield* output
+    pool(input, output, concurrency, async (value, worker) => {
+      await Promise.resolve(f(value, index++, worker))
+      await output.write(value)
+    })
+    try {
+      yield* output
+    } finally {
+      if (!input.doneWriting) {
+        input.close()
+      }
+    }
   }
 }
 
