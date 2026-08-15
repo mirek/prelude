@@ -36,3 +36,9 @@ await test('shorter', () => {
   ), [
   ])
 })
+
+await test('empty input yields no window even when shorter windows are allowed', () => {
+  assert.deepEqual(G.pipe([], G.window(3, true), G.array), [])
+  assert.deepEqual(G.pipe([], G.window(3), G.array), [])
+  assert.deepEqual(G.pipe([ 1 ], G.window(3, true), G.array), [ [ 1 ] ])
+})
