@@ -33,15 +33,19 @@ export const extreme =
         min: next.value,
         max: next.value
       }
-      for (; !next.done; next = iterator.next()) {
-        if (f(result.max, next.value) < 0) {
-          result.max = next.value
+      try {
+        for (; !next.done; next = iterator.next()) {
+          if (f(result.max, next.value) < 0) {
+            result.max = next.value
+          }
+          if (f(result.min, next.value) > 0) {
+            result.min = next.value
+          }
         }
-        if (f(result.min, next.value) > 0) {
-          result.min = next.value
-        }
+      } finally {
+        // Close the source even if the comparator throws.
+        iterator.return?.()
       }
-      iterator.return?.()
       return result
     }
 

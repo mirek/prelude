@@ -426,3 +426,16 @@ await test('an actor created with the supervisor option is adopted on its first 
   await root.stop()
   assert.equal(actor.status, 'stopped')
 })
+
+await test('supervising the same child twice does not duplicate it', async () => {
+  const root = Supervisor.of({ strategy: 'all-for-one', maxRestarts: 10 })
+  const a = root.spawn(worker('a'))
+  const b = root.spawn(worker('b'))
+  root.supervise(a)
+  root.supervise(b)
+  assert.deepEqual(root.children, [ a, b ])
+  await assert.rejects(a.ask('boom'), /boom/)
+  await tick()
+  assert.equal(b.restarts, 1, 'the sibling is restarted once, not once per duplicate')
+  await root.stop()
+})

@@ -36,3 +36,9 @@ await test('sources are also closed on normal completion', () => {
   assert.deepEqual([ ...G.sortedDiff(source('r', closed, [ 2 ])(), (a: number, b: number) => a < b ? -1 : a > b ? 1 : 0)(source('l', closed, [ 1 ])()) ], [ [ 1, undefined ], [ undefined, 2 ] ])
   assert.deepEqual(closed.toSorted(), [ 'a', 'b', 'l', 'lhs', 'r', 'rhs' ])
 })
+
+await test('extreme closes its source when the comparator throws', () => {
+  const closed: string[] = []
+  assert.throws(() => G.extreme(() => { throw new Error('cmp boom') })(source('s', closed)()), /cmp boom/)
+  assert.deepEqual(closed, [ 's' ])
+})
