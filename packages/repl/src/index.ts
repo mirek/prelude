@@ -94,7 +94,8 @@ export async function runInContext(
   return Vm.runInContext(code, context, options)
 }
 
-export const extractRegExp = /```!(js|javascript)\n([\s\S]*?)\n```\n/gm
+/** Matches ```!js fenced blocks with LF or CRLF endings, including a closing fence at end of input. */
+export const extractRegExp = /```!(js|javascript)\r?\n([\s\S]*?)\r?\n```[ \t]*(?:\r?\n|$)/g
 
 export function extractCode(markdown: string): string[] {
   return Array.from(markdown.matchAll(extractRegExp)).map(([, _language, code]) => code)
