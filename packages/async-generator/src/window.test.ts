@@ -14,3 +14,9 @@ await test('window', async () => {
     [ 4, 5 ]
   ])
 })
+
+await test('empty input yields no window even when shorter windows are allowed', async () => {
+  assert.deepEqual(await G.pipe(G.ofIterable([]), G.window(3, true), G.array), [])
+  assert.deepEqual(await G.pipe(G.ofIterable([]), G.window(3), G.array), [])
+  assert.deepEqual(await G.pipe(G.ofIterable([ 1 ]), G.window(3, true), G.array), [ [ 1 ] ])
+})

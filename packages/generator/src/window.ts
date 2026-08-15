@@ -34,7 +34,7 @@ const window_ =
             yield range.slice()
         }
       }
-      if (range.length < n && yieldShorter) {
+      if (range.length > 0 && range.length < n && yieldShorter) {
         yield range
       }
     }

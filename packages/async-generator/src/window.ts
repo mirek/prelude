@@ -69,7 +69,7 @@ export function window<T>(n: number, yieldsShorter = false) {
           // noop
       }
     }
-    if (range.length < n && yieldsShorter) {
+    if (range.length > 0 && range.length < n && yieldsShorter) {
       yield range
     }
   }
