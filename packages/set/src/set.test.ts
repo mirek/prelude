@@ -87,3 +87,8 @@ await test('a step below the ulp of the start fails fast instead of stalling', (
   assert.throws(() => S.range1(0, 1e9, 1), RangeError)
   assert.equal(S.range(0, 1000).size, 1000)
 })
+
+await test('the Readme usage example runs as written', () => {
+  const a = new Set([ 3, 1, 2 ])
+  assert.deepEqual(S.sorted(a, Cmp.number), [ 1, 2, 3 ])
+})

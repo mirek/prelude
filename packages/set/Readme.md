@@ -8,12 +8,13 @@ npm i -E @prelude/set
 
 ```ts
 import * as Sets from '@prelude/set'
+import * as Cmp from '@prelude/cmp'
 // ...
 Sets.equal(a, b)
 Sets.difference(a, b)
 Sets.union(a, b)
 Sets.intersection(a, b)
-Sets.sorted(a)
+Sets.sorted(a, Cmp.number) // sorted array
 Sets.shuffled(a)
 ```
 

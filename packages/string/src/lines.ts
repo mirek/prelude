@@ -1,6 +1,5 @@
 export * as Diff from './lines/diff.js'
 export * from './lines/distance-at.js'
-export * from './lines/distance-at.js'
 export * from './lines/of.js'
 export * from './lines/similar-index-of.js'
 export * from './lines/indent.js'
