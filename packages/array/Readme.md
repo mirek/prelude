@@ -20,7 +20,7 @@
 
   Throws {Error} if index is out of bounds.
 
-* `bounded: <T>(values: T[], index: number) => T`
+* `atClamp: <T>(values: T[], index: number) => T`
 
   Like `at` but bounds less than zero index to 0 and out of bound to last.
 
@@ -74,7 +74,7 @@
 
   Returns random element or `undefined` if array is empty.
 
-* `modulo: <T>(values: T[], index: number) => T`
+* `atCycle: <T>(values: T[], index: number) => T`
 
   Like `at` but wraps using modulo on length.
 

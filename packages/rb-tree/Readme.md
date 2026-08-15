@@ -21,9 +21,9 @@ npm i -E @prelude/rb-tree
 
 ```ts
 import * as RbTree from '@prelude/rb-tree'
-import * as Cmp from '@preluce/cmp'
+import * as Cmp from '@prelude/cmp'
 
-const rb = RbTree.of(Cmp.strings)
+const rb = RbTree.of(Cmp.string, (_: string) => _)
 RbTree.insert(rb, 'foo')
 RbTree.insert(rb, 'bar')
 console.log(RbTree.has(rb, 'foo')) // true

@@ -5,7 +5,7 @@ import unsafeCombinations from './unsafe-combinations.js'
  * This is a safe version that creates a new array for each combination.
  *
  * @template T - Type of elements in the iterable
- * @param k - Optional size of each combination. If undefined, defaults to 2
+ * @param k - Optional size of each combination (defaults to the length of the input, i.e. a single combination of all elements)
  * @returns A function that takes an iterable and returns a generator of combinations
  * @yields Arrays containing each k-element combination from the input
  *
