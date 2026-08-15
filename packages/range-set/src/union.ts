@@ -8,7 +8,7 @@ const reduction = <K, V>(
   x: Range.T<K, V>
 ): Range.T<K, V>[] => {
   // The very first range stays as is.
-  const r = rs.pop()
+  let r = rs.pop()
   if (r == null) {
     rs.push(x)
     return rs
@@ -34,10 +34,10 @@ const reduction = <K, V>(
     return rs
   }
 
-  // First part.
+  // First part. Never mutate `r`: it may be one of the caller's input ranges.
   if (x.start > r.start) {
     rs.push({ ...r, end: key.prev(x.start) })
-    r.start = x.start
+    r = { ...r, start: x.start }
   }
 
   // Unify shared part.

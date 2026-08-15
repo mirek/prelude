@@ -373,3 +373,10 @@ await test('difference (closed, min)', () => {
   a = RangeSet.difference(a, { ranges: [r(2, 4, 5)] })
   assert.deepEqual(a.ranges, [r(1, 1, 8)])
 })
+await test('difference with half-open keys does not emit empty ranges', () => {
+  const halfOpen = { key: RangeSet.Key.halfOpen, value: RangeSet.Value.sum }
+  assert.deepEqual(RangeSet.difference({ ...halfOpen, ranges: [ r(2, 3, 1) ] }, { ranges: [ r(0, 3, 9) ] }).ranges, [])
+  assert.deepEqual(RangeSet.difference({ ...halfOpen, ranges: [ r(2, 5, 1) ] }, { ranges: [ r(2, 5, 9) ] }).ranges, [])
+  assert.deepEqual(RangeSet.difference({ ...halfOpen, ranges: [ r(0, 10, 1) ] }, { ranges: [ r(2, 4, 9), r(6, 8, 9) ] }).ranges, [ r(0, 2, 1), r(4, 6, 1), r(8, 10, 1) ])
+  assert.deepEqual(RangeSet.difference({ ...halfOpen, ranges: [ r(0, 10, 1) ] }, { ranges: [ r(0, 5, 9), r(5, 10, 9) ] }).ranges, [])
+})

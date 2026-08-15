@@ -22,6 +22,8 @@ export const difference = <K, V>(
   let i = 0
   let j = 0
   const { key } = rangeSet
+  // A range is empty once its start reaches the key after its end (works for closed and half-open keys).
+  const empty = (range: Range.T<K, V>) => key.cmp(range.start, key.next(range.end)) >= 0
 
   // Process each original range
   while (i < rangeSet.ranges.length) {
@@ -53,14 +55,14 @@ export const difference = <K, V>(
       x.start = key.next(y.end)
 
       // If nothing remains of x, stop processing
-      if (x.start > x.end) {
+      if (empty(x)) {
         break
       }
       k++
     }
 
     // Add remaining part of x if any
-    if (x.start <= x.end) {
+    if (!empty(x)) {
       ranges.push(x)
     }
 

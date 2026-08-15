@@ -356,3 +356,12 @@ await test('union (closed, sum) - filling gaps', () => {
   a = RangeSet.union(a, { ranges: [r(2, 3, 2)] })
   assert.deepEqual(a.ranges, [r(1, 4, 2)])
 })
+
+await test('union does not mutate the input ranges', () => {
+  const A = [ r(1, 5, 1) ]
+  const B = [ r(3, 7, 2) ]
+  const result = RangeSet.union({ ranges: A, key: RangeSet.Key.closed, value: RangeSet.Value.sum }, { ranges: B })
+  assert.deepEqual(A, [ r(1, 5, 1) ])
+  assert.deepEqual(B, [ r(3, 7, 2) ])
+  assert.deepEqual(result.ranges, [ r(1, 2, 1), r(3, 5, 3), r(6, 7, 2) ])
+})
