@@ -211,6 +211,37 @@ await test('eventually removes its listener once resolved', async () => {
   assert.equal(emitter.listeners('data'), undefined)
 })
 
+await test('a once handler that re-registers itself fires once per emit', () => {
+  const emitter = Emitter.of<TestEvents>()
+  emitter.on('message', () => {})
+  let calls = 0
+  const handler = () => {
+    calls++
+    emitter.once('message', handler)
+  }
+  emitter.once('message', handler)
+  emitter.emit('message', 'a')
+  assert.equal(calls, 1)
+  emitter.emit('message', 'b')
+  assert.equal(calls, 2)
+})
+
+await test('listeners added during emit run from the next emit', () => {
+  const emitter = Emitter.of<TestEvents>()
+  const seen: string[] = []
+  emitter.on('message', message => {
+    seen.push(`first:${message}`)
+    if (message === 'a') {
+      emitter.on('message', message_ => {
+        seen.push(`added:${message_}`)
+      })
+    }
+  })
+  emitter.emit('message', 'a')
+  emitter.emit('message', 'b')
+  assert.deepEqual(seen, [ 'first:a', 'first:b', 'added:b' ])
+})
+
 await test('eventually should reject on timeout', async () => {
   const emitter = Emitter.of<TestEvents>()
 

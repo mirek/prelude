@@ -57,11 +57,18 @@ export class Emitter<T extends Events> implements Interface<T> {
   /**
    * Triggers an event, calling all registered listeners with the provided value.
    * Errors in listeners are caught and logged without interrupting other listeners.
+   * Listeners are snapshotted first (like Node's EventEmitter): a listener added
+   * during the emit runs from the next emit, so a `once` handler that re-registers
+   * itself cannot re-fire within the same emit.
    * @param name - The event name to emit
    * @param values - The payload to pass to listeners
    */
   emit<K extends keyof T>(name: K, ...values: T[K]) {
-    for (const listener of this.listeners(name) ?? []) {
+    const listeners = this.listeners(name)
+    if (!listeners) {
+      return
+    }
+    for (const listener of Array.from(listeners)) {
       try {
         listener(...values)
       } catch (err) {
