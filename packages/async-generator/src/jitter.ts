@@ -5,12 +5,12 @@ import sleep from './sleep.js'
  * Creates a transformer that adds random time delays between yielded values.
  *
  * @description
- * This function yields each value from the source iterable immediately,
- * then waits for a random amount of time before processing the next value.
+ * This function yields the first value immediately and waits a random amount of time
+ * before each following value; nothing is waited after the last one.
  * The delay consists of a fixed component plus a random component.
  *
  * @param jitter_ - Maximum random delay in milliseconds to add to the base delay
- * @param delay - Base delay in milliseconds to apply after each value (default: 0)
+ * @param delay - Base delay in milliseconds to apply between values (default: 0)
  * @returns A transformer that passes through all values with time delays between them
  *
  * @example
@@ -25,9 +25,14 @@ import sleep from './sleep.js'
  */
 export function jitter<T>(jitter_: number, delay = 0): Transformer<T> {
   return async function* (values) {
+    // Sleep between values, not after the last one: a trailing delay only holds up completion.
+    let first = true
     for await (const value of values) {
+      if (!first) {
+        await sleep(delay + (Math.random() * jitter_))
+      }
+      first = false
       yield value
-      await sleep(delay + (Math.random() * jitter_))
     }
   }
 }
