@@ -37,3 +37,12 @@ await test('keys named after Object.prototype members are recorded like any othe
   assert.throws(() => G.record((x: string) => x)([ 'hasOwnProperty', 'hasOwnProperty' ]), /duplicate key hasOwnProperty/)
   assert.deepEqual(G.record((x: string) => x, G.record.lastWins)([ 'valueOf', 'valueOf' ]), { valueOf: 'valueOf' })
 })
+
+await test('a __proto__ key is an own property, not the prototype', () => {
+  const result = G.record((x: string) => x)([ '__proto__', 'a' ])
+  assert.deepEqual(Object.keys(result).toSorted(), [ '__proto__', 'a' ])
+  assert.equal(Object.getPrototypeOf(result), Object.prototype)
+  assert.throws(() => G.record((x: string) => x)([ '__proto__', '__proto__' ]), /duplicate key __proto__/)
+  const last = G.record((x: string) => x, G.record.lastWins)([ '__proto__', '__proto__' ])
+  assert.deepEqual(Object.keys(last), [ '__proto__' ])
+})

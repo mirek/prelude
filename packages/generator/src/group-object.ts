@@ -10,7 +10,8 @@ export const groupObject =
         if (recordValues) {
           recordValues.push(value)
         } else {
-          record[key] = [ value ]
+          // Plain assignment of '__proto__' would set the prototype instead of an own property.
+          Object.defineProperty(record, key, { value: [ value ], enumerable: true, writable: true, configurable: true })
         }
       }
       return record

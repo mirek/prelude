@@ -34,12 +34,28 @@ export const memoized =
   <T>(iterable: Iterable<T>) => {
     const values: T[] = []
     const iterator = iterable[Symbol.iterator]()
+    let done = false
+    let failure: undefined | { error: unknown }
     const f =
       function* (): Generator<T> {
         for (let index = 0; ; index++) {
           if (index === values.length) {
-            const result = iterator.next()
+            // A source that threw stays failed: replaying only the prefix would silently truncate.
+            if (failure) {
+              throw failure.error
+            }
+            if (done) {
+              break
+            }
+            let result: IteratorResult<T>
+            try {
+              result = iterator.next()
+            } catch (error) {
+              failure = { error }
+              throw error
+            }
             if (result.done) {
+              done = true
               break
             }
             values.push(result.value)

@@ -13,3 +13,10 @@ await test('keys named after Object.prototype members are grouped like any other
   const grouped = G.groupObject((x: string) => x)([ 'constructor', 'toString', 'constructor', 'a' ])
   assert.deepEqual(grouped, { constructor: [ 'constructor', 'constructor' ], toString: [ 'toString' ], a: [ 'a' ] })
 })
+
+await test('a __proto__ key is grouped as an own property', () => {
+  const grouped = G.groupObject((x: string) => x)([ '__proto__', '__proto__', 'b' ])
+  assert.deepEqual(Object.keys(grouped).toSorted(), [ '__proto__', 'b' ])
+  assert.equal(Object.getPrototypeOf(grouped), Object.prototype)
+  assert.deepEqual(Object.getOwnPropertyDescriptor(grouped, '__proto__')?.value, [ '__proto__', '__proto__' ])
+})
