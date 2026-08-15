@@ -27,3 +27,15 @@ await test('cycle on no values', async () => {
     G.array
   ), [])
 })
+
+await test('cycle 0 times still consumes the whole input', async () => {
+  const pulled: number[] = []
+  const source = async function* () {
+    for (const value of [ 1, 2, 3 ]) {
+      pulled.push(value)
+      yield value
+    }
+  }
+  assert.deepEqual(await G.pipe(source(), G.cycle(0), G.array), [])
+  assert.deepEqual(pulled, [ 1, 2, 3 ])
+})

@@ -8,8 +8,9 @@ import type { Transformer } from './prelude.js'
  */
 // eslint-disable-next-line require-yield
 async function* cycleZero(values: AsyncIterable<unknown>) {
+  // Drain the whole input, as documented; returning early would leave it half-consumed.
   for await (const _value of values) {
-    return
+    // consume
   }
 }
 
