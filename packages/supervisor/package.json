@@ -1,0 +1,55 @@
+{
+  "name": "@prelude/supervisor",
+  "version": "0.0.1",
+  "description": "Supervisor module: restart strategies (one-for-one, all-for-one, rest-for-one) and restart limits for @prelude/actor.",
+  "type": "module",
+  "files": [
+    "mjs",
+    "Readme.md",
+    "README.md",
+    "License.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "pnpm tsx --test src/**/*.test.ts",
+    "prepack": "node ../../scripts/build-package.mjs"
+  },
+  "keywords": [
+    "prelude",
+    "std",
+    "lib",
+    "stdlib",
+    "library",
+    "actor",
+    "actors",
+    "actor-model",
+    "supervisor",
+    "supervision",
+    "restart",
+    "one-for-one",
+    "all-for-one",
+    "rest-for-one",
+    "erlang",
+    "otp"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "@prelude/tsconfig": "workspace:*"
+  },
+  "dependencies": {
+    "@prelude/actor": "workspace:*"
+  },
+  "module": "./mjs/index.js",
+  "exports": {
+    ".": {
+      "types": "./mjs/index.d.ts",
+      "import": "./mjs/index.js"
+    },
+    "./*.js": {
+      "types": "./mjs/*.d.ts",
+      "import": "./mjs/*.js"
+    }
+  },
+  "types": "./mjs/index.d.ts"
+}
