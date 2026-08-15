@@ -6,6 +6,11 @@ import type { Listener, Events, Predicate } from './prelude.js'
 
 const log = Log.of('@prelude/emitter')
 
+/** A `once`/`onceIf` wrapper remembers the listener it stands for. */
+interface OnceWrapper {
+  listener?: Listener
+}
+
 /**
  * Threshold for logging error when number of listeners exceeds this value.
  * Used to detect potential memory leaks from too many listeners.
@@ -51,7 +56,27 @@ export class Emitter<T extends Events> implements Interface<T> {
     if (listener == null) {
       return this._listeners.has(name)
     }
-    return this.listeners(name)?.has(listener) ?? false
+    return this.#find(name, listener) !== undefined
+  }
+
+  /**
+   * Finds the registered function for `listener`: the listener itself, or the wrapper
+   * `once`/`onceIf` registered on its behalf (so `off`/`hasListener` accept the original).
+   */
+  #find<K extends keyof T>(name: K, listener: Listener<T[K]>): undefined | Listener {
+    const listeners = this.listeners(name)
+    if (!listeners) {
+      return undefined
+    }
+    if (listeners.has(listener)) {
+      return listener as Listener
+    }
+    for (const registered of listeners) {
+      if ((registered as OnceWrapper).listener === listener) {
+        return registered as Listener
+      }
+    }
+    return undefined
   }
 
   /**
@@ -103,7 +128,8 @@ export class Emitter<T extends Events> implements Interface<T> {
         .from(listeners)
         .reduce((n, listener) => n + this.off(maybeName, listener), 0)
     }
-    if (listeners.delete(maybeListener)) {
+    const registered = this.#find(maybeName, maybeListener)
+    if (registered !== undefined && listeners.delete(registered as Listener<T[K]>)) {
       this.emit('removeListener', maybeName, maybeListener as Listener)
       if (listeners.size === 0) {
         this._listeners.delete(maybeName)
@@ -148,12 +174,14 @@ export class Emitter<T extends Events> implements Interface<T> {
    * @returns Unregister function to remove the listener before it's triggered
    */
   onceIf<K extends keyof T>(name: K, predicate: Predicate<T[K]>, listener: Listener<T[K]>) {
-    const off = this.on(name, (...values) => {
+    const wrapper: Listener<T[K]> & OnceWrapper = (...values) => {
       if (predicate(...values)) {
         off()
         listener(...values)
       }
-    })
+    }
+    wrapper.listener = listener as Listener
+    const off = this.on(name, wrapper)
     return off
   }
 
@@ -184,18 +212,32 @@ export class Emitter<T extends Events> implements Interface<T> {
     return new Promise((resolve, reject) => {
       let off: null | (() => void) = null
       let offTimeout: null | (() => void) = null
-      offTimeout = after(timeout, () => {
-        offTimeout = null
+      const cleanup = () => {
         off?.()
         off = null
-        reject(Err.error('timeout', `Timeout of ${timeout} reached while waiting for ${String(name)} event.`))
-      })
-      off = this.on(name, (...values) => {
-        if (predicate(...values)) {
-          off?.()
-          off = null
-          offTimeout?.()
+        offTimeout?.()
+        offTimeout = null
+      }
+      // A non-finite timeout means "wait forever"; setTimeout would clamp it to ~1ms.
+      if (Number.isFinite(timeout)) {
+        offTimeout = after(timeout, () => {
           offTimeout = null
+          cleanup()
+          reject(Err.error('timeout', `Timeout of ${timeout} reached while waiting for ${String(name)} event.`))
+        })
+      }
+      off = this.on(name, (...values) => {
+        let matched: boolean
+        try {
+          matched = predicate(...values)
+        } catch (err) {
+          // emit() would swallow the throw and leave this promise pending until the timeout.
+          cleanup()
+          reject(err)
+          return
+        }
+        if (matched) {
+          cleanup()
           resolve(values)
         }
       })
