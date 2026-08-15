@@ -9,7 +9,7 @@ import type { Eq } from './prelude.js'
 export function record<T>(eq: Eq<T>) {
   return function (a: Record<string, T>, b: Record<string, T>) {
     for (const k in a) {
-      if (!(k in b)) {
+      if (!Object.hasOwn(b, k)) {
         if (a[k] === undefined) {
           continue
         }
@@ -20,7 +20,7 @@ export function record<T>(eq: Eq<T>) {
       }
     }
     for (const k in b) {
-      if (k in a) {
+      if (Object.hasOwn(a, k)) {
         continue
       }
       if (b[k] !== undefined) {
