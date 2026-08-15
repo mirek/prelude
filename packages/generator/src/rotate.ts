@@ -1,8 +1,4 @@
 import array from './array.js'
-import of from './of.js'
-import pipe from './pipe.js'
-import retain from './retain.js'
-import take from './take.js'
 
 /**
  * Helper function to rotate values backward by n positions
@@ -32,16 +28,35 @@ const rotateBackward =
 const rotateForward =
   <T>(n: number) =>
     function* (g: Iterable<T>): Generator<T> {
-      const q = pipe(of(g), retain, take(n), array)
-      const m = q.length
-      let i = 0
-      for (const _ of g) {
-        yield _
-        i++
-      }
-      let j = i > 0 ? 0 : m ? n % m : 0
-      for (let k = 0; k < m; k++) {
-        yield q[(j + k) % m]
+      // Use a single iterator: iterating `g` twice would replay re-iterable inputs (arrays, sets).
+      const iterator = g[Symbol.iterator]()
+      try {
+        const q: T[] = []
+        let exhausted = false
+        while (q.length < n) {
+          const result = iterator.next()
+          if (result.done) {
+            exhausted = true
+            break
+          }
+          q.push(result.value)
+        }
+        let rest = 0
+        while (!exhausted) {
+          const result = iterator.next()
+          if (result.done) {
+            break
+          }
+          rest++
+          yield result.value
+        }
+        const m = q.length
+        const j = rest > 0 || m === 0 ? 0 : n % m
+        for (let k = 0; k < m; k++) {
+          yield q[(j + k) % m]
+        }
+      } finally {
+        iterator.return?.()
       }
     }
 
@@ -60,7 +75,7 @@ const rotateForward =
  *   G.range(1, 5),
  *   G.rotate(2),
  *   G.array
- * ) // [4, 5, 1, 2, 3]
+ * ) // [3, 4, 5, 1, 2]
  * ```
  */
 export const rotate =
