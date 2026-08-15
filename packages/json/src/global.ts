@@ -5,7 +5,9 @@ export const global = Coder.of()
 Coder.register(global, Codecs.Array)
 Coder.register<bigint>(global, Codecs.BigInt)
 Coder.register(global, Codecs.Date)
-Coder.register(global, Codecs.Error)
+for (const constructor of Codecs.Error.constructors) {
+  Coder.register(global, { ...Codecs.Error, constructor })
+}
 Coder.register(global, Codecs.Map)
 Coder.register(global, Codecs.RegExp)
 Coder.register(global, Codecs.Set)

@@ -1,5 +1,6 @@
 import * as $ from '@prelude/refute'
 import * as Encoder from '../encoder.js'
+import * as Decoder from '../decoder.js'
 
 export type t = Error
 
@@ -7,9 +8,22 @@ export const constructor = Error
 
 export const name = 'Error'
 
+/** Built-in error constructors sharing this coder; registered alongside `Error` by the global coder. */
+export const constructors = [
+  Error,
+  EvalError,
+  RangeError,
+  ReferenceError,
+  SyntaxError,
+  TypeError,
+  URIError,
+  AggregateError
+] as const
+
 export const encode =
   (value: t, encoder: Encoder.t) => {
     const { name: name_, message, cause, stack } = value
+    const encodedCause = cause === undefined ? undefined : Encoder.encode(cause, encoder)
     if (value instanceof AggregateError) {
       const { errors } = value
       return {
@@ -17,7 +31,7 @@ export const encode =
           name: name_,
           message,
           errors: errors.map(error => Encoder.encode(error, encoder)),
-          cause,
+          cause: encodedCause,
           stack
         }
       }
@@ -26,14 +40,14 @@ export const encode =
       ['^Error$']: {
         name: name_,
         message,
-        cause,
+        cause: encodedCause,
         stack
       }
     }
   }
 
 export const decode =
-  (value: unknown): t => {
+  (value: unknown, decoder: Decoder.t): t => {
     const refute = $.object({
       name: $.string,
       message: $.string,
@@ -44,7 +58,9 @@ export const decode =
     if ($.failed(refute)) {
       throw new Error($.reasonWithoutReceived(refute))
     }
-    const { name: name_, message, cause, errors, stack } = refute.value
+    const { name: name_, message, stack } = refute.value
+    const cause = refute.value.cause === undefined ? undefined : Decoder.decode(refute.value.cause, decoder)
+    const errors = refute.value.errors?.map(error => Decoder.decode(error, decoder))
     const options = cause === undefined ? undefined : { cause }
     const withStack = (err: Error) => stack === undefined ? err : Object.assign(err, { stack })
     switch (name_) {
