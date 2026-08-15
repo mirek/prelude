@@ -26,3 +26,14 @@ await test('escaped percent and unknown rules', () => {
   assert.equal($.strftime('100%%')('100%'), true)
   assert.throws(() => $.strftime('%Q')('x'), /Unknown strftime rule/)
 })
+
+await test('%j and %z reject out-of-range values', () => {
+  assert.equal($.strftime('%j')('000'), false)
+  assert.equal($.strftime('%j')('001'), true)
+  assert.equal($.strftime('%j')('366'), true)
+  assert.equal($.strftime('%j')('367'), false)
+  assert.equal($.strftime('%z')('+0130'), true)
+  assert.equal($.strftime('%z')('-2359'), true)
+  assert.equal($.strftime('%z')('+0160'), false)
+  assert.equal($.strftime('%z')('+2400'), false)
+})

@@ -32,3 +32,11 @@ await test('strftime', () => {
   assert.deepEqual($.strftime('%T')('01:01:01'), $.ok('01:01:01'))
   assert.deepEqual($.strftime('%T')('25:01:01'), $.fail({ value: '25:01:01', index: 0 }, 'expected %T strftime, failed at index 0'))
 })
+
+await test('%j and %z reject out-of-range values', () => {
+  assert.equal($.failed($.strftime('%j')('000')), true)
+  assert.deepEqual($.strftime('%j')('366'), $.ok('366'))
+  assert.equal($.failed($.strftime('%z')('+0160')), true)
+  assert.equal($.failed($.strftime('%z')('+2400')), true)
+  assert.deepEqual($.strftime('%z')('-0530'), $.ok('-0530'))
+})

@@ -5,7 +5,7 @@ const map: Record<string, undefined | string | RegExp> = {
   A: /^(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday)/,
   d: /^(0[1-9]|[12][0-9]|3[01])/, // 01..31
   e: /^( [1-9]|[12][0-9]|3[01])/, // _1..31
-  j: /^([0-2][0-9]{2}|3[0-5][0-9]|36[0-6])/,
+  j: /^(00[1-9]|0[1-9][0-9]|[12][0-9]{2}|3[0-5][0-9]|36[0-6])/, // 001..366
   u: /^[1-7]/, // 1..7
   w: /^[0-6]/, // 0..6
 
@@ -40,7 +40,7 @@ const map: Record<string, undefined | string | RegExp> = {
   S: /^[0-5][0-9]/,
   T: '%H:%M:%S',
   X: '%H:%M:%S',
-  z: /^[+-][0-9]{4}/,
+  z: /^[+-](0[0-9]|1[0-9]|2[0-3])[0-5][0-9]/, // +hhmm, minutes 00..59
   Z: /^[A-Z]+/,
 
   // Time and Date Stamps
