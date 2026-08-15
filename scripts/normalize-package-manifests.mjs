@@ -82,6 +82,27 @@ function normalizeLibraryManifest(manifest) {
   }
 }
 
+// Public configs ship in the tarball. Workspace configs add the
+// `@prelude/* -> ../*/src/index.ts` alias and must stay repository-only, but
+// TypeScript resolves tsconfig `extends` through package.json `exports`, so
+// they still have to be exported for sibling packages to extend them from
+// source. `publishConfig.exports` narrows the map back down at pack time.
+const publicTsconfigExports = {
+  './base.json': './base.json',
+  './isomorphic.json': './isomorphic.json',
+  './isomorphic.d.ts': './isomorphic.d.ts',
+  './backend.json': './backend.json',
+  './javascript-backend.json': './javascript-backend.json',
+  './test.json': './test.json',
+  './package.json': './package.json'
+}
+
+const workspaceTsconfigExports = {
+  './workspace-isomorphic.json': './workspace-isomorphic.json',
+  './workspace-backend.json': './workspace-backend.json',
+  './workspace-test.json': './workspace-test.json'
+}
+
 function normalizeTsconfigManifest(manifest) {
   return {
     ...manifest,
@@ -94,13 +115,12 @@ function normalizeTsconfigManifest(manifest) {
       'test.json'
     ],
     exports: {
-      './base.json': './base.json',
-      './isomorphic.json': './isomorphic.json',
-      './isomorphic.d.ts': './isomorphic.d.ts',
-      './backend.json': './backend.json',
-      './javascript-backend.json': './javascript-backend.json',
-      './test.json': './test.json',
-      './package.json': './package.json'
+      ...publicTsconfigExports,
+      ...workspaceTsconfigExports
+    },
+    publishConfig: {
+      ...manifest.publishConfig,
+      exports: publicTsconfigExports
     }
   }
 }
