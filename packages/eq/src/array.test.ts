@@ -39,3 +39,17 @@ await test('tuple equality never invokes an element equality with a hole', () =>
   assert.equal(eq([ 1, 2 ], [ 1, 2 ]), true)
   assert.equal(eq([ 1, 2 ], [ 1, 3 ]), false)
 })
+
+await test('inherited numeric properties do not make holes look present', () => {
+  const eq = $.array((a: number, b: number) => a.toFixed() === b.toFixed())
+  const proto = Object.create(Array.prototype)
+  proto[0] = 7
+  const withHole = Object.setPrototypeOf([, 1], proto) as number[]
+  const withValue = Object.setPrototypeOf([7, 1], proto) as number[]
+  assert.equal(eq(withHole, withValue), false)
+  assert.equal(eq(withValue, withHole), false)
+  assert.equal(eq(withHole, Object.setPrototypeOf([, 1], proto) as number[]), true)
+  const tuple = $.tuple<[ number ]>((a: number, b: number) => a.toFixed() === b.toFixed())
+  assert.equal(tuple(withHole as [number], withValue as [number]), false)
+  assert.equal(tuple(withHole as [number], withHole as [number]), true)
+})

@@ -8,10 +8,13 @@ import type { Eq } from './prelude.js'
  */
 export function tuple<T extends unknown[]>(...eqs: Eq<T[number]>[]) {
   return function (a: T, b: T) {
-    return eqs.every((eq, i) =>
-      i in a && i in b ?
+    return eqs.every((eq, i) => {
+      // Own slots only, so inherited numeric properties do not make a hole look present.
+      const inA = Object.hasOwn(a, i)
+      const inB = Object.hasOwn(b, i)
+      return inA && inB ?
         eq(a[i], b[i]) :
-        a[i] === undefined && b[i] === undefined
-    )
+        !(inA && a[i] !== undefined) && !(inB && b[i] !== undefined)
+    })
   }
 }

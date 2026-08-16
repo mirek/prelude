@@ -13,11 +13,15 @@ function array_<T>(eq: Eq<T>) {
     }
     // Index loop rather than `every`, which skips holes and so treated [, 1] as equal to [2, 1].
     for (let i = 0; i < a.length; i++) {
-      if (!(i in a) || !(i in b)) {
-        if (a[i] === undefined && b[i] === undefined) {
-          continue
+      // Own slots only: an inherited numeric property (e.g. on Array.prototype or a subclass)
+      // must not make a hole look present.
+      const inA = Object.hasOwn(a, i)
+      const inB = Object.hasOwn(b, i)
+      if (!inA || !inB) {
+        if ((inA && a[i] !== undefined) || (inB && b[i] !== undefined)) {
+          return false
         }
-        return false
+        continue
       }
       if (!eq(a[i], b[i])) {
         return false
