@@ -38,6 +38,29 @@ declare function clearInterval(handle: TimerHandle | undefined): void;
 declare function queueMicrotask(callback: () => void): void;
 
 // ---------------------------------------------------------------------------
+// Explicit resource management
+//
+// Node 22 (the supported floor), browsers and other runtimes expose the
+// Symbol.dispose / Symbol.asyncDispose well-known symbols, so isomorphic code
+// may implement Disposable/AsyncDisposable. The rest of the proposal
+// (DisposableStack, AsyncDisposableStack, SuppressedError) is Node 24+, which
+// is why the lib `ESNext.Disposable` is deliberately NOT enabled: only the
+// symbols and the two interfaces are declared here.
+
+interface SymbolConstructor {
+  readonly dispose: unique symbol;
+  readonly asyncDispose: unique symbol;
+}
+
+interface Disposable {
+  [Symbol.dispose](): void;
+}
+
+interface AsyncDisposable {
+  [Symbol.asyncDispose](): PromiseLike<void>;
+}
+
+// ---------------------------------------------------------------------------
 // Console
 //
 // Universally available in every JS runtime. We declare a minimal surface —

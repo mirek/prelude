@@ -110,12 +110,15 @@ missing JavaScript or declarations.
 ## Runtime floor and library policy
 
 `base.json` sets `target: ES2024` and an explicit `lib` list (ES2024 plus the
-ES2025 iterator helpers, `Set` methods and disposable symbols that Node 22
-ships). Do not switch either back to `ESNext` and do not add a `lib` entry
-per package: the list is the machine-checked half of the support policy in the
-root README's "Supported runtimes" section, and every entry must be available
-in the oldest supported Node release. `@types/node` at the workspace root is
-pinned to that same release for the same reason.
+ES2025 iterator helpers and `Set` methods that Node 22 ships). Do not switch
+either back to `ESNext` and do not add a `lib` entry per package: the list is
+the machine-checked half of the support policy in the root README's "Supported
+runtimes" section, and every entry must be available in the oldest supported
+Node release. `@types/node` at the workspace root is pinned to that same
+release for the same reason. `Symbol.dispose`/`Symbol.asyncDispose` come from
+`isomorphic.d.ts` (isomorphic projects) or `@types/node` (backend and test
+projects), not from `ESNext.Disposable`, whose `DisposableStack` family is
+Node 24+; the root `.oxlintrc.json` bans those globals.
 
 ## Common failures
 
