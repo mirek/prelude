@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2024",
+    "lib": ["ES2024", "ES2025.Iterator", "ES2025.Collection", "ESNext.Disposable"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,

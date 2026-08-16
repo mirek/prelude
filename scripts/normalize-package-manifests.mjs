@@ -12,6 +12,15 @@ const files = [
   'LICENSE'
 ]
 
+// The supported runtime matrix (see README.md "Supported runtimes"): every
+// published manifest declares the same floor, and CI runs the full gate on
+// that floor and on the current LTS.
+const engines = { node: '>=22' }
+
+// @prelude/tsconfig's base config names its lib entries the way TypeScript 6
+// does (ES2025.Iterator, ES2025.Collection); 5.x knows them only as ESNext.*.
+const tsconfigPeerDependencies = { typescript: '>=6' }
+
 const workspaceExtends = new Map([
   ['@prelude/tsconfig/isomorphic.json', '@prelude/tsconfig/workspace-isomorphic.json'],
   ['@prelude/tsconfig/backend.json', '@prelude/tsconfig/workspace-backend.json'],
@@ -76,7 +85,8 @@ function normalizeLibraryManifest(manifest) {
     files,
     scripts,
     types: './mjs/index.d.ts',
-    exports
+    exports,
+    engines
   }
 }
 
@@ -119,7 +129,12 @@ function normalizeTsconfigManifest(manifest) {
     publishConfig: {
       ...manifest.publishConfig,
       exports: publicTsconfigExports
-    }
+    },
+    peerDependencies: {
+      ...manifest.peerDependencies,
+      ...tsconfigPeerDependencies
+    },
+    engines
   }
 }
 

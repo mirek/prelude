@@ -13,7 +13,7 @@ This repository is organized as a monorepo. Every directory under `packages/*` i
 
 ### Prerequisites
 
-- Node.js 22 or 24
+- Node.js 22 or later (see [Supported runtimes](#supported-runtimes))
 - pnpm `11.1.3` through the root `packageManager` declaration
 
 ### Install dependencies
@@ -41,9 +41,19 @@ pnpm verify
 
 Concurrency tests use explicit barriers, fake schedulers, and awaited task settlement rather than random sleeps or eventual polling. Optional randomized stress coverage must use a reproducible seed.
 
-The package check verifies declared entry points, declaration resolution, root and subpath runtime imports, workspace dependency rewriting, the externally published TypeScript configs, and exclusion of development-only files. Every publishable library also builds from source during its own `prepack` lifecycle.
+The package check verifies declared entry points, declaration resolution, root and subpath runtime imports, workspace dependency rewriting, the externally published TypeScript configs, and exclusion of development-only files. Isomorphic packages are additionally imported with Node's platform globals removed and every Node builtin unresolvable, and their declarations are type-checked without `@types/node`. Every publishable library also builds from source during its own `prepack` lifecycle.
 
-GitHub Actions runs these checks independently on Node.js 22 and 24. The aggregate `CI` job is suitable as the required branch-protection check.
+GitHub Actions runs these checks independently on Node.js 22 (the supported floor), 24 and 26. The aggregate `CI` job is suitable as the required branch-protection check.
+
+## Supported runtimes
+
+Every published `@prelude/*` package declares `"engines": { "node": ">=22" }`; the root manifest declares the same. Node 22 is the oldest release line still in maintenance, and CI runs the full quality gate on it and on the current release lines, so the floor is exercised, not inferred.
+
+- **Compile target.** `@prelude/tsconfig/base.json` sets `target: ES2024` and `lib: ["ES2024", "ES2025.Iterator", "ES2025.Collection", "ESNext.Disposable"]`: the ES2024 language and library, plus the ES2025 iterator helpers, `Set` methods and `Symbol.dispose`/`Symbol.asyncDispose`, all of which Node 22 ships. Nothing newer (`Promise.try`, `RegExp.escape`, `Float16Array`, ...) is visible to the compiler, so it cannot enter a package by accident. Widening the list is a support-policy change: it requires the feature to be available in the oldest supported Node and an entry in this section.
+- **Node types.** The workspace type-checks against `@types/node` for the oldest supported release, so backend packages cannot use a Node API added after the floor.
+- **Package classes.** A package is *isomorphic* when its `tsconfig.lib.json` extends `@prelude/tsconfig/isomorphic.json` (compiled with `types: []`, so no Node global or `node:` module resolves) or *Node-only* when it extends `backend.json`. Currently Node-only: `@prelude/assert`, `@prelude/fs`, `@prelude/log`, `@prelude/progress`, `@prelude/rb-tree`, `@prelude/refute`, `@prelude/repl` (and the private `@prelude/json`); every other package is isomorphic and is expected to run in browsers, workers and edge runtimes that support ES2024. `pnpm pack:check` enforces both classes on every CI Node version.
+- **TypeScript.** `@prelude/tsconfig` declares `typescript >=6` as a peer dependency: its `lib` entries use the `ES2025.*` names TypeScript 6 introduced (5.x only knows them as `ESNext.*`). Package declarations are emitted and consumer-checked (`pack:check`) with the workspace TypeScript version; older compilers are not tested.
+- **Dropping a runtime.** Raising the floor is a breaking change for every package: bump the `engines` constant in `scripts/normalize-package-manifests.mjs`, the CI matrix, `@types/node` and this section together, and release the affected packages with a major bump.
 
 ### Clean TypeScript build artifacts
 

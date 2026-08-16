@@ -120,7 +120,8 @@ async function withUncaughtExceptions<T>(f: (errors: unknown[]) => Promise<T>): 
   } finally {
     process.removeAllListeners('uncaughtException')
     for (const listener of listeners) {
-      process.on('uncaughtException', listener)
+      // rawListeners is typed as Function[] in @types/node 22.
+      process.on('uncaughtException', listener as NodeJS.UncaughtExceptionListener)
     }
   }
 }

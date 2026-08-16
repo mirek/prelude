@@ -1,7 +1,6 @@
 {
   "extends": "./base.json",
   "compilerOptions": {
-    "lib": ["ESNext"],
     "types": ["node"],
     "allowJs": true,
     "checkJs": true,
