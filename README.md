@@ -61,7 +61,6 @@ make clean
 | `packages/async-generator` | `@prelude/async-generator` | Async generator module. |
 | `packages/channel` | `@prelude/channel` | Channel module. |
 | `packages/cmp` | `@prelude/cmp` | Cmp module. |
-| `packages/docs` | `@prelude/docs` | (no description in package manifest) |
 | `packages/emitter` | `@prelude/emitter` | Emitter module. |
 | `packages/eq` | `@prelude/eq` | Eq module. |
 | `packages/err` | `@prelude/err` | Err module. |

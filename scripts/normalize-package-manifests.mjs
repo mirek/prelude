@@ -157,14 +157,22 @@ function updateJson(filePath, normalize, changed) {
 }
 
 const changed = []
+const unverified = []
 for (const directory of packageDirectories()) {
   const manifestPath = path.join(directory, 'package.json')
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  const hasLibraryProject = existsSync(path.join(directory, 'tsconfig.lib.json'))
 
   if (manifest.name === '@prelude/tsconfig') {
     updateJson(manifestPath, normalizeTsconfigManifest, changed)
-  } else if (existsSync(path.join(directory, 'tsconfig.lib.json')) && manifest.private !== true) {
+  } else if (hasLibraryProject && manifest.private !== true) {
     updateJson(manifestPath, normalizeLibraryManifest, changed)
+  } else if (!hasLibraryProject && (manifest.private !== true || existsSync(path.join(directory, 'src')))) {
+    // typecheck, build and pack-check all select packages by tsconfig.lib.json,
+    // while the release scripts select by `private` alone: a package that is
+    // publishable, or has sources, but no library project would be released
+    // without ever having been compiled or tested.
+    unverified.push(path.relative(root, directory))
   }
 
   for (const name of ['tsconfig.lib.json', 'tsconfig.test.json']) {
@@ -173,6 +181,14 @@ for (const directory of packageDirectories()) {
       updateJson(projectPath, normalizeProject, changed)
     }
   }
+}
+
+if (unverified.length > 0) {
+  throw new Error(
+    `Packages without tsconfig.lib.json are skipped by typecheck, build and pack-check; add the project (see packages/tsconfig/AGENTS.md) or remove the package:\n${
+      unverified.map(name => `- ${name}`).join('\n')
+    }`
+  )
 }
 
 if (changed.length > 0) {
