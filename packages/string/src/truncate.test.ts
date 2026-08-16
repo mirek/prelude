@@ -67,3 +67,9 @@ await describe('truncate', async () => {
     }
   })
 })
+
+await test('fractional lengths keep whole code points', () => {
+  assert.equal(truncate('hello world', 8.5, ''), 'hello wo')
+  assert.equal(truncate('hello world', 8.5), 'hello...')
+  assert.equal(truncate('😀😀😀', 2.5, ''), '😀😀')
+})

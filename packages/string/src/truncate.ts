@@ -11,6 +11,8 @@
  * @returns The truncated string with suffix if needed
  */
 export default function truncate(str: string, length: number, suffix: string = '...'): string {
+  // A fractional length keeps whole code points, as `slice` did before the streaming rewrite.
+  length = Math.floor(length)
   // UTF-16 length is an upper bound of the code-point count.
   if (str.length <= length) {
     return str
