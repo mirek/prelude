@@ -30,3 +30,14 @@ await test('inherited names are not treated as present keys', () => {
   assert.equal(f({ toString: 1 }, {}), false)
   assert.equal(f({ constructor: 1 }, { constructor: 1 }), true)
 })
+
+await test('inherited enumerable entries are ignored on both sides', () => {
+  const f = $.record($.eq)
+  const proto = { x: 1 }
+  assert.equal(f(Object.create(proto), Object.create(proto)), true)
+  assert.equal(f(Object.create(proto), {}), true)
+  assert.equal(f({}, Object.create(proto)), true)
+  assert.equal(f(Object.assign(Object.create(proto), { x: 1 }), Object.assign(Object.create(proto), { x: 2 })), false)
+  assert.equal(f(Object.assign(Object.create(proto), { y: 1 }), Object.create(proto)), false)
+  assert.equal(f(Object.create(proto), Object.assign(Object.create(proto), { y: 1 })), false)
+})
