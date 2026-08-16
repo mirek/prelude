@@ -62,7 +62,7 @@ export function selectAsync<Attempts extends Attempt[]>(
               undo()
             }
           })
-          if (err) {
+          if (err || attempt.channel.failed) {
             reject(err)
             return
           }

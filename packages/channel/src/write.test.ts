@@ -26,3 +26,26 @@ await test('two pending writes are consumed and settled', async () => {
   assert.equal(channel.pendingReads, 0)
   assert.equal(channel.pendingWrites, 0)
 })
+
+await test('fail with a falsy reason still rejects a blocked write', async () => {
+  for (const reason of [ undefined, null, false, 0 ]) {
+    const ch = Ch.of<number>()
+    const write = ch.write(1)
+    ch.fail(reason)
+    assert.equal(ch.failed, true)
+    await assert.rejects(write, err => err === reason, `fail(${String(reason)})`)
+    await assert.rejects(ch.read(), err => err === reason)
+  }
+  const ch = Ch.of<number>()
+  const write = ch.write(1)
+  ch.fail(new Error('real'))
+  await assert.rejects(write, /real/)
+})
+
+await test('closeWriting without a reason resolves a blocked write', async () => {
+  const ch = Ch.of<number>()
+  const write = ch.write(1)
+  ch.closeWriting()
+  await write
+  assert.equal(ch.failed, false)
+})
