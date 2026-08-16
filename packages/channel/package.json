@@ -42,6 +42,7 @@
   "license": "CC0-1.0",
   "devDependencies": {
     "@prelude/cmp": "workspace:*",
+    "@prelude/testing": "workspace:*",
     "@prelude/tsconfig": "workspace:*"
   },
   "dependencies": {

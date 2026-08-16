@@ -32,8 +32,9 @@
     "@babel/preset-env": "^7.29.2",
     "@babel/preset-typescript": "^7.28.5",
     "@babel/types": "^7.29.0",
-    "@types/babel__core": "^7.20.5",
-    "@prelude/tsconfig": "workspace:*"
+    "@prelude/testing": "workspace:*",
+    "@prelude/tsconfig": "workspace:*",
+    "@types/babel__core": "^7.20.5"
   },
   "exports": {
     ".": {

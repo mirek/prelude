@@ -1,0 +1,29 @@
+{
+  "private": true,
+  "name": "@prelude/testing",
+  "version": "0.0.0",
+  "description": "Workspace-internal test helpers: seeded pseudo-random generation and trace-based model checking with shrinking.",
+  "type": "module",
+  "scripts": {
+    "test": "make test",
+    "build": "make build"
+  },
+  "keywords": [],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "@prelude/tsconfig": "workspace:*"
+  },
+  "module": "./mjs/index.js",
+  "exports": {
+    ".": {
+      "types": "./mjs/index.d.ts",
+      "import": "./mjs/index.js"
+    },
+    "./*.js": {
+      "types": "./mjs/*.d.ts",
+      "import": "./mjs/*.js"
+    }
+  },
+  "types": "./mjs/index.d.ts"
+}

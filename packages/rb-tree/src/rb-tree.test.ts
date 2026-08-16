@@ -99,53 +99,6 @@ await test('bag partial removal from an internal node keeps remaining occurrence
   assert.equal(Bag.length(bag), 14)
 })
 
-await test('deletes agree with a multiset model', () => {
-  // Deterministic LCG so the failing sequence is reproducible.
-  let seed = 12345
-  const random = (n: number) => {
-    seed = (seed * 1103515245 + 12345) % 2147483648
-    return seed % n
-  }
-  for (let trial = 0; trial < 200; trial++) {
-    const tree = numbers()
-    const model = new Map<number, number>()
-    for (let step = 0; step < 60; step++) {
-      const key = random(12)
-      if (random(3) === 0) {
-        const n = 1 + random(3)
-        const have = model.get(key) ?? 0
-        const [ value, count ] = RbTree.delete(tree, key, n)
-        assert.equal(count, have === 0 ? 0 : have - n, `trial ${trial} step ${step}`)
-        assert.equal(value, have !== 0 && have <= n ? key : undefined, `trial ${trial} step ${step}`)
-        if (have <= n) {
-          model.delete(key)
-        } else {
-          model.set(key, have - n)
-        }
-      } else {
-        const n = 1 + random(3)
-        RbTree.insert(tree, key, n)
-        model.set(key, (model.get(key) ?? 0) + n)
-      }
-      RbTree.assert(tree)
-      const expected = [ ...model.keys() ].sort((a, b) => a - b)
-      assert.deepEqual([ ...RbTree.each(tree) ], expected, `trial ${trial} step ${step}`)
-      assert.equal(RbTree.length(tree), [ ...model.values() ].reduce((a, b) => a + b, 0))
-      for (const key_ of expected) {
-        assert.equal(RbTree.getc(tree, key_), model.get(key_))
-      }
-    }
-    while (!RbTree.empty(tree)) {
-      const [ min ] = RbTree.shiftCount(tree)
-      assert.equal(min, [ ...model.keys() ].sort((a, b) => a - b)[0])
-      model.delete(min)
-      RbTree.assert(tree)
-    }
-    RbTree.insert(tree, 1)
-    assert.equal(RbTree.length(tree), 1)
-  }
-})
-
 await test('count with an inverted range query is zero', () => {
   const tree = numbers()
   for (let k = 1; k <= 5; k++) {

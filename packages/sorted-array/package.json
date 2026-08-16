@@ -28,6 +28,7 @@
     "@prelude/cmp": "workspace:*"
   },
   "devDependencies": {
+    "@prelude/testing": "workspace:*",
     "@prelude/tsconfig": "workspace:*"
   },
   "module": "./mjs/index.js",

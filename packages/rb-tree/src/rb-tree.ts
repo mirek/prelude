@@ -238,11 +238,52 @@ export const assertMonotonic =
     }
   }
 
+/** Assert size invariant - every node's `s` is its own positive count plus the sizes of both subtrees. */
+export const assertSizes =
+  <T, K>(tree: RbTree<T, K>): void => {
+    for (const _ of eachNode(tree.root)) {
+      if (!Number.isSafeInteger(_.n) || _.n < 1) {
+        throw new Error(`Size invariant violated: count ${_.n} is not a positive integer.`)
+      }
+      const s = _.n + (_.l?.s ?? 0) + (_.r?.s ?? 0)
+      if (_.s !== s) {
+        throw new Error(`Size invariant violated: subtree size ${_.s}, expected ${s}.`)
+      }
+    }
+  }
+
+/** Assert no double-black colours or double-black nil leaves survive outside an in-progress deletion. */
+export const assertSettled =
+  <T, K>(tree: RbTree<T, K>): void => {
+    if (tree.root === EE) {
+      throw new Error('Settled invariant violated: root is a double-black leaf.')
+    }
+    for (const _ of eachNode(tree.root)) {
+      if (_.c !== R && _.c !== B) {
+        throw new Error('Settled invariant violated: double-black node.')
+      }
+      if (_.l === EE || _.r === EE) {
+        throw new Error('Settled invariant violated: double-black leaf.')
+      }
+    }
+  }
+
+/**
+ * Assert every invariant this tree maintains: no red node has a red child, all
+ * root-to-leaf paths have the same black height, keys are in order, subtree
+ * sizes add up and no double-black colour or leaf survives a deletion.
+ *
+ * The root is allowed to be red (as in Germane & Might's deletion algorithm,
+ * `blacken` only recolours a red root that has a red child), so a black root
+ * is deliberately not asserted.
+ */
 export const assert =
   <T, K>(tree: RbTree<T, K>): void => {
     assertLocal(tree)
     assertGlobal(tree)
     assertMonotonic(tree)
+    assertSizes(tree)
+    assertSettled(tree)
   }
 
 /** @returns number of elements. */

@@ -1,0 +1,55 @@
+name: Stress
+
+# The default test suite runs a bounded, deterministic number of generated
+# traces per model-based test (see @prelude/testing). This workflow runs the
+# same suite with many more trials on a schedule; failures report the seed and
+# a shrunk operation trace, so they can be replayed locally with `pnpm test`.
+
+on:
+  schedule:
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      factor:
+        description: Multiplier applied to every property test's trial count (SLOW_TESTS)
+        default: '20'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  stress:
+    name: Stress (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        node:
+          - 22
+          - 24
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - name: Test with scaled trial counts
+        run: SLOW_TESTS=${{ inputs.factor || '20' }} pnpm test 2>&1 | tee stress.log
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stress-node-${{ matrix.node }}
+          path: stress.log
+          retention-days: 7
