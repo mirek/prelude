@@ -10,7 +10,8 @@ import lift from './lift.js'
  */
 const exact =
   <T extends Record<string, Primitive | Assert<unknown>>>(kvs: T): Assert<{ [k in keyof T]: Lifted<T[k]> }> => {
-    const asserts: Record<string, Assert<unknown>> = {}
+    // Null prototype so a declared `__proto__` key becomes an own entry instead of invoking the legacy setter.
+    const asserts: Record<string, Assert<unknown>> = Object.create(null)
     for (const k in kvs) {
       asserts[k] = lift(kvs[k])
     }

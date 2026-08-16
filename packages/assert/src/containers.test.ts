@@ -98,6 +98,18 @@ await test('exact and exactPartial reject keys named after Object.prototype memb
   assert.deepEqual(p({}), {})
 })
 
+await test('exact and exactPartial preserve an explicitly declared __proto__ key', () => {
+  const decl = Object.defineProperty({}, '__proto__', { value: $.string, enumerable: true }) as Record<string, typeof $.string>
+  const ok = JSON.parse('{"__proto__":"ok"}') as object
+  const bad = JSON.parse('{"__proto__":1}') as object
+  const a = $.exact(decl)
+  assert.equal(a(ok), ok)
+  assert.throws(() => a(bad), /Expected \.__proto__ to be a string, got 1\./)
+  const p = $.exactPartial(decl)
+  assert.equal(p(ok), ok)
+  assert.throws(() => p(bad), /Expected \.__proto__ to be a string, got 1\./)
+})
+
 await test('tuple rejects arrays missing required positions but allows optional tails', () => {
   const a = $.tuple($.string, $.number)
   assert.throws(() => a([ 'a' ]), /Expected \.1 to be a number/)
