@@ -12,27 +12,11 @@ export const isTagLike =
   (key: string): boolean =>
     key.endsWith('$') && key.includes('^')
 
-/** Objects currently being encoded (encoding is synchronous), to report cycles instead of overflowing the stack. */
-export const ancestors = new Set<unknown>()
-
 export const encode =
   (input: t, encoder: Encoder.t) => {
     if (typeof input !== 'object' || input === null) {
       throw new Error(`Expected object, got ${typeof input}.`)
     }
-    if (ancestors.has(input)) {
-      throw new TypeError('Converting circular structure to JSON.')
-    }
-    ancestors.add(input)
-    try {
-      return encodeProperties(input, encoder)
-    } finally {
-      ancestors.delete(input)
-    }
-  }
-
-const encodeProperties =
-  (input: object, encoder: Encoder.t) => {
     let output: object = input
     // Own enumerable keys only, like JSON.stringify: inherited keys are not on the wire.
     for (const key of Object.keys(input)) {

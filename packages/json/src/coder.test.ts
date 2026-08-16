@@ -138,3 +138,24 @@ await test('circular structures are reported as TypeError instead of overflowing
   const shared = { d: new Date(0) }
   assert.deepEqual(Json.parse(Json.stringify([ shared, shared ])), [ shared, shared ], 'shared references are fine')
 })
+
+await test('cycles through Set, Map and Error values are reported as TypeError', () => {
+  const set = new Set<unknown>()
+  set.add(set)
+  assert.throws(() => Json.stringify(set), TypeError, 'set containing itself')
+  const map = new Map<string, unknown>()
+  map.set('self', map)
+  assert.throws(() => Json.stringify(map), TypeError, 'map containing itself')
+  const error = new Error('x')
+  error.cause = error
+  assert.throws(() => Json.stringify(error), TypeError, 'error whose cause is itself')
+  const aggregate = new AggregateError([], 'x')
+  aggregate.errors.push(aggregate)
+  assert.throws(() => Json.stringify(aggregate), TypeError, 'aggregate error containing itself')
+  const shared = { s: new Set([ 1 ]), m: new Map([ [ 'a', 1 ] ]), e: new Error('x') }
+  const dag = { a: shared, b: shared, c: [ shared.s, shared.s, shared.e, shared.e ] }
+  const decoded = Json.parse(Json.stringify(dag)) as typeof dag
+  assert.deepEqual(decoded.a.s, shared.s, 'shared sets are fine')
+  assert.deepEqual(decoded.b.m, shared.m, 'shared maps are fine')
+  assert.deepEqual(decoded.c.map(v => v instanceof Error ? v.message : v), [ shared.s, shared.s, 'x', 'x' ], 'shared errors are fine')
+})
