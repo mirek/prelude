@@ -65,12 +65,16 @@ export function consume<T>(
     // Share one iterator between workers; iterating `values` per worker would replay
     // re-iterable async iterables `concurrency` times.
     const iterator = values[Symbol.asyncIterator]()
+    // Serialise next() calls: hand-written iterators may only permit one in-flight next(), like under for-await.
+    let pull: Promise<IteratorResult<T> | void> = Promise.resolve()
     let failed = false
     let exhausted = false
     const workers = Array.from({ length: concurrency }, async (_, worker) => {
       // Stop pulling as soon as any worker failed; otherwise the others would keep draining the source.
       while (!failed) {
-        const result = await iterator.next()
+        const next = pull.then(() => iterator.next())
+        pull = next
+        const result = await next
         if (result.done) {
           exhausted = true
           return

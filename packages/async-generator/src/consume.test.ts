@@ -84,3 +84,30 @@ await test('a failing worker closes an event-driven source instead of waiting fo
   await assert.rejects(Promise.race([ consumed, timeout ]), /x/)
   assert.equal(channel.doneWriting, true)
 })
+
+await test('concurrent consume never overlaps next() calls on the shared iterator', async () => {
+  // An iterator that permits only one in-flight next(), like many hand-written async iterators.
+  const source: AsyncIterable<number> = {
+    [Symbol.asyncIterator]: () => {
+      let pending = false
+      let i = 0
+      return {
+        next: async () => {
+          if (pending) {
+            throw new Error('overlapping next()')
+          }
+          pending = true
+          await new Promise(resolve => setTimeout(resolve, 1))
+          pending = false
+          return i < 5 ? { done: false, value: i++ } : { done: true, value: undefined }
+        }
+      }
+    }
+  }
+  const seen: number[] = []
+  await G.consume(async (value: number) => {
+    await new Promise(resolve => setTimeout(resolve, 2))
+    seen.push(value)
+  }, { concurrency: 3 })(source)
+  assert.deepEqual(seen.toSorted((a, b) => a - b), [ 0, 1, 2, 3, 4 ])
+})
