@@ -124,11 +124,12 @@ export class Supervisor implements A.Supervisor, A.Supervised {
     if (terminal(child)) {
       throw new SupervisorError('Cannot supervise a terminated child.', 'invalid')
     }
+    child.supervisor = this
     if (this.#children.includes(child)) {
-      // Already ours: adopting twice would restart (and count) the child twice per decision.
+      // Already listed: adopting twice would restart (and count) the child twice per decision.
+      // The supervisor is still reassigned, in case another supervisor took the child over.
       return child
     }
-    child.supervisor = this
     this.#children.push(child)
     const forget = () => {
       this.#children = this.#children.filter(other => other !== child)

@@ -194,6 +194,26 @@ await test('supervise adopts an existing actor and forgets children that termina
   await supervisor.stop()
 })
 
+await test('supervise re-adopts a listed child that another supervisor took over', async () => {
+  const first = Supervisor.of({ name: 'first' })
+  const second = Supervisor.of({ name: 'second' })
+  const a = first.spawn(worker('a'))
+  second.supervise(a)
+  assert.equal(a.supervisor, second)
+
+  assert.equal(first.supervise(a), a)
+  assert.equal(a.supervisor, first)
+  assert.deepEqual(first.children, [ a ])
+
+  await assert.rejects(a.ask('boom'), /a: boom/)
+  await tick()
+  assert.equal(a.restarts, 1)
+  assert.equal(first.restarts, 1, 'the failure is handled by first')
+  assert.equal(second.restarts, 0, 'not by second')
+  await first.stop()
+  await second.stop()
+})
+
 await test('concurrent failures under all-for-one do not deadlock', async () => {
   const supervisor = Supervisor.of({ strategy: 'all-for-one', maxRestarts: 10 })
   const a = supervisor.spawn(worker('a'))
