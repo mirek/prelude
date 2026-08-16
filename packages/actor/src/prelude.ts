@@ -90,7 +90,10 @@ export interface Supervisor {
 /** Options for {@link Ref.ask}. */
 export interface AskOptions {
 
-  /** Reject with an `ActorError` (`code: 'timeout'`) if no reply arrives within this many milliseconds (`Infinity`: never). */
+  /**
+   * Reject with an `ActorError` (`code: 'timeout'`) if no reply arrives within this many milliseconds.
+   * `Infinity` or a value above `2_147_483_647` (the `setTimeout` limit, ~24.8 days) means never.
+   */
   readonly timeout?: number
 
   /** Reject with `signal.reason` when aborted. */

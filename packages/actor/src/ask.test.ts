@@ -161,3 +161,21 @@ await test('an infinite ask timeout waits for the reply', async () => {
   assert.equal(await asked, 'slow')
   await actor.stop()
 })
+
+await test('an ask timeout above the timer limit means no timeout', async () => {
+  const warnings: string[] = []
+  const onWarning = (warning: Error) => { warnings.push(warning.name) }
+  process.on('warning', onWarning)
+  try {
+    const actor = Actor.of(() => null, async (message: string) => {
+      await new Promise(resolve => setTimeout(resolve, 20))
+      return message
+    })
+    assert.equal(await actor.ask('slow', { timeout: 2 ** 31 }), 'slow')
+    await new Promise(resolve => setImmediate(resolve))
+    assert.ok(!warnings.includes('TimeoutOverflowWarning'), 'unexpected TimeoutOverflowWarning')
+    await actor.stop()
+  } finally {
+    process.off('warning', onWarning)
+  }
+})

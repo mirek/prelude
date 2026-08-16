@@ -345,6 +345,26 @@ await test('client cleans pending calls on timeout, abort, close, and send failu
   sendClient.dispose()
 })
 
+await test('a call timeout above the timer limit means no timeout', async () => {
+  const warnings: string[] = []
+  const onWarning = (warning: Error) => { warnings.push(warning.name) }
+  process.on('warning', onWarning)
+  try {
+    const transport = new MockTransport()
+    const client = new Jsonrpc.Client(transport, { nextId: () => 'call-id' })
+    const slow = client.call<string>('slow', undefined, { timeout: 2 ** 31 })
+    await new Promise(resolve => setTimeout(resolve, 20))
+    transport.emit('message', JSON.stringify({ jsonrpc: '2.0', id: 'call-id', result: 'done' }))
+    assert.equal(await slow, 'done')
+    await new Promise(resolve => setImmediate(resolve))
+    assert.ok(!warnings.includes('TimeoutOverflowWarning'), 'unexpected TimeoutOverflowWarning')
+    assert.equal(client.pendingCount, 0)
+    client.dispose()
+  } finally {
+    process.off('warning', onWarning)
+  }
+})
+
 await test('duplicate and unknown responses do not create or retain pending calls', async () => {
   const transport = new MockTransport()
   const unknown: unknown[] = []

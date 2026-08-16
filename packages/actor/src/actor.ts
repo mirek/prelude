@@ -13,6 +13,9 @@ import type {
   Supervisor
 } from './prelude.js'
 
+/** Largest delay `setTimeout` accepts; longer delays are clamped to 1ms with a `TimeoutOverflowWarning`. */
+const maxTimerDelay = 2_147_483_647
+
 /** Passed to the mailbox on termination; senders map it back to the actual reason. */
 const closedOnTermination = new ActorError('Actor terminated.', 'stopped')
 
@@ -233,8 +236,8 @@ export class Actor<M, S = undefined, R = void> implements Ref<M, R>, Supervised 
       reject: reason => settle(() => reject(reason))
     }
 
-    // A non-finite timeout means "wait forever": setTimeout would clamp it to ~1ms and time out at once.
-    if (options.timeout !== undefined && Number.isFinite(options.timeout)) {
+    // A non-finite timeout or one above the timer limit means "wait forever": setTimeout would clamp it to 1ms and time out at once.
+    if (options.timeout !== undefined && Number.isFinite(options.timeout) && options.timeout <= maxTimerDelay) {
       const timer = setTimeout(
         () => envelope.reject!(new ActorError(`Ask timed out after ${options.timeout}ms.`, 'timeout')),
         options.timeout
