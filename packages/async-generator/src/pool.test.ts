@@ -114,6 +114,37 @@ await test('ordered map rejects instead of hanging when the source and a worker 
   assert.deepEqual(unhandled, [])
 })
 
+await test('ordered map rejects when the source and a worker fail with the same error value', async () => {
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+  const shared = new Error('shared boom')
+  const failingSlowly = async function* () {
+    yield 0
+    yield 1
+    yield 2
+    await sleep(10)
+    throw shared
+  }
+  const timeout = sleep(500).then(() => {
+    throw new Error('timed out: ordered map never settled')
+  })
+  await assert.rejects(Promise.race([
+    G.pipe(
+      failingSlowly(),
+      G.map(async x => {
+        if (x === 0) {
+          await sleep(30)
+          throw shared
+        }
+        return x
+      }, { concurrency: 3, preserveOrder: true }),
+      G.array
+    ),
+    timeout
+  ]), /shared boom/)
+  await settle()
+  assert.deepEqual(unhandled, [])
+})
+
 await test('successful concurrent map and tap are unaffected', async () => {
   assert.deepEqual(await G.pipe(
     G.ofIterable([ 1, 2, 3 ]),

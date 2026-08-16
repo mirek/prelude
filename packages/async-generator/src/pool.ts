@@ -17,9 +17,19 @@ export function pool<T, R>(
   concurrency: number,
   work: (value: T, worker: number) => Promise<void>
 ): void {
+  // A worker's own failure (`work` rejected) is told apart from the source failing by where the
+  // rejection came from, not by comparing error values, which may coincide.
   const workers = Array.from({ length: concurrency }, async (_, worker) => {
     for await (const value of input) {
-      await work(value, worker)
+      try {
+        await work(value, worker)
+      } catch (error: unknown) {
+        // A worker failing on its own must fail the output right away even if the source has
+        // failed too: with ordered delivery the other workers wait for its turn and would
+        // otherwise never settle.
+        output.fail(error)
+        throw error
+      }
     }
   })
   Promise
@@ -32,14 +42,8 @@ export function pool<T, R>(
       if (input.failed) {
         // The source failed: values already handed to workers are still legitimate results
         // (as with serial processing), so let in-flight work deliver before failing the output.
-        // A worker failing on its own must still fail the output right away: with ordered
-        // delivery the other workers wait for its turn and would otherwise never settle.
         void Promise
-          .allSettled(workers.map(worker => worker.catch(e => {
-            if (e !== input.error) {
-              output.fail(e)
-            }
-          })))
+          .allSettled(workers)
           .then(() => output.fail(input.error))
         return
       }
