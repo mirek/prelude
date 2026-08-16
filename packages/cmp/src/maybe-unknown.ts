@@ -5,7 +5,6 @@ import boolean from './boolean.js'
 import maybePairwise from './maybe-pairwise.js'
 import number from './number.js'
 import numeric from './numeric.js'
-import string from './string.js'
 
 const sameKind =
   (a: unknown, b: unknown, kind: Kind): MaybeR => {
@@ -26,7 +25,8 @@ const sameKind =
       case 'function':
         return a === b ? eq : undefined
       case 'string':
-        return string(a as string, b as string)
+        // Numeric strings compare by value, consistent with how number/string pairs compare below.
+        return numeric(a as string, b as string)
       case 'Array':
         return maybePairwise(maybeUnknown)(a as Iterable<unknown>, b as Iterable<unknown>)
       case 'Set':
