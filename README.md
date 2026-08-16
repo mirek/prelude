@@ -44,6 +44,8 @@ pnpm verify
 
 Concurrency tests use explicit barriers, fake schedulers, and awaited task settlement rather than random sleeps or eventual polling. Optional randomized stress coverage must use a reproducible seed.
 
+The data structures with the largest state spaces (`rb-tree` and its `Bag`/`Map`, `radix-trie`, `range-set`, `sorted-array`, `set`, `channel`, `serial-queue`) also have model-based property tests (`packages/*/src/model.test.ts`, `laws.test.ts`) built on the private `@prelude/testing` package: `checkTrace` generates operation traces from a seed, replays them against the structure and a naive reference model with every invariant checked after each step, and on failure shrinks the trace and reports `seed`, `trial` and the minimal operation sequence. The default suite runs a bounded number of trials; `SLOW_TESTS=<factor>` multiplies them, which the weekly `Stress` workflow (`.github/workflows/stress.yml`, also runnable by hand) does with a factor of 20.
+
 The package check verifies declared entry points, declaration resolution, root and subpath runtime imports, workspace dependency rewriting, the externally published TypeScript configs, and exclusion of development-only files. Isomorphic packages are additionally imported with Node's platform globals removed and every Node builtin unresolvable, and their declarations are type-checked without `@types/node`. Every publishable library also builds from source during its own `prepack` lifecycle.
 
 GitHub Actions runs these checks independently on Node.js 22 (the supported floor), 24 and 26. The aggregate `CI` job is suitable as the required branch-protection check.
@@ -103,6 +105,7 @@ Generated from the workspace manifests by `pnpm docs:write`; `pnpm docs:check` f
 | `packages/sorted-array` | `@prelude/sorted-array` | Arrays kept sorted by a comparator with binary search, insert, insert-ignore and upsert. |
 | `packages/string` | `@prelude/string` | String utilities: blank checks, case conversion, indentation, truncation, line operations, search-replace and edit distance. |
 | `packages/supervisor` | `@prelude/supervisor` | Supervisor module: restart strategies (one-for-one, all-for-one, rest-for-one) and restart limits for @prelude/actor. |
+| `packages/testing` | `@prelude/testing` (private) | Workspace-internal test helpers: seeded pseudo-random generation and trace-based model checking with shrinking. |
 | `packages/tsconfig` | `@prelude/tsconfig` | Shared TypeScript configurations for the prelude monorepo. |
 | `packages/wait-group` | `@prelude/wait-group` | Go-style WaitGroup: count outstanding work and await completion, with invalid-counter protection. |
 | `packages/xml` | `@prelude/xml` | XML parser built on @prelude/parser producing a small AST, with JSON conversion helpers. |

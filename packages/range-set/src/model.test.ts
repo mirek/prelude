@@ -1,0 +1,223 @@
+import * as RangeSet from './index.js'
+import * as Testing from '@prelude/testing'
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+
+// Model-based checks over closed integer keys in a small domain: a range set
+// is expanded to a Map<key, value>, the three operations are computed on the
+// maps, and the results are compared. Structural invariants of every result
+// (sorted, non-empty, non-overlapping and canonical) are checked directly.
+
+type R = RangeSet.Range.T<number, number>
+type Values = 'sum' | 'max' | 'min' | 'left' | 'right'
+type Case = { a: R[], b: R[], values: Values }
+
+const values: Record<Values, RangeSet.Value.T<number>> = {
+  sum: RangeSet.Value.sum,
+  max: RangeSet.Value.max,
+  min: RangeSet.Value.min,
+  left: RangeSet.Value.left as RangeSet.Value.T<number>,
+  right: RangeSet.Value.right as RangeSet.Value.T<number>
+}
+
+const domain = 12
+const key = RangeSet.Key.closed
+
+/** Random canonical range set: sorted, gaps of at least one key or different values between neighbours. */
+const ranges =
+  (rng: Testing.Prng): R[] => {
+    const result: R[] = []
+    let cursor = rng.int(3)
+    while (cursor <= domain && rng.bool(0.8)) {
+      const end = Math.min(domain, cursor + rng.int(4))
+      result.push(RangeSet.Range.of(cursor, end, rng.between(1, 3)))
+      cursor = end + 1 + rng.int(3)
+    }
+    return canonical(result)
+  }
+
+/** Merges adjacent ranges with equal values (the canonical form the operations are expected to produce). */
+const canonical =
+  (ranges: R[]): R[] => {
+    const result: R[] = []
+    for (const range of ranges) {
+      const last = result[result.length - 1]
+      if (last && key.next(last.end) === range.start && last.value === range.value) {
+        result[result.length - 1] = { ...last, end: range.end }
+      } else {
+        result.push({ ...range })
+      }
+    }
+    return result
+  }
+
+const expand =
+  (ranges: R[]): Map<number, number> => {
+    const map = new Map<number, number>()
+    for (const range of ranges) {
+      for (let k = range.start; k <= range.end; k++) {
+        assert.ok(!map.has(k), `key ${k} covered twice`)
+        map.set(k, range.value)
+      }
+    }
+    return map
+  }
+
+const sortedEntries =
+  (map: Map<number, number>) =>
+    [ ...map.entries() ].sort(([ a ], [ b ]) => a - b)
+
+const assertNormalized =
+  (ranges: R[], what: string) => {
+    for (let i = 0; i < ranges.length; i++) {
+      const range = ranges[i]
+      assert.ok(key.cmp(range.start, range.end) <= 0, `${what}: empty or inverted range ${JSON.stringify(range)}`)
+      assert.ok(Number.isInteger(range.start) && Number.isInteger(range.end), `${what}: non-integer boundary in ${JSON.stringify(range)}`)
+      if (i > 0) {
+        const previous = ranges[i - 1]
+        assert.ok(key.cmp(key.next(previous.end), range.start) <= 0, `${what}: ranges ${JSON.stringify(previous)} and ${JSON.stringify(range)} overlap or are out of order`)
+      }
+    }
+  }
+
+const assertCanonical =
+  (ranges: R[], what: string) => {
+    for (let i = 1; i < ranges.length; i++) {
+      const previous = ranges[i - 1]
+      const range = ranges[i]
+      assert.ok(!(key.next(previous.end) === range.start && previous.value === range.value), `${what}: adjacent ranges ${JSON.stringify(previous)} and ${JSON.stringify(range)} carry the same value and were not merged`)
+    }
+  }
+
+const set =
+  (ranges: R[], value: RangeSet.Value.T<number>): RangeSet.T<number, number> =>
+    ({ ranges, key, value })
+
+const check =
+  ({ a, b, values: name }: Case) => {
+    const value = values[name]
+    const A = set(a, value)
+    const B = set(b, value)
+    const ma = expand(a)
+    const mb = expand(b)
+    const startOf = (ranges: R[], k: number) => ranges.find(range => range.start <= k && k <= range.end)!.start
+
+    // union: keys from either side; on overlap the earlier-starting range is the left merge operand.
+    const union = RangeSet.union(A, B)
+    const expectedUnion = new Map<number, number>()
+    for (const k of new Set([ ...ma.keys(), ...mb.keys() ])) {
+      const x = ma.get(k)
+      const y = mb.get(k)
+      if (x !== undefined && y !== undefined) {
+        expectedUnion.set(k, startOf(a, k) <= startOf(b, k) ? value.merge(x, y) : value.merge(y, x))
+      } else {
+        expectedUnion.set(k, (x ?? y)!)
+      }
+    }
+    assertNormalized(union.ranges, 'union')
+    assert.deepEqual(sortedEntries(expand(union.ranges)), sortedEntries(expectedUnion), 'union')
+    assertCanonical(union.ranges, 'union')
+
+    // intersection: keys in both sides, merged left-to-right.
+    const intersection = RangeSet.intersection(A, B)
+    const expectedIntersection = new Map<number, number>()
+    for (const [ k, x ] of ma) {
+      const y = mb.get(k)
+      if (y !== undefined) {
+        expectedIntersection.set(k, value.merge(x, y))
+      }
+    }
+    assertNormalized(intersection.ranges, 'intersection')
+    assert.deepEqual(sortedEntries(expand(intersection.ranges)), sortedEntries(expectedIntersection), 'intersection')
+    assertCanonical(intersection.ranges, 'intersection')
+
+    // difference: keys of a not in b, values untouched.
+    const difference = RangeSet.difference(A, B)
+    const expectedDifference = new Map([ ...ma ].filter(([ k ]) => !mb.has(k)))
+    assertNormalized(difference.ranges, 'difference')
+    assert.deepEqual(sortedEntries(expand(difference.ranges)), sortedEntries(expectedDifference), 'difference')
+    assertCanonical(difference.ranges, 'difference')
+
+    // Inputs are never mutated.
+    assert.deepEqual(A.ranges, a)
+    assert.deepEqual(B.ranges, b)
+    assert.deepEqual(union.key, key)
+    assert.deepEqual(union.value, value)
+  }
+
+const laws =
+  ({ a, b, values: name }: Case) => {
+    const value = values[name]
+    const A = set(a, value)
+    const B = set(b, value)
+    const empty = set([], value)
+    const same = (x: RangeSet.T<number, number>, y: RangeSet.T<number, number>, what: string) =>
+      assert.deepEqual(x.ranges, y.ranges, what)
+
+    same(RangeSet.union(A, empty), A, 'a ∪ ∅ = a')
+    same(RangeSet.union(empty, A), A, '∅ ∪ a = a')
+    same(RangeSet.intersection(A, empty), empty, 'a ∩ ∅ = ∅')
+    same(RangeSet.difference(A, empty), A, 'a \\ ∅ = a')
+    same(RangeSet.difference(A, A), empty, 'a \\ a = ∅')
+    same(RangeSet.difference(empty, A), empty, '∅ \\ a = ∅')
+    if (name === 'sum' || name === 'max' || name === 'min') {
+      same(RangeSet.union(A, B), RangeSet.union(B, A), 'union commutes for a commutative merge')
+      same(RangeSet.intersection(A, B), RangeSet.intersection(B, A), 'intersection commutes for a commutative merge')
+    }
+    if (name === 'max' || name === 'min' || name === 'left' || name === 'right') {
+      same(RangeSet.union(A, A), A, 'a ∪ a = a for an idempotent merge')
+      same(RangeSet.intersection(A, A), A, 'a ∩ a = a for an idempotent merge')
+      // For a left-biased merge, (a \ b) ∪ (a ∩ b) restores a's keys with a's values.
+      if (name === 'left') {
+        same(RangeSet.union(RangeSet.difference(A, B), RangeSet.intersection(A, B)), A, 'a = (a \\ b) ∪ (a ∩ b)')
+      }
+    }
+    // Splitting a into pieces and re-uniting them gives a back, whatever the merge.
+    const pieces = a.flatMap(range => Array.from({ length: range.end - range.start + 1 }, (_, i) => RangeSet.Range.of(range.start + i, range.start + i, range.value)))
+    let rebuilt = empty
+    for (const piece of pieces) {
+      rebuilt = RangeSet.union(rebuilt, { ranges: [ piece ] })
+    }
+    same(rebuilt, A, 'point-wise union rebuilds a')
+    // Difference against the intersection leaves exactly the keys outside b.
+    assert.deepEqual(
+      sortedEntries(expand(RangeSet.difference(A, RangeSet.intersection(A, B)).ranges)),
+      sortedEntries(expand(RangeSet.difference(A, B).ranges)),
+      'a \\ (a ∩ b) = a \\ b'
+    )
+  }
+
+const cases =
+  (rng: Testing.Prng): Case => ({
+    a: ranges(rng),
+    b: ranges(rng),
+    values: rng.pick([ 'sum', 'max', 'min', 'left', 'right' ] as Values[])
+  })
+
+const simplify =
+  (c: Case): Case[] => [
+    ...(c.a.length > 0 ? [ { ...c, a: c.a.slice(1) }, { ...c, a: c.a.slice(0, -1) } ] : []),
+    ...(c.b.length > 0 ? [ { ...c, b: c.b.slice(1) }, { ...c, b: c.b.slice(0, -1) } ] : [])
+  ]
+
+await test('union, intersection and difference agree with an expanded map model and stay normalized', async () => {
+  await Testing.checkTrace<Case>({
+    seed: 0x4a4e,
+    trials: 400,
+    length: 1,
+    op: cases,
+    simplify,
+    run: cs => cs.forEach(check)
+  })
+})
+
+await test('range set algebra: identities, commutativity, idempotence and rebuild laws', async () => {
+  await Testing.checkTrace<Case>({
+    seed: 0x1a75,
+    trials: 400,
+    length: 1,
+    op: cases,
+    simplify,
+    run: cs => cs.forEach(laws)
+  })
+})

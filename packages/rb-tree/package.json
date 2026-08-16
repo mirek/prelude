@@ -24,6 +24,7 @@
   "license": "CC0-1.0",
   "devDependencies": {
     "@prelude/array": "workspace:*",
+    "@prelude/testing": "workspace:*",
     "@prelude/tsconfig": "workspace:*"
   },
   "dependencies": {
