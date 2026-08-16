@@ -65,3 +65,7 @@ await test('regexp with a global or sticky flag is stateless across calls', () =
   assert.equal(sticky('a'), 'a')
   assert.equal(sticky('a'), 'a')
 })
+
+await test('regexp accepts a frozen non-global regexp', () => {
+  assert.equal($.regexp(Object.freeze(/a/))('a'), 'a')
+})
