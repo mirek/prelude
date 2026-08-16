@@ -2,7 +2,7 @@
   "name": "@mirek/prelude",
   "private": true,
   "version": "1.0.0",
-  "description": "",
+  "description": "pnpm workspace of small, focused TypeScript utility packages published under the @prelude/* scope.",
   "workspaces": [
     "packages/*"
   ],
@@ -23,10 +23,17 @@
     "release:prepare": "node scripts/release-prepare.mjs",
     "release:publish": "node scripts/release-publish.mjs",
     "pack:check": "node scripts/pack-check.mjs",
-    "verify": "pnpm manifests:check && pnpm release-hooks:check && pnpm makefiles:check && pnpm test:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:scripts && pnpm build && pnpm pack:check"
+    "docs:check": "node scripts/check-docs.mjs",
+    "docs:write": "node scripts/check-docs.mjs --write",
+    "verify": "pnpm manifests:check && pnpm release-hooks:check && pnpm makefiles:check && pnpm docs:check && pnpm test:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:scripts && pnpm build && pnpm pack:check"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "prelude",
+    "typescript",
+    "utilities",
+    "monorepo"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
   "license": "CC0-1.0",
   "packageManager": "pnpm@11.1.3",
   "engines": {

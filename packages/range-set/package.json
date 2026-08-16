@@ -1,7 +1,7 @@
 {
   "name": "@prelude/range-set",
   "version": "0.0.0",
-  "description": "Range set.",
+  "description": "Sets of value-carrying ranges over ordered keys with union, intersection and difference under pluggable value merges.",
   "type": "module",
   "module": "./mjs/index.js",
   "scripts": {
@@ -64,5 +64,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/range-set"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/range-set#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

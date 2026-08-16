@@ -1,7 +1,7 @@
 {
   "name": "@prelude/eq",
   "version": "0.0.5",
-  "description": "Eq module.",
+  "description": "Structural equality combinators for primitives, arrays, tuples, records and partial objects.",
   "type": "module",
   "directories": {
     "test": "test"
@@ -43,5 +43,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/eq"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/eq#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

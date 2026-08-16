@@ -1,7 +1,7 @@
 {
   "name": "@prelude/parser",
   "version": "7.1.0",
-  "description": "Parser combinators module.",
+  "description": "Parser combinators over string readers with location-aware failures, plus an RFC 8259 JSON grammar.",
   "type": "module",
   "directories": {
     "test": "test"
@@ -51,5 +51,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/parser"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/parser#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

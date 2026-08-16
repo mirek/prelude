@@ -1,7 +1,7 @@
 {
   "name": "@prelude/refute",
   "version": "1.0.1",
-  "description": "Refute module.",
+  "description": "Validators that return ok/refuted results with a reason instead of throwing, with predicate and assertion interpreters.",
   "type": "module",
   "module": "./mjs/index.js",
   "directories": {
@@ -48,5 +48,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/refute"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/refute#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

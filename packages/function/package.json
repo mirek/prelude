@@ -1,7 +1,7 @@
 {
   "name": "@prelude/function",
   "version": "0.4.1",
-  "description": "Function module.",
+  "description": "Function utilities: pipe, memoize, throttle, timeout, retry (eventually), sleep, serial execution and logic combinators.",
   "type": "module",
   "directories": {
     "test": "test"
@@ -51,5 +51,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/function"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/function#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

@@ -32,12 +32,15 @@ pnpm verify
 
 1. `pnpm manifests:check` — verifies normalized package manifests, exports, and workspace TypeScript configs.
 2. `pnpm release-hooks:check` — rejects package-local version, push, or publish hooks.
-3. `pnpm test:check` — rejects unseeded randomness and unsupported `node:test` timeout arguments in the default suite.
-4. `pnpm lint` — type-aware linting across `packages`.
-5. `pnpm typecheck` — checks every package library and test TypeScript project independently.
-6. `pnpm test` — runs all colocated `*.test.ts` files through Node's test runner.
-7. `pnpm build` — rebuilds every package with a `tsconfig.lib.json` from clean source.
-8. `pnpm pack:check` — packs every public package and installs the tarballs into an isolated consumer project.
+3. `pnpm makefiles:check` — rejects package recipes that build with `tsc` directly or use unquoted recursive globs.
+4. `pnpm docs:check` — verifies package READMEs, license references, manifest descriptions and the package index below.
+5. `pnpm test:check` — rejects unseeded randomness and unsupported `node:test` timeout arguments in the default suite.
+6. `pnpm lint` — type-aware linting across `packages`.
+7. `pnpm typecheck` — checks every package library and test TypeScript project independently.
+8. `pnpm test` — runs all colocated `*.test.ts` files through Node's test runner.
+9. `pnpm test:scripts` — runs the tests of the repository scripts themselves.
+10. `pnpm build` — rebuilds every package with a `tsconfig.lib.json` from clean source.
+11. `pnpm pack:check` — packs every public package and installs the tarballs into an isolated consumer project.
 
 Concurrency tests use explicit barriers, fake schedulers, and awaited task settlement rather than random sleeps or eventual polling. Optional randomized stress coverage must use a reproducible seed.
 
@@ -63,43 +66,78 @@ make clean
 
 ## Package index
 
+Generated from the workspace manifests by `pnpm docs:write`; `pnpm docs:check` fails when it drifts.
+
+<!-- package-index:start -->
 | Directory | Package | Description |
 | --- | --- | --- |
 | `packages/actor` | `@prelude/actor` | Actor module: stateful message processors with ask/reply, bounded mailboxes, failure directives and supervision hooks. |
-| `packages/array` | `@prelude/array` | Array module. |
-| `packages/assert` | `@prelude/assert` | Assert module. |
-| `packages/async-generator` | `@prelude/async-generator` | Async generator module. |
-| `packages/channel` | `@prelude/channel` | Channel module. |
-| `packages/cmp` | `@prelude/cmp` | Cmp module. |
-| `packages/emitter` | `@prelude/emitter` | Emitter module. |
-| `packages/eq` | `@prelude/eq` | Eq module. |
-| `packages/err` | `@prelude/err` | Err module. |
-| `packages/fs` | `@prelude/fs` | Fs module. |
-| `packages/function` | `@prelude/function` | Function module. |
-| `packages/generator` | `@prelude/generator` | Generator module. |
-| `packages/json` | `@prelude/json` | Json module. |
-| `packages/jsonrpc` | `@prelude/jsonrpc` | Jsonrpc module. |
-| `packages/log` | `@prelude/log` | Log package. |
-| `packages/parser` | `@prelude/parser` | Parser combinators module. |
+| `packages/array` | `@prelude/array` | Array utilities: safe indexing, sampling and shuffling, sorting and searching, grouping, swap-delete and vector helpers. |
+| `packages/assert` | `@prelude/assert` | Composable runtime assertions that narrow unknown values to typed ones and throw AssertionError with the failing path. |
+| `packages/async-generator` | `@prelude/async-generator` | Composable async iterable transforms: map, filter, batch, window, buffered and concurrent processing with backpressure. |
+| `packages/channel` | `@prelude/channel` | Go-style channels for async code: buffered or unbuffered, async-iterable, with select over reads and writes. |
+| `packages/cmp` | `@prelude/cmp` | Sound comparators: strict -1 | 0 | 1 results, composition, reversal and helpers for sorting and searching. |
+| `packages/emitter` | `@prelude/emitter` | Type-safe event emitter with once, predicate-filtered listeners and promise-based waits with timeouts. |
+| `packages/eq` | `@prelude/eq` | Structural equality combinators for primitives, arrays, tuples, records and partial objects. |
+| `packages/err` | `@prelude/err` | Errors with a severity and a code, plus helpers to create, inspect and rethrow them consistently. |
+| `packages/fs` | `@prelude/fs` | Node.js file-system helpers: JSON and string read/write, existence checks and deterministic depth-first traversal. |
+| `packages/function` | `@prelude/function` | Function utilities: pipe, memoize, throttle, timeout, retry (eventually), sleep, serial execution and logic combinators. |
+| `packages/generator` | `@prelude/generator` | Iterable and generator utilities: lazy map, filter, flatMap, batch, group, permutations, primes and other transforms over sync iterables. |
+| `packages/json` | `@prelude/json` (private) | JSON encoding and decoding of non-JSON-native values (Set, Map, Date, RegExp, bigint, errors) through tagged coders. |
+| `packages/jsonrpc` | `@prelude/jsonrpc` | JSON-RPC 2.0 client and request handling over any message transport, with request timeouts, abort signals and typed payloads. |
+| `packages/log` | `@prelude/log` | Lightweight logger with severity levels, namespaces, pluggable targets and environment-variable level control. |
+| `packages/parser` | `@prelude/parser` | Parser combinators over string readers with location-aware failures, plus an RFC 8259 JSON grammar. |
 | `packages/predicate` | `@prelude/predicate` | Predicate combinators. |
-| `packages/prelude` | `@prelude/prelude` | Prelude module. |
-| `packages/progress` | `@prelude/progress` | Progress module. |
-| `packages/radix-trie` | `@prelude/radix-trie` | Radix trie module. |
-| `packages/range-set` | `@prelude/range-set` | Range set. |
-| `packages/rb-tree` | `@prelude/rb-tree` | Red-black tree module. |
-| `packages/refute` | `@prelude/refute` | Refute module. |
-| `packages/remote-clock` | `@prelude/remote-clock` | Remote clock module. |
+| `packages/prelude` | `@prelude/prelude` | Low-level primitives shared by @prelude/* packages: pipe and common utility types. |
+| `packages/progress` | `@prelude/progress` | Terminal progress display for Node.js: multi-worker progress bars, spinners and percentages on stdout. |
+| `packages/radix-trie` | `@prelude/radix-trie` | Radix (compressed prefix) trie for string sets: insert, membership and shortest/longest prefix matching. |
+| `packages/range-set` | `@prelude/range-set` | Sets of value-carrying ranges over ordered keys with union, intersection and difference under pluggable value merges. |
+| `packages/rb-tree` | `@prelude/rb-tree` | Persistent red-black tree with duplicate counts, range counting and Bag/Map wrappers, with exported invariant checks. |
+| `packages/refute` | `@prelude/refute` | Validators that return ok/refuted results with a reason instead of throwing, with predicate and assertion interpreters. |
 | `packages/remote-actor` | `@prelude/remote-actor` | Remote actor module: send/ask to an actor over any message transport (MessagePort, workers, sockets). |
-| `packages/repl` | `@prelude/repl` | Repl package. |
-| `packages/semver` | `@prelude/semver` | Semver module. |
-| `packages/serial-queue` | `@prelude/serial-queue` | Serial queue module. |
-| `packages/set` | `@prelude/set` | Set module. |
-| `packages/sorted-array` | `@prelude/sorted-array` | Sorted array module. |
-| `packages/string` | `@prelude/string` | String module. |
+| `packages/remote-clock` | `@prelude/remote-clock` | Clock synchronisation against a remote time source: offset estimation, remote now/date and mid-second ticks. |
+| `packages/repl` | `@prelude/repl` | Node.js REPL helpers: run code snippets extracted from Markdown in a sandbox with builtin modules and globals. |
+| `packages/semver` | `@prelude/semver` | Semantic Versioning 2.0 parsing, comparison and precedence ordering. |
+| `packages/serial-queue` | `@prelude/serial-queue` | Promise-returning serial task queue: pushed work runs one at a time, in order, with bulk rejection. |
+| `packages/set` | `@prelude/set` | Set helpers over the native Set: union, intersection, difference, equality, numeric ranges and sorted/shuffled views. |
+| `packages/sorted-array` | `@prelude/sorted-array` | Arrays kept sorted by a comparator with binary search, insert, insert-ignore and upsert. |
+| `packages/string` | `@prelude/string` | String utilities: blank checks, case conversion, indentation, truncation, line operations, search-replace and edit distance. |
 | `packages/supervisor` | `@prelude/supervisor` | Supervisor module: restart strategies (one-for-one, all-for-one, rest-for-one) and restart limits for @prelude/actor. |
 | `packages/tsconfig` | `@prelude/tsconfig` | Shared TypeScript configurations for the prelude monorepo. |
-| `packages/wait-group` | `@prelude/wait-group` | WaitGroup module. |
-| `packages/xml` | `@prelude/xml` | Xml module. |
+| `packages/wait-group` | `@prelude/wait-group` | Go-style WaitGroup: count outstanding work and await completion, with invalid-counter protection. |
+| `packages/xml` | `@prelude/xml` | XML parser built on @prelude/parser producing a small AST, with JSON conversion helpers. |
+<!-- package-index:end -->
+
+## Package documentation
+
+Every package ships `Readme.md` and `License.md` (CC0-1.0). `pnpm docs:check` (part of `pnpm verify`) enforces the shared shape:
+
+- a top-level heading and a specific `description` in `package.json` (no `Foo module.` placeholders — the description is what npm and the index above show);
+- an install command (`npm i -E @prelude/<name>`) and an import example;
+- a `# License` section that points at `./License.md`;
+- no machine-local paths, badges for retired services, links to the retired standalone repositories, or license text that contradicts the manifest;
+- relative links that resolve.
+
+A minimal package README therefore looks like:
+
+```markdown
+# Foo module
+
+One or two sentences on what the package is for and when to reach for it.
+
+# Usage
+
+    npm i -E @prelude/foo
+
+    import * as Foo from '@prelude/foo'
+    Foo.bar(1)
+
+# License
+
+This package is dedicated to the public domain under [CC0 1.0](./License.md).
+```
+
+Package manifests get `repository`, `homepage`, `bugs`, `files`, `exports` and `types` from `pnpm manifests:write`, derived from the package directory, so they cannot drift from the repository layout.
 
 ## License
 

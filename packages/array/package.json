@@ -1,7 +1,7 @@
 {
   "name": "@prelude/array",
   "version": "3.0.0",
-  "description": "Array module.",
+  "description": "Array utilities: safe indexing, sampling and shuffling, sorting and searching, grouping, swap-delete and vector helpers.",
   "type": "module",
   "scripts": {
     "test": "pnpm tsx --test \"src/**/*.test.ts\"",
@@ -46,5 +46,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/array"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/array#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

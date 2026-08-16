@@ -1,7 +1,7 @@
 {
   "name": "@prelude/cmp",
   "version": "4.2.0",
-  "description": "Cmp module.",
+  "description": "Sound comparators: strict -1 | 0 | 1 results, composition, reversal and helpers for sorting and searching.",
   "type": "module",
   "module": "./mjs/index.js",
   "exports": {
@@ -44,5 +44,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/cmp"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/cmp#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

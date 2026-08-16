@@ -1,7 +1,7 @@
 {
   "name": "@prelude/async-generator",
   "version": "1.0.1",
-  "description": "Async generator module.",
+  "description": "Composable async iterable transforms: map, filter, batch, window, buffered and concurrent processing with backpressure.",
   "type": "module",
   "module": "./mjs/index.js",
   "exports": {
@@ -47,5 +47,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/async-generator"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/async-generator#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

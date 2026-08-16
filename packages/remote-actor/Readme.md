@@ -74,4 +74,4 @@ ignore frames they do not understand, so a transport may carry other traffic.
 
 # License
 
-See [License.md](./License.md).
+This package is dedicated to the public domain under [CC0 1.0](./License.md).

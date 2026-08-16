@@ -1,7 +1,7 @@
 {
   "name": "@prelude/log",
   "version": "1.0.0",
-  "description": "Log package.",
+  "description": "Lightweight logger with severity levels, namespaces, pluggable targets and environment-variable level control.",
   "type": "module",
   "scripts": {
     "test": "make test",
@@ -47,5 +47,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/log"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/log#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

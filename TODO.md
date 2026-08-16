@@ -6,4 +6,3 @@ This index contains outstanding work only, ordered by importance. When an item i
 - [Add invariant tests for core data structures](todo/add-data-structure-invariant-tests.md) — Property-test red-black trees, tries, range sets, queues, and channels against simple reference models.
 - [Unify validation package internals](todo/unify-validation-package-internals.md) — Remove duplicated object, tuple, primitive, and combinator logic across assert, predicate, and refute.
 - [Define cancellation for asynchronous utilities](todo/define-async-cancellation.md) — Add a consistent abort contract for generators, channels, queues, timers, and event waits.
-- [Normalize package documentation and metadata](todo/normalize-package-documentation-and-metadata.md) — Remove stale generated content and make package purpose, licensing, links, and examples accurate.

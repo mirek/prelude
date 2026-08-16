@@ -1,7 +1,7 @@
 {
   "name": "@prelude/assert",
   "version": "0.0.1",
-  "description": "Assert module.",
+  "description": "Composable runtime assertions that narrow unknown values to typed ones and throw AssertionError with the failing path.",
   "type": "module",
   "module": "./mjs/index.js",
   "directories": {
@@ -47,5 +47,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/assert"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/assert#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

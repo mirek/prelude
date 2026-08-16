@@ -1,7 +1,7 @@
 {
   "name": "@prelude/channel",
   "version": "1.0.0",
-  "description": "Channel module.",
+  "description": "Go-style channels for async code: buffered or unbuffered, async-iterable, with select over reads and writes.",
   "type": "module",
   "files": [
     "mjs",
@@ -61,5 +61,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/channel"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/channel#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

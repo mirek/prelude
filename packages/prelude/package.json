@@ -1,7 +1,7 @@
 {
   "name": "@prelude/prelude",
   "version": "1.0.1",
-  "description": "Prelude module.",
+  "description": "Low-level primitives shared by @prelude/* packages: pipe and common utility types.",
   "type": "module",
   "directories": {
     "test": "test"
@@ -43,5 +43,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/prelude"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/prelude#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

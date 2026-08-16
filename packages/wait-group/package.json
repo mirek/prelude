@@ -1,7 +1,7 @@
 {
   "name": "@prelude/wait-group",
   "version": "0.0.2",
-  "description": "WaitGroup module.",
+  "description": "Go-style WaitGroup: count outstanding work and await completion, with invalid-counter protection.",
   "type": "module",
   "files": [
     "mjs",
@@ -40,5 +40,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/wait-group"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/wait-group#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

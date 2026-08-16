@@ -1,7 +1,0 @@
-.github
-.vscode
-*.test.*
-jest.*
-Makefile
-src/wip
-tsconfig.json

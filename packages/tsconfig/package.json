@@ -5,6 +5,8 @@
   "license": "CC0-1.0",
   "author": "Mirek Rusin (https://github.com/mirek)",
   "files": [
+    "Readme.md",
+    "License.md",
     "base.json",
     "isomorphic.json",
     "isomorphic.d.ts",
@@ -43,5 +45,12 @@
   },
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/tsconfig"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/tsconfig#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

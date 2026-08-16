@@ -1,7 +1,7 @@
 {
   "name": "@prelude/sorted-array",
   "version": "0.1.1",
-  "description": "Sorted array module.",
+  "description": "Arrays kept sorted by a comparator with binary search, insert, insert-ignore and upsert.",
   "type": "module",
   "directories": {
     "test": "test"
@@ -51,5 +51,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/sorted-array"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/sorted-array#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

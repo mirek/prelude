@@ -1,7 +1,7 @@
 {
   "name": "@prelude/repl",
   "version": "1.0.0",
-  "description": "Repl package.",
+  "description": "Node.js REPL helpers: run code snippets extracted from Markdown in a sandbox with builtin modules and globals.",
   "type": "module",
   "directories": {
     "test": "test"
@@ -53,5 +53,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/repl"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/repl#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

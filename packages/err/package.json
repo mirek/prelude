@@ -1,7 +1,7 @@
 {
   "name": "@prelude/err",
   "version": "0.2.1",
-  "description": "Err module.",
+  "description": "Errors with a severity and a code, plus helpers to create, inspect and rethrow them consistently.",
   "type": "module",
   "directories": {
     "test": "test"
@@ -46,5 +46,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/err"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/err#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

@@ -1,8 +1,0 @@
-.github
-.gitignore
-.npmignore
-.npmrc
-.vscode
-*.test.*
-Makefile
-wip

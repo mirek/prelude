@@ -1,7 +1,7 @@
 {
   "name": "@prelude/remote-clock",
   "version": "0.1.0",
-  "description": "Remote clock module.",
+  "description": "Clock synchronisation against a remote time source: offset estimation, remote now/date and mid-second ticks.",
   "type": "module",
   "directories": {
     "test": "test"
@@ -43,5 +43,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/remote-clock"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/remote-clock#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

@@ -1,7 +1,7 @@
 {
   "name": "@prelude/set",
   "version": "1.2.0",
-  "description": "Set module.",
+  "description": "Set helpers over the native Set: union, intersection, difference, equality, numeric ranges and sorted/shuffled views.",
   "type": "module",
   "directories": {
     "test": "test"
@@ -50,5 +50,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/set"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/set#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }
