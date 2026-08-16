@@ -20,5 +20,7 @@ await test('removes many leading blank lines in linear time', () => {
   const start = performance.now()
   assert.equal(S.dedent('\n'.repeat(200_000) + 'x'), 'x')
   const elapsed = performance.now() - start
-  assert.ok(elapsed < 200, `took ${elapsed.toFixed(0)}ms`)
+  // The previous quadratic shift() loop took several seconds for this input; the linear
+  // scan takes ~10ms, so a wide guard still catches the regression without measuring CI load.
+  assert.ok(elapsed < 1500, `took ${elapsed.toFixed(0)}ms`)
 })
