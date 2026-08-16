@@ -1,7 +1,7 @@
 {
   "name": "@prelude/emitter",
   "version": "2.0.0",
-  "description": "Emitter module.",
+  "description": "Type-safe event emitter with once, predicate-filtered listeners and promise-based waits with timeouts.",
   "type": "module",
   "packageManager": "pnpm@10.6.3",
   "scripts": {
@@ -51,5 +51,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/emitter"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/emitter#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

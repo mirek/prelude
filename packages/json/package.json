@@ -2,7 +2,7 @@
   "private": true,
   "name": "@prelude/json",
   "version": "0.0.0",
-  "description": "Json module.",
+  "description": "JSON encoding and decoding of non-JSON-native values (Set, Map, Date, RegExp, bigint, errors) through tagged coders.",
   "type": "module",
   "scripts": {
     "test": "make test",

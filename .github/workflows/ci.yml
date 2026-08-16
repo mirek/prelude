@@ -46,6 +46,8 @@ jobs:
         run: pnpm release-hooks:check 2>&1 | tee release-hooks.log
       - name: Package Makefiles
         run: pnpm makefiles:check 2>&1 | tee makefiles.log
+      - name: Documentation and metadata
+        run: pnpm docs:check 2>&1 | tee docs-check.log
       - name: Test determinism
         run: pnpm test:check 2>&1 | tee test-check.log
       - name: Lint

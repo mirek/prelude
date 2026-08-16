@@ -119,4 +119,4 @@ actor without managing its lifecycle. `Actor` and `RemoteActor` both implement i
 
 # License
 
-See [License.md](./License.md).
+This package is dedicated to the public domain under [CC0 1.0](./License.md).

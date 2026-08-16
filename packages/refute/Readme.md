@@ -1,21 +1,3 @@
-![@prelude/refute](https://shields.io/npm/v/@prelude/refute)
-![esm](https://img.shields.io/badge/module-esm-f39f37)
-[![deno](https://img.shields.io/badge/deno-f39f37)](https://raw.githubusercontent.com/preludejs/refute/master/esm/index.js)
-
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=preludejs_refute&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=preludejs_refute)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=preludejs_refute&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=preludejs_refute)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=preludejs_refute&metric=bugs)](https://sonarcloud.io/summary/new_code?id=preludejs_refute)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=preludejs_refute&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=preludejs_refute)
-[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=preludejs_refute&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=preludejs_refute)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=preludejs_refute&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=preludejs_refute)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=preludejs_refute&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=preludejs_refute)
-[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=preludejs_refute&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=preludejs_refute)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=preludejs_refute&metric=coverage)](https://sonarcloud.io/summary/new_code?id=preludejs_refute)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=preludejs_refute&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=preludejs_refute)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=preludejs_refute&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=preludejs_refute)
-
----
-
 # Refute module
 
 * `and: <Ts extends (Primitive | Refute<unknown>)[]>(...as: Ts) => Refute<IntersectionOfUnion<Lifted<Ts[number]>>>`
@@ -175,14 +157,4 @@ console.log($.reason(refute)({ bar: 'a' }))
 
 # License
 
-```
-MIT License
-
-Copyright 2021 Mirek Rusin
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-```
+This package is dedicated to the public domain under [CC0 1.0](./License.md).

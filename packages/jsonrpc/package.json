@@ -1,7 +1,7 @@
 {
   "name": "@prelude/jsonrpc",
   "version": "0.1.0",
-  "description": "Jsonrpc module.",
+  "description": "JSON-RPC 2.0 client and request handling over any message transport, with request timeouts, abort signals and typed payloads.",
   "type": "module",
   "directories": {
     "test": "test"
@@ -50,5 +50,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/jsonrpc"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/jsonrpc#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

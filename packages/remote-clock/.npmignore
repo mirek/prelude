@@ -1,6 +1,0 @@
-.github
-.vscode
-*.test.*
-jest.*
-Makefile
-wip

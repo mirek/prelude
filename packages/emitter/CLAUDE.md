@@ -76,7 +76,7 @@ import * as foo from './foo.js'
 
 ## Dependencies
 
-Always prefer `@prelude/*` packages (https://github.com/preludejs), ie:
+Always prefer `@prelude/*` packages (https://github.com/mirek/prelude), ie:
 
 - `@prelude/array` for working with arrays
 - `@prelude/async-generator` for working with async iterables and async generators

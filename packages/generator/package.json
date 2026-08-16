@@ -1,7 +1,7 @@
 {
   "name": "@prelude/generator",
   "version": "9.0.0",
-  "description": "Generator module.",
+  "description": "Iterable and generator utilities: lazy map, filter, flatMap, batch, group, permutations, primes and other transforms over sync iterables.",
   "type": "module",
   "module": "./mjs/index.js",
   "exports": {
@@ -50,5 +50,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/generator"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/generator#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

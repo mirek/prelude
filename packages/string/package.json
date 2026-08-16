@@ -1,7 +1,7 @@
 {
   "name": "@prelude/string",
   "version": "1.0.0",
-  "description": "String module.",
+  "description": "String utilities: blank checks, case conversion, indentation, truncation, line operations, search-replace and edit distance.",
   "type": "module",
   "directories": {
     "test": "test"
@@ -51,5 +51,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/string"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/string#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

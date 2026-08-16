@@ -1,7 +1,7 @@
 {
   "name": "@prelude/fs",
   "version": "1.0.0",
-  "description": "Fs module.",
+  "description": "Node.js file-system helpers: JSON and string read/write, existence checks and deterministic depth-first traversal.",
   "type": "module",
   "directories": {
     "test": "test"
@@ -47,5 +47,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/fs"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/fs#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

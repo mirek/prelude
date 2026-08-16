@@ -1,7 +1,7 @@
 {
   "name": "@prelude/radix-trie",
   "version": "0.1.1",
-  "description": "Radix trie module.",
+  "description": "Radix (compressed prefix) trie for string sets: insert, membership and shortest/longest prefix matching.",
   "type": "module",
   "directories": {
     "test": "test"
@@ -43,5 +43,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/radix-trie"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/radix-trie#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

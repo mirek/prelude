@@ -54,7 +54,21 @@ function normalizeExport(target) {
   }
 }
 
-function normalizeLibraryManifest(manifest) {
+// npm shows these on every package page; they are derived from the package
+// directory so a renamed or moved package cannot keep stale links.
+function repositoryMetadata(directoryName) {
+  return {
+    repository: {
+      type: 'git',
+      url: 'git+https://github.com/mirek/prelude.git',
+      directory: `packages/${directoryName}`
+    },
+    homepage: `https://github.com/mirek/prelude/tree/main/packages/${directoryName}#readme`,
+    bugs: 'https://github.com/mirek/prelude/issues'
+  }
+}
+
+function normalizeLibraryManifest(manifest, directoryName) {
   const scripts = {
     ...manifest.scripts,
     prepack: 'node ../../scripts/build-package.mjs'
@@ -82,6 +96,7 @@ function normalizeLibraryManifest(manifest) {
 
   return {
     ...manifest,
+    ...repositoryMetadata(directoryName),
     files,
     scripts,
     types: './mjs/index.d.ts',
@@ -111,10 +126,13 @@ const workspaceTsconfigExports = {
   './workspace-test.json': './workspace-test.json'
 }
 
-function normalizeTsconfigManifest(manifest) {
+function normalizeTsconfigManifest(manifest, directoryName) {
   return {
     ...manifest,
+    ...repositoryMetadata(directoryName),
     files: [
+      'Readme.md',
+      'License.md',
       'base.json',
       'isomorphic.json',
       'isomorphic.d.ts',
@@ -160,7 +178,8 @@ function normalizeProject(project) {
 
 function updateJson(filePath, normalize, changed) {
   const original = readFileSync(filePath, 'utf8')
-  const content = `${JSON.stringify(normalize(JSON.parse(original)), null, 2)}\n`
+  const directoryName = path.basename(path.dirname(filePath))
+  const content = `${JSON.stringify(normalize(JSON.parse(original), directoryName), null, 2)}\n`
   if (content === original) {
     return
   }

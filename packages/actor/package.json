@@ -56,5 +56,12 @@
   "types": "./mjs/index.d.ts",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/actor"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/actor#readme",
+  "bugs": "https://github.com/mirek/prelude/issues"
 }

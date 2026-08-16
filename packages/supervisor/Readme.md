@@ -63,4 +63,4 @@ const supervisor = Supervisor.of({ maxRestarts: 2, window: 1000, now: () => time
 
 # License
 
-See [License.md](./License.md).
+This package is dedicated to the public domain under [CC0 1.0](./License.md).
