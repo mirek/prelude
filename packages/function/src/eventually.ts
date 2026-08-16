@@ -3,11 +3,12 @@ import sleep from './sleep.js'
 /**
  * Repeatedly run `f` until `predicate` holds for its result.
  *
- * `retry(n, duration)` is consulted exactly once per candidate attempt,
- * before it is made, with the zero-based attempt index and the elapsed
- * milliseconds; a stateful predicate can therefore count attempts. When it
- * refuses, no further `sleep` happens and `reject` receives an `Error`
- * reporting the number of attempts actually made.
+ * `retry(n, duration)` is consulted exactly once per candidate attempt with
+ * the zero-based attempt index and the elapsed milliseconds at which that
+ * attempt would start (i.e. including the `delay` before it), so a stateful
+ * predicate can count attempts and a duration-based one is not overshot by
+ * the delay. When it refuses, no further `sleep` happens and `reject`
+ * receives an `Error` reporting the number of attempts actually made.
  */
 const eventually =
   async <T, U>(
@@ -32,8 +33,9 @@ const eventually =
       if (predicate(r)) {
         return r
       }
-      // Ask once whether another attempt will be made and only then wait.
-      again = retry(++i, Date.now() - before)
+      // Ask once whether another attempt will be made — at the time it would actually start,
+      // so a duration-based predicate sees the delay — and only then wait.
+      again = retry(++i, Date.now() - before + delay)
       if (again) {
         await sleep(delay)
       }
