@@ -47,7 +47,10 @@ export const interleave =
         if (done) {
           break
         }
-        yield* values as Value<Args[number]>[]
+        // Yield directly (not `yield*` to an array iterator, which has no `throw`) so `.throw()` reaches this generator.
+        for (const value of values as Value<Args[number]>[]) {
+          yield value
+        }
       }
     } finally {
       // Close every source whether we finished or the consumer stopped early.

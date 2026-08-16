@@ -31,3 +31,10 @@ await test('interleave of no inputs is empty', () => {
   assert.deepEqual([ ...G.interleave() ], [])
   assert.deepEqual(G.interleave().next(), { done: true, value: undefined })
 })
+
+await test('interleave propagates throw() into the generator', () => {
+  const g = G.interleave([ 1, 2 ], [ 3, 4 ])
+  assert.deepEqual(g.next(), { done: false, value: 1 })
+  assert.throws(() => g.throw(new Error('injected')), /injected/)
+  assert.deepEqual(g.next(), { done: true, value: undefined })
+})
