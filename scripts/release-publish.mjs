@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import path from 'node:path'
-import { preparedPath, readPackages, root } from './release-lib.mjs'
+import { preparedPath, publishPrepared, readPackages, root } from './release-lib.mjs'
 
 const pnpmCli = process.env.npm_execpath
 if (!pnpmCli) {
@@ -75,23 +75,13 @@ if (prepared.schemaVersion !== 1 || !Array.isArray(prepared.packages)) {
   throw new Error('Unsupported prepared release format')
 }
 
-const packages = readPackages()
-for (const item of prepared.packages) {
-  const entry = packages.get(item.name)
-  if (!entry) {
-    throw new Error(`Prepared release references missing package ${item.name}`)
-  }
-  if (entry.manifest.version !== item.version) {
-    throw new Error(`${item.name} manifest is ${entry.manifest.version}, expected ${item.version}`)
-  }
-
-  if (isPublished(item.name, item.version)) {
-    console.log(`skip published ${item.name}@${item.version}`)
-    continue
-  }
-
-  console.log(`publish ${item.name}@${item.version}`)
-  requireSuccess(process.execPath, [
+publishPrepared({
+  prepared,
+  packages: readPackages(),
+  head,
+  remoteTagCommit,
+  isPublished,
+  publish: entry => requireSuccess(process.execPath, [
     pnpmCli,
     'publish',
     '--access', 'public',
@@ -102,9 +92,11 @@ for (const item of prepared.packages) {
     stdio: 'inherit',
     encoding: undefined
   })
-}
+})
 
 for (const item of prepared.packages) {
+  // Re-query rather than trust the preflight: publishing can take a while and a tag deleted or
+  // moved meanwhile must be re-created or reported, not silently skipped.
   const remoteCommit = remoteTagCommit(item.tag)
   if (remoteCommit) {
     if (remoteCommit !== head) {

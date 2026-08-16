@@ -201,3 +201,51 @@ export function createRelease() {
     })
   }
 }
+
+/**
+ * Checks every prepared tag against the remote before anything is published:
+ * a tag that already exists must point at `head`. Returns the remote commit
+ * (or `undefined`) for each prepared tag so the tagging step can reuse it.
+ */
+export function assertTagsMatchHead(prepared, head, remoteTagCommit) {
+  const commits = new Map()
+  for (const item of prepared.packages) {
+    const remoteCommit = remoteTagCommit(item.tag)
+    if (remoteCommit && remoteCommit !== head) {
+      throw new Error(`Remote tag ${item.tag} points at ${remoteCommit}, expected ${head}`)
+    }
+    commits.set(item.tag, remoteCommit)
+  }
+  return commits
+}
+
+/**
+ * Publishes the prepared packages. All manifest and remote tag checks run
+ * before the first `publish` call because npm versions are immutable.
+ * Returns the remote tag commits from `assertTagsMatchHead`.
+ */
+export function publishPrepared({ prepared, packages, head, remoteTagCommit, isPublished, publish, log = console.log }) {
+  const entries = prepared.packages.map(item => {
+    const entry = packages.get(item.name)
+    if (!entry) {
+      throw new Error(`Prepared release references missing package ${item.name}`)
+    }
+    if (entry.manifest.version !== item.version) {
+      throw new Error(`${item.name} manifest is ${entry.manifest.version}, expected ${item.version}`)
+    }
+    return entry
+  })
+
+  const remoteCommits = assertTagsMatchHead(prepared, head, remoteTagCommit)
+
+  for (const [index, item] of prepared.packages.entries()) {
+    if (isPublished(item.name, item.version)) {
+      log(`skip published ${item.name}@${item.version}`)
+      continue
+    }
+    log(`publish ${item.name}@${item.version}`)
+    publish(entries[index])
+  }
+
+  return remoteCommits
+}
