@@ -15,16 +15,24 @@ import type {
 } from './prelude.js'
 
 export interface CallOptions {
+  /**
+   * Reject with a {@link TimeoutError} if no response arrives within this many milliseconds.
+   * A value above `2_147_483_647` (the `setTimeout` limit, ~24.8 days) means no timeout.
+   */
   readonly timeout?: number
   readonly signal?: AbortSignalLike
 }
 
 export interface ClientOptions {
+  /** Default {@link CallOptions.timeout} for every call. */
   readonly timeout?: number
   readonly nextId?: () => Exclude<Id, null>
   readonly onUnknownResponse?: (response: unknown) => void
   readonly exception?: (error: unknown) => void
 }
+
+/** Largest delay `setTimeout` accepts; longer delays are clamped to 1ms with a `TimeoutOverflowWarning`. */
+const maxTimerDelay = 2_147_483_647
 
 interface Pending {
   resolve(value: unknown): void
@@ -178,7 +186,8 @@ export default class Client {
         reject
       }
 
-      if (timeout !== undefined) {
+      // A timeout above the timer limit means "no timeout": setTimeout would clamp it to 1ms and time out at once.
+      if (timeout !== undefined && timeout <= maxTimerDelay) {
         pending.timer = setTimeout(() => {
           this.#reject(id, new TimeoutError(id, timeout))
         }, timeout)

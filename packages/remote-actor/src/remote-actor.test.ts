@@ -127,6 +127,30 @@ await test('ask times out; a late reply is ignored', async () => {
   }
 })
 
+await test('an ask timeout above the timer limit means no timeout', async () => {
+  const warnings: string[] = []
+  const onWarning = (warning: Error) => { warnings.push(warning.name) }
+  process.on('warning', onWarning)
+  try {
+    const local = Actor.of(() => null, async (message: string) => {
+      await new Promise(resolve => setTimeout(resolve, 20))
+      return message
+    })
+    const [ server, client ] = Remote.pair()
+    Remote.serve(local, server)
+    const remote = new Remote.RemoteActor<string, string>(client)
+
+    assert.equal(await remote.ask('slow', { timeout: 2 ** 31 }), 'slow')
+    await new Promise(resolve => setImmediate(resolve))
+    assert.deepEqual(warnings, [])
+    assert.equal(remote.pending, 0)
+    remote.close()
+    await local.stop()
+  } finally {
+    process.off('warning', onWarning)
+  }
+})
+
 await test('ask honours abort signals', async () => {
   const local = counter()
   const [ server, client ] = Remote.pair()

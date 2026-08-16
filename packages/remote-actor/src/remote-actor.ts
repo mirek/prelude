@@ -9,6 +9,9 @@ interface Pending {
   readonly reject: (reason: unknown) => void
 }
 
+/** Largest delay `setTimeout` accepts; longer delays are clamped to 1ms with a `TimeoutOverflowWarning`. */
+const maxTimerDelay = 2_147_483_647
+
 /**
  * A {@link Ref} to an actor served on the other side of a {@link Transport}.
  * `send` and `ask` behave like their local counterparts; a handler error on
@@ -72,7 +75,8 @@ export class RemoteActor<M, R = void> implements Ref<M, R> {
         reject: reason => settle(() => reject(reason))
       })
 
-      if (options.timeout !== undefined) {
+      // A non-finite timeout or one above the timer limit means "wait forever": setTimeout would clamp it to 1ms and time out at once.
+      if (options.timeout !== undefined && Number.isFinite(options.timeout) && options.timeout <= maxTimerDelay) {
         const timer = setTimeout(
           () => this.#pending.get(id)?.reject(new ActorError(`Ask timed out after ${options.timeout}ms.`, 'timeout')),
           options.timeout
