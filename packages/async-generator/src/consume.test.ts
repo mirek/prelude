@@ -1,4 +1,5 @@
 import * as G from './index.js'
+import { Channel } from '@prelude/channel'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 
@@ -69,4 +70,17 @@ await test('a failing callback stops the remaining workers and closes the source
   }, { concurrency: 3 })(plain), /boom/)
   await new Promise(resolve => setTimeout(resolve, 300))
   assert.ok(pulled < 10, `plain iterator pulled ${pulled}`)
+})
+
+await test('a failing worker closes an event-driven source instead of waiting for blocked workers', async () => {
+  // With the writer still open, the second worker sits in `channel.next()` forever unless
+  // consume closes the channel before waiting for the workers to settle.
+  const channel = new Channel<number>()
+  channel.writeIgnore(1)
+  const consumed = G.consume(async () => {
+    throw new Error('x')
+  }, { concurrency: 2 })(channel)
+  const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 200))
+  await assert.rejects(Promise.race([ consumed, timeout ]), /x/)
+  assert.equal(channel.doneWriting, true)
 })

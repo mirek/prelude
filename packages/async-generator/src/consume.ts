@@ -84,11 +84,13 @@ export function consume<T>(
       await Promise.all(workers)
     } catch (error: unknown) {
       failed = true
-      // Let in-flight callbacks settle, then close the source before reporting the failure.
-      await Promise.allSettled(workers)
+      // Close the source first: workers blocked in `iterator.next()` on an event-driven source
+      // (for example a channel whose writer is still open) only settle once it is closed, so
+      // awaiting them before `return()` would deadlock. Then let in-flight callbacks settle.
       if (!exhausted) {
         await Promise.resolve().then(() => iterator.return?.()).catch(() => {})
       }
+      await Promise.allSettled(workers)
       throw error
     }
   }
