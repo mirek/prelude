@@ -3,9 +3,11 @@ import * as Ch from '@prelude/channel'
 /**
  * Runs `concurrency` workers that drain `input` through `work`.
  *
- * Closes `output` for writing once every worker has finished. If a worker (or the
- * input channel) fails, closes `input` so remaining workers stop and fails `output`
- * with the error, so the consumer of `output` sees it instead of a silent completion.
+ * Closes `output` for writing once every worker has finished. If a worker fails, closes
+ * `input` so remaining workers stop and fails `output` with the error, so the consumer of
+ * `output` sees it instead of a silent completion. If the input channel fails, lets the
+ * in-flight work deliver before failing `output` with the input error, unless a worker
+ * fails on its own meanwhile, in which case `output` fails with that error right away.
  *
  * @internal
  */
@@ -15,9 +17,19 @@ export function pool<T, R>(
   concurrency: number,
   work: (value: T, worker: number) => Promise<void>
 ): void {
+  // A worker's own failure (`work` rejected) is told apart from the source failing by where the
+  // rejection came from, not by comparing error values, which may coincide.
   const workers = Array.from({ length: concurrency }, async (_, worker) => {
     for await (const value of input) {
-      await work(value, worker)
+      try {
+        await work(value, worker)
+      } catch (error: unknown) {
+        // A worker failing on its own must fail the output right away even if the source has
+        // failed too: with ordered delivery the other workers wait for its turn and would
+        // otherwise never settle.
+        output.fail(error)
+        throw error
+      }
     }
   })
   Promise
@@ -30,7 +42,9 @@ export function pool<T, R>(
       if (input.failed) {
         // The source failed: values already handed to workers are still legitimate results
         // (as with serial processing), so let in-flight work deliver before failing the output.
-        void Promise.allSettled(workers).then(() => output.fail(input.error))
+        void Promise
+          .allSettled(workers)
+          .then(() => output.fail(input.error))
         return
       }
       // A worker failed: stop the others and fail fast.
