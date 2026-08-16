@@ -31,3 +31,12 @@ await test('all fully consumes the reader', () => {
   const result = P.all(P.bol)(P.Reader.of('x\ny'))
   assert.deepEqual(result.reader, { input: 'x\ny', offset: 3 })
 })
+
+await test('all hands each scan position its own reader', () => {
+  // A parser may keep its input reader in its value; a later scan must not mutate it.
+  const capture = (reader: P.Reader.t) => P.Reader.end(reader) ?
+    P.Result.fail(reader, 'end') :
+    P.Result.ok(P.Reader.advanced(reader, 1), reader)
+  const readers = P.all<P.Reader.t>(capture)(P.Reader.of('ab')).value
+  assert.deepEqual(readers.map(reader => reader.offset), [ 0, 1 ])
+})

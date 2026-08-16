@@ -14,13 +14,15 @@ import type * as Parser from './parser.js'
 export function all<T>(parser: Parser.t<T>) {
   return (reader: Reader.t) => {
     const values: T[] = []
-    const reader_ = Reader.mutable(reader)
+    // A fresh immutable reader per scan position: a parser may keep its input reader in its value.
+    let offset = reader.offset
     while (true) {
+      const reader_ = Reader.of(reader.input, offset)
       const result = parser(reader_)
       if (!Result.failed(result)) {
         values.push(result.value)
-        if (result.reader.offset > reader_.offset) {
-          reader_.offset = result.reader.offset
+        if (result.reader.offset > offset) {
+          offset = result.reader.offset
           continue
         }
       }
@@ -28,7 +30,7 @@ export function all<T>(parser: Parser.t<T>) {
         break
       }
       // Failed or zero-width match, advance by single character from this position.
-      reader_.offset++
+      offset++
     }
     return Result.ok(Reader.of(reader.input, reader.input.length), values)
   }
