@@ -1,4 +1,6 @@
 import * as Ch from '@prelude/channel'
+import abortConcurrent from './abort.js'
+import { abortable, raceAbort } from './abortable.js'
 import assertConcurrency from './assert-concurrency.js'
 import type { Transformer } from './prelude.js'
 import pool from './pool.js'
@@ -13,11 +15,13 @@ type F<T, R> = (value: T, index: number, worker: number) => R
  * @param f - Mapping function
  * @returns Transformer function for mapping values serially
  */
-function serial<T, R>(f: F<T, R>): Transformer<T, Awaited<R>> {
+function serial<T, R>(f: F<T, R>, signal: undefined | AbortSignal): Transformer<T, Awaited<R>> {
   return async function* (values: AsyncIterable<T>) {
     let index = 0
-    for await (const value of values) {
-      yield await f(value, index++, 0)
+    // Both the pull and the mapping are raced against the signal, so an abort takes effect at once;
+    // a mapping in flight is left to settle on its own and its result is dropped.
+    for await (const value of abortable(values, signal)) {
+      yield await raceAbort(Promise.resolve(f(value, index++, 0)), signal)
     }
   }
 }
@@ -30,17 +34,21 @@ function serial<T, R>(f: F<T, R>): Transformer<T, Awaited<R>> {
  * @param concurrency - Maximum number of concurrent operations
  * @returns Transformer function for mapping values concurrently without preserving order
  */
-function unordered<T, R>(f: F<T, R>, concurrency: number): Transformer<T, Awaited<R>> {
+function unordered<T, R>(f: F<T, R>, concurrency: number, signal: undefined | AbortSignal): Transformer<T, Awaited<R>> {
   return async function* (values: AsyncIterable<T>) {
+    // Before touching the source: creating the input channel pulls its first value.
+    signal?.throwIfAborted()
     let index = 0
     const input = Ch.ofAsyncIterable(values)
     const output = Ch.of<Awaited<R>>()
+    const detach = abortConcurrent(signal, input, output)
     pool(input, output, concurrency, async (value, worker) => {
       await output.write(await f(value, index++, worker))
     })
     try {
       yield* output
     } finally {
+      detach()
       if (!input.doneWriting) {
         input.close()
       }
@@ -56,11 +64,14 @@ function unordered<T, R>(f: F<T, R>, concurrency: number): Transformer<T, Awaite
  * @param concurrency - Maximum number of concurrent operations
  * @returns Transformer function for mapping values concurrently while preserving order
  */
-function ordered<T, R>(f: F<T, R>, concurrency: number): Transformer<T, Awaited<R>> {
+function ordered<T, R>(f: F<T, R>, concurrency: number, signal: undefined | AbortSignal): Transformer<T, Awaited<R>> {
   return async function* (values: AsyncIterable<T>) {
+    // Before touching the source: creating the input channel pulls its first value.
+    signal?.throwIfAborted()
     let index = 0
     const input = Ch.ofAsyncIterable(withIndex(values))
     const output = Ch.of<Awaited<R>>()
+    const detach = abortConcurrent(signal, input, output)
 
     // Results are written to the (unbuffered) output in input order: a worker holding result i
     // waits for its turn, so a slow head-of-line item blocks the workers behind it instead of
@@ -106,6 +117,7 @@ function ordered<T, R>(f: F<T, R>, concurrency: number): Transformer<T, Awaited<
     try {
       yield* output
     } finally {
+      detach()
       if (!input.doneWriting) {
         input.close()
       }
@@ -124,6 +136,8 @@ function ordered<T, R>(f: F<T, R>, concurrency: number): Transformer<T, Awaited<
  * @param options - Configuration options
  * @param options.concurrency - Number of concurrent operations (default: 1)
  * @param options.preserveOrder - Whether to preserve the original order (default: true)
+ * @param options.signal - Aborting makes the transformer throw `signal.reason` and stop pulling from
+ *   the source; a mapping already in flight is left to settle on its own and its result is dropped
  * @returns A transformer function that yields the mapped values
  *
  * @example
@@ -146,16 +160,17 @@ function ordered<T, R>(f: F<T, R>, concurrency: number): Transformer<T, Awaited<
  * ); // [2, 4, 6, 8, 10]
  * ```
  */
-export function map<T, R>(f: F<T, R>, { concurrency = 1, preserveOrder = true }: {
+export function map<T, R>(f: F<T, R>, { concurrency = 1, preserveOrder = true, signal }: {
   concurrency?: number,
-  preserveOrder?: boolean
+  preserveOrder?: boolean,
+  signal?: AbortSignal
 } = {}): Transformer<T, Awaited<R>> {
   assertConcurrency(concurrency)
   if (concurrency === 1) {
-    return serial(f)
+    return serial(f, signal)
   }
   if (!preserveOrder) {
-    return unordered(f, concurrency)
+    return unordered(f, concurrency, signal)
   }
-  return ordered(f, concurrency)
+  return ordered(f, concurrency, signal)
 }

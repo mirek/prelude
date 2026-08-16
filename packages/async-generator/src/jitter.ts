@@ -11,6 +11,7 @@ import sleep from './sleep.js'
  *
  * @param jitter_ - Maximum random delay in milliseconds to add to the base delay
  * @param delay - Base delay in milliseconds to apply between values (default: 0)
+ * @param options.signal - Aborting cuts a pending delay short and makes the transformer throw `signal.reason`
  * @returns A transformer that passes through all values with time delays between them
  *
  * @example
@@ -23,13 +24,14 @@ import sleep from './sleep.js'
  * );
  * ```
  */
-export function jitter<T>(jitter_: number, delay = 0): Transformer<T> {
+export function jitter<T>(jitter_: number, delay = 0, { signal }: { signal?: AbortSignal } = {}): Transformer<T> {
   return async function* (values) {
     // Sleep between values, not after the last one: a trailing delay only holds up completion.
     let first = true
+    signal?.throwIfAborted()
     for await (const value of values) {
       if (!first) {
-        await sleep(delay + (Math.random() * jitter_))
+        await sleep(delay + (Math.random() * jitter_), { signal })
       }
       first = false
       yield value

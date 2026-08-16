@@ -2,7 +2,7 @@ import * as Err from '@prelude/err'
 import * as Log from '@prelude/log'
 import after from './after.js'
 import type { Interface } from './interface.js'
-import type { Listener, Events, Predicate } from './prelude.js'
+import type { Listener, Events, Predicate, WaitOptions } from './prelude.js'
 
 const log = Log.of('@prelude/emitter')
 
@@ -210,22 +210,40 @@ export class Emitter<T extends Events> implements Interface<T> {
    *
    * @param name - Event name to wait for
    * @param predicate - Function that evaluates if the event payload should resolve the promise
-   * @param timeout - Maximum time to wait in milliseconds before rejecting with timeout error
+   * @param options - Timeout in milliseconds, or `{ timeout, signal }`; aborting the signal
+   *   removes the listener and timer and rejects with `signal.reason`
    * @returns Promise that resolves with the event payload when predicate matches
    */
   eventuallyIf<K extends keyof T>(
     name: K,
     predicate: Predicate<T[K]>,
-    timeout = 60 * 1000
+    options: number | WaitOptions = 60 * 1000
   ): Promise<T[K]> {
+    const { timeout = 60 * 1000, signal } = typeof options === 'number' ? { timeout: options } : options
     return new Promise((resolve, reject) => {
+      if (signal?.aborted) {
+        reject(signal.reason)
+        return
+      }
       let off: null | (() => void) = null
       let offTimeout: null | (() => void) = null
+      let offAbort: null | (() => void) = null
       const cleanup = () => {
         off?.()
         off = null
         offTimeout?.()
         offTimeout = null
+        offAbort?.()
+        offAbort = null
+      }
+      if (signal) {
+        const onAbort = () => {
+          offAbort = null
+          cleanup()
+          reject(signal.reason)
+        }
+        signal.addEventListener('abort', onAbort, { once: true })
+        offAbort = () => signal.removeEventListener('abort', onAbort)
       }
       // A non-finite timeout means "wait forever"; setTimeout would clamp it to ~1ms.
       if (Number.isFinite(timeout)) {
@@ -250,6 +268,10 @@ export class Emitter<T extends Events> implements Interface<T> {
           resolve(values)
         }
       })
+      // A `newListener` handler may abort the signal synchronously inside on(), before `off` exists.
+      if (signal?.aborted) {
+        cleanup()
+      }
     })
   }
 
@@ -257,11 +279,12 @@ export class Emitter<T extends Events> implements Interface<T> {
    * Creates a promise that resolves when the specified event is emitted.
    *
    * @param name - Event name to wait for
-   * @param timeout - Maximum time to wait in milliseconds before rejecting with timeout error
+   * @param options - Timeout in milliseconds, or `{ timeout, signal }`; aborting the signal
+   *   removes the listener and timer and rejects with `signal.reason`
    * @returns Promise that resolves with the event payload when emitted
    */
-  eventually<K extends keyof T>(name: K, timeout = 60 * 1000): Promise<T[K]> {
-    return this.eventuallyIf(name, () => true, timeout)
+  eventually<K extends keyof T>(name: K, options: number | WaitOptions = 60 * 1000): Promise<T[K]> {
+    return this.eventuallyIf(name, () => true, options)
   }
 
 }

@@ -1,4 +1,6 @@
 import * as Ch from '@prelude/channel'
+import abortConcurrent from './abort.js'
+import { abortable, raceAbort } from './abortable.js'
 import assertConcurrency from './assert-concurrency.js'
 import pool from './pool.js'
 
@@ -10,12 +12,15 @@ import pool from './pool.js'
  * @returns Transformer function that applies the function and yields the original values
  */
 function serialTap<T>(
-  f: (value: T, index: number, worker: number) => void | Promise<void>
+  f: (value: T, index: number, worker: number) => void | Promise<void>,
+  signal: undefined | AbortSignal
 ) {
   return async function* (values: AsyncIterable<T>) {
     let index = 0
-    for await (const value of values) {
-      await Promise.resolve(f(value, index++, 0))
+    // Both the pull and the callback are raced against the signal, so an abort takes effect at once;
+    // a callback in flight is left to settle on its own.
+    for await (const value of abortable(values, signal)) {
+      await raceAbort(Promise.resolve(f(value, index++, 0)), signal)
       yield value
     }
   }
@@ -31,12 +36,16 @@ function serialTap<T>(
  */
 function concurrentTap<T>(
   f: (value: T, index: number, worker: number) => void | Promise<void>,
-  concurrency: number
+  concurrency: number,
+  signal: undefined | AbortSignal
 ) {
   return async function* (values: AsyncIterable<T>) {
+    // Before touching the source: creating the input channel pulls its first value.
+    signal?.throwIfAborted()
     let index = 0
     const input = Ch.ofAsyncIterable<T>(values)
     const output = Ch.of<T>()
+    const detach = abortConcurrent(signal, input, output)
     pool(input, output, concurrency, async (value, worker) => {
       await Promise.resolve(f(value, index++, worker))
       await output.write(value)
@@ -44,6 +53,7 @@ function concurrentTap<T>(
     try {
       yield* output
     } finally {
+      detach()
       if (!input.doneWriting) {
         input.close()
       }
@@ -62,6 +72,8 @@ function concurrentTap<T>(
  * @param f - Side-effect function to apply to each value
  * @param options - Configuration options
  * @param options.concurrency - Number of concurrent operations (default: 1)
+ * @param options.signal - Aborting makes the transformer throw `signal.reason` and stop pulling from
+ *   the source; a call of `f` already in flight is left to settle on its own
  * @returns A transformer function that yields the original values after applying the function
  *
  * @example
@@ -85,10 +97,10 @@ function concurrentTap<T>(
  */
 export function tap<T>(
   f: (value: T, index: number, worker: number) => void | Promise<void>,
-  { concurrency = 1 }: { concurrency?: number } = {}
+  { concurrency = 1, signal }: { concurrency?: number, signal?: AbortSignal } = {}
 ) {
   assertConcurrency(concurrency)
   return concurrency === 1 ?
-    serialTap(f) :
-    concurrentTap(f, concurrency)
+    serialTap(f, signal) :
+    concurrentTap(f, concurrency, signal)
 }

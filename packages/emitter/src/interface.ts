@@ -1,4 +1,4 @@
-import type { Events, Listener, Predicate } from './prelude.js'
+import type { Events, Listener, Predicate, WaitOptions } from './prelude.js'
 
 /**
  * Typed event emitter interface similar to EventEmitter from Node.js standard library.
@@ -83,21 +83,21 @@ export interface Interface<T extends Events> {
    * Creates a promise that resolves when the specified event is emitted.
    *
    * @param name - Event name to wait for
-   * @param timeout - Maximum time to wait in milliseconds before rejecting with timeout error (default: 60 seconds)
+   * @param options - Maximum time to wait in milliseconds (default: 60 seconds), or `{ timeout, signal }`
    * @returns Promise that resolves with the event payload when emitted
-   * @throws Error with code 'timeout' if event is not emitted within the timeout period
+   * @throws Error with code 'timeout' if event is not emitted within the timeout period; `signal.reason` when aborted
    */
-  eventually<K extends keyof T>(name: K, timeout?: number): Promise<T[K]>
+  eventually<K extends keyof T>(name: K, options?: number | WaitOptions): Promise<T[K]>
 
   /**
    * Creates a promise that resolves when an event matching the predicate is emitted.
    *
    * @param name - Event name to wait for
    * @param predicate - Function that evaluates if the event payload should resolve the promise
-   * @param timeout - Maximum time to wait in milliseconds before rejecting with timeout error (default: 60 seconds)
+   * @param options - Maximum time to wait in milliseconds (default: 60 seconds), or `{ timeout, signal }`
    * @returns Promise that resolves with the event payload when predicate matches
-   * @throws Error with code 'timeout' if matching event is not emitted within the timeout period
+   * @throws Error with code 'timeout' if matching event is not emitted within the timeout period; `signal.reason` when aborted
    */
-  eventuallyIf<K extends keyof T>(name: K, predicate: Predicate<T[K]>, timeout?: number): Promise<T[K]>
+  eventuallyIf<K extends keyof T>(name: K, predicate: Predicate<T[K]>, options?: number | WaitOptions): Promise<T[K]>
 
 }

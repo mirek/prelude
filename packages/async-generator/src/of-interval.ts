@@ -18,6 +18,7 @@ import * as Ch from '@prelude/channel'
  * combinators to limit the number of values processed.
  *
  * @param milliseconds - The time interval between values in milliseconds
+ * @param options.signal - Aborting clears the interval and makes the generator throw `signal.reason`
  * @returns An async generator that yields timestamp objects at regular intervals
  *
  * @example
@@ -50,8 +51,14 @@ import * as Ch from '@prelude/channel'
  * );
  * ```
  */
-export async function* ofInterval(milliseconds: number): AsyncGenerator<{ generatedAt: Date, yieldedAt: Date, index: number }> {
+export async function* ofInterval(milliseconds: number, { signal }: { signal?: AbortSignal } = {}): AsyncGenerator<{ generatedAt: Date, yieldedAt: Date, index: number }> {
   const ch = Ch.of<Date>(Infinity)
+  // Aborting fails the channel: the loop below throws `signal.reason` and the finally clears the interval.
+  const onAbort = () => ch.fail(signal!.reason)
+  if (signal?.aborted) {
+    onAbort()
+  }
+  signal?.addEventListener('abort', onAbort, { once: true })
   const intervalId =
     setInterval(() => {
       if (ch.doneWriting) {
@@ -66,6 +73,7 @@ export async function* ofInterval(milliseconds: number): AsyncGenerator<{ genera
       yield { generatedAt, yieldedAt: new Date, index: index++ }
     }
   } finally {
+    signal?.removeEventListener('abort', onAbort)
     clearInterval(intervalId)
     if (!ch.doneWriting) {
       ch.closeWriting()

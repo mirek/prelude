@@ -174,3 +174,57 @@ await test('rejectAll rejects every entry even when the drained hook throws', as
     gate.resolve()
   })
 })
+
+await test('aborting a queued entry removes it and rejects with the reason; the rest of the queue is unaffected', async () => {
+  const started: number[] = []
+  const gates: Array<() => void> = []
+  const queue = Q.of((id: number) => new Promise<number>(resolve => { started.push(id); gates.push(() => resolve(id)) }))
+  const first = Q.push(queue, 1)
+  const controller = new AbortController()
+  const second = Q.pushWith(queue, { signal: controller.signal }, 2)
+  const third = Q.push(queue, 3)
+  assert.equal(queue.entries.length, 3)
+  controller.abort(new Error('stop'))
+  await assert.rejects(second, /stop/)
+  assert.equal(queue.entries.length, 2)
+  gates.shift()!()
+  assert.equal(await first, 1)
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.deepEqual(started, [ 1, 3 ], 'the aborted entry never runs')
+  gates.shift()!()
+  assert.equal(await third, 3)
+})
+
+await test('aborting the running entry rejects its promise, drops its result and lets the queue continue', async () => {
+  const gates: Array<() => void> = []
+  let drained = 0
+  const queue = Q.of((id: number) => new Promise<number>(resolve => { gates.push(() => resolve(id)) }), { drained: () => { drained++ } })
+  const controller = new AbortController()
+  const running = Q.pushWith(queue, { signal: controller.signal }, 1)
+  const following = Q.push(queue, 2)
+  assert.equal(queue.running?.args[0], 1)
+  controller.abort(new Error('stop'))
+  await assert.rejects(running, /stop/)
+  assert.equal(queue.entries.length, 1, 'the running entry is removed, the next one still queued')
+  assert.equal(gates.length, 1, 'the next entry does not start while the aborted one is in flight')
+  gates.shift()!()
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.equal(gates.length, 1, 'the next entry starts once the aborted one settled')
+  gates.shift()!()
+  assert.equal(await following, 2)
+  assert.equal(drained, 1)
+})
+
+await test('aborting the only queued entry drains the queue; an already aborted signal never queues', async () => {
+  let drained = 0
+  const queue = Q.of(async (id: number) => id, { drained: () => { drained++ } })
+  const controller = new AbortController()
+  const only = Q.pushWith(queue, { signal: controller.signal }, 1)
+  // It is running (queue was idle), so it settles normally; abort afterwards is a no-op.
+  assert.equal(await only, 1)
+  controller.abort()
+  assert.equal(drained, 1)
+  await assert.rejects(Q.pushWith(queue, { signal: AbortSignal.abort(new Error('never')) }, 2), /never/)
+  assert.equal(queue.entries.length, 0)
+  assert.equal(drained, 1)
+})

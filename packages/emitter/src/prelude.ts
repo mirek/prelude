@@ -29,3 +29,11 @@ export type Events =
 export type Predicate<T extends unknown[] = unknown[]> =
   (...args: T) =>
     boolean
+
+/** Options of {@link Interface.eventually} and {@link Interface.eventuallyIf}. */
+export type WaitOptions = {
+  /** Maximum time to wait in milliseconds before rejecting with a `timeout` error (default: 60 seconds; a non-finite value waits forever). */
+  timeout?: number,
+  /** Aborting removes the listener and the timer and rejects with `signal.reason`. */
+  signal?: AbortSignal
+}

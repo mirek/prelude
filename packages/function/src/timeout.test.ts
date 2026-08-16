@@ -64,3 +64,31 @@ await test('a wait above the setTimeout maximum does not time out immediately or
     process.off('warning', onWarning)
   }
 })
+
+await test('aborting the signal rejects with the reason, clears the timer and leaves f to settle on its own', async () => {
+  const controller = new AbortController()
+  let fired = false
+  let fSettled = false
+  const pending = F.timeout(50, () => F.sleep(20).then(() => { fSettled = true; return 'f' }), () => { fired = true; return 'g' }, { signal: controller.signal })
+  controller.abort(new Error('stop'))
+  await assert.rejects(pending, /stop/)
+  await F.sleep(80)
+  assert.equal(fired, false, 'g must not fire after abort')
+  assert.equal(fSettled, true, 'f is not interrupted')
+})
+
+await test('an already aborted signal rejects timeout without calling f or g', async () => {
+  const controller = new AbortController()
+  controller.abort()
+  let called = false
+  await assert.rejects(F.timeout(10, () => { called = true; return Promise.resolve(1) }, () => 2, { signal: controller.signal }), (error: unknown) => error instanceof DOMException && error.name === 'AbortError')
+  assert.equal(called, false)
+})
+
+await test('abort listeners are removed once timeout settles', async () => {
+  const controller = new AbortController()
+  assert.equal(await F.timeout(50, () => Promise.resolve('done'), () => 'late', { signal: controller.signal }), 'done')
+  assert.equal(await F.timeout(1, () => F.sleep(50).then(() => 'late'), () => 'timed out', { signal: controller.signal }), 'timed out')
+  // Aborting afterwards must not throw or reject anything.
+  controller.abort()
+})
