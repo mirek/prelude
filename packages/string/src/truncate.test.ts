@@ -44,4 +44,32 @@ await describe('truncate', async () => {
       assert.equal(result.isWellFormed(), true, result)
     }
   })
+
+  await test('does not materialise every code point of a large input', () => {
+    const str = 'a'.repeat(1e7)
+    const originalFrom = Array.from
+    let materialised = false
+    Array.from = function (this: unknown, ...args: Parameters<typeof Array.from>) {
+      if (args[0] === str) {
+        materialised = true
+      }
+      return Reflect.apply(originalFrom, this, args)
+    } as typeof Array.from
+    try {
+      const before = process.memoryUsage().heapUsed
+      const result = truncate(str, 10)
+      const delta = process.memoryUsage().heapUsed - before
+      assert.equal(result, 'aaaaaaa...')
+      assert.equal(materialised, false, 'Array.from was called with the whole input')
+      assert.ok(delta < 64 * 1024 * 1024, `heap grew by ${delta} bytes`)
+    } finally {
+      Array.from = originalFrom
+    }
+  })
+})
+
+await test('fractional lengths keep whole code points', () => {
+  assert.equal(truncate('hello world', 8.5, ''), 'hello wo')
+  assert.equal(truncate('hello world', 8.5), 'hello...')
+  assert.equal(truncate('😀😀😀', 2.5, ''), '😀😀')
 })
