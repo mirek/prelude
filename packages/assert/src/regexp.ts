@@ -9,7 +9,10 @@ const regexp =
         throw new AssertionError({ expected: 'a string', value })
       }
       // A global or sticky regexp keeps lastIndex between calls, making test() alternate results.
-      re.lastIndex = 0
+      // Only those flags make test() write lastIndex, so leave other (possibly frozen) regexps untouched.
+      if (re.global || re.sticky) {
+        re.lastIndex = 0
+      }
       if (!re.test(value)) {
         throw new AssertionError({ expected, value })
       }

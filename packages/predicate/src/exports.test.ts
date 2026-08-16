@@ -23,3 +23,7 @@ await test('exact treats Object.prototype names as extra keys', () => {
   assert.equal(p({ a: 'x', constructor: 1 }), false)
   assert.equal(p({ a: 'x' }), true)
 })
+
+await test('regexp accepts a frozen non-global regexp', () => {
+  assert.equal($.regexp(Object.freeze(/a/))('a'), true)
+})

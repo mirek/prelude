@@ -12,7 +12,10 @@ const regexp =
         return fail(value, 'expected string')
       }
       // A sticky (or global) regexp keeps lastIndex between calls; the refute must be stateless.
-      re.lastIndex = 0
+      // Only those flags make test() write lastIndex, so leave other (possibly frozen) regexps untouched.
+      if (re.global || re.sticky) {
+        re.lastIndex = 0
+      }
       return re.test(value) ?
         ok(value) :
         fail(value, `expected to match ${re}.`)
