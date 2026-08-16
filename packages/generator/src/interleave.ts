@@ -1,3 +1,4 @@
+import closeIterator from './close-iterator.js'
 import type { Value } from './prelude.js'
 
 /**
@@ -31,20 +32,22 @@ export const interleave =
     if (iterators.length === 0) {
       return
     }
+    // The source that reported `done` (at most one) must not be closed again.
+    let exhausted: Iterator<unknown> | undefined
+    let failed = false
     try {
       while (true) {
         // Pull one source at a time and stop at the first exhausted one (see zip).
         const values: unknown[] = []
-        let done = false
         for (const iterator of iterators) {
           const result = iterator.next()
           if (result.done) {
-            done = true
+            exhausted = iterator
             break
           }
           values.push(result.value)
         }
-        if (done) {
+        if (exhausted) {
           break
         }
         // Yield directly (not `yield*` to an array iterator, which has no `throw`) so `.throw()` reaches this generator.
@@ -52,10 +55,15 @@ export const interleave =
           yield value
         }
       }
+    } catch (error) {
+      failed = true
+      throw error
     } finally {
-      // Close every source whether we finished or the consumer stopped early.
+      // Close every source that was not exhausted, whether we finished or the consumer stopped early.
       for (const iterator of iterators) {
-        iterator.return?.()
+        if (iterator !== exhausted) {
+          closeIterator(iterator, failed)
+        }
       }
     }
   }

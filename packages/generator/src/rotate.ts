@@ -1,4 +1,5 @@
 import array from './array.js'
+import closeIterator from './close-iterator.js'
 
 /**
  * Helper function to rotate values backward by n positions
@@ -30,9 +31,10 @@ const rotateForward =
     function* (g: Iterable<T>): Generator<T> {
       // Use a single iterator: iterating `g` twice would replay re-iterable inputs (arrays, sets).
       const iterator = g[Symbol.iterator]()
+      let exhausted = false
+      let failed = false
       try {
         const q: T[] = []
-        let exhausted = false
         while (q.length < n) {
           const result = iterator.next()
           if (result.done) {
@@ -45,6 +47,7 @@ const rotateForward =
         while (!exhausted) {
           const result = iterator.next()
           if (result.done) {
+            exhausted = true
             break
           }
           rest++
@@ -55,8 +58,14 @@ const rotateForward =
         for (let k = 0; k < m; k++) {
           yield q[(j + k) % m]
         }
+      } catch (error) {
+        failed = true
+        throw error
       } finally {
-        iterator.return?.()
+        // Close the source only if we left it before it was exhausted (consumer break or error).
+        if (!exhausted) {
+          closeIterator(iterator, failed)
+        }
       }
     }
 

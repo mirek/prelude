@@ -61,3 +61,36 @@ await test('closes the source on early break', () => {
   }
   assert.deepEqual(closed, [ 'closed' ])
 })
+
+await test('does not close an exhausted source, closes it on early break', () => {
+  const tracked = (throwOnReturn: boolean) => {
+    const tracker = {
+      returnCalls: 0,
+      [Symbol.iterator](): Iterator<number> {
+        const iterator = [ 1, 2, 3 ][Symbol.iterator]()
+        return {
+          next: () => iterator.next(),
+          return: () => {
+            tracker.returnCalls++
+            if (throwOnReturn) {
+              throw new Error('return boom')
+            }
+            return { done: true, value: undefined }
+          }
+        }
+      }
+    }
+    return tracker
+  }
+  const full = tracked(false)
+  assert.deepEqual([ ...G.rotate(1)(full) ], [ 2, 3, 1 ])
+  assert.equal(full.returnCalls, 0)
+  assert.deepEqual([ ...G.rotate(1)(tracked(true)) ], [ 2, 3, 1 ])
+  assert.deepEqual([ ...G.rotate(5)(tracked(true)) ], [ 3, 1, 2 ])
+  const early = tracked(false)
+  for (const value of G.rotate(1)(early)) {
+    assert.equal(value, 2)
+    break
+  }
+  assert.equal(early.returnCalls, 1)
+})

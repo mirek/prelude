@@ -1,3 +1,5 @@
+import closeIterator from './close-iterator.js'
+
 /**
  * Creates a generator that yields pairs of values from two iterables.
  * Stops when either iterable is exhausted.
@@ -29,23 +31,35 @@ export const pair =
     function* (lhsIterable: Iterable<A>): Generator<[ A, B ]> {
       const lhsIterator = lhsIterable[Symbol.iterator]()
       const rhsIterator = rhsIterable[Symbol.iterator]()
+      let lhsDone = false
+      let rhsDone = false
+      let failed = false
       try {
         while (true) {
           const lhsResult = lhsIterator.next()
           if (lhsResult.done) {
+            lhsDone = true
             break
           }
           // Only advance rhs once lhs produced a value, so rhs is not pulled past its pair.
           const rhsResult = rhsIterator.next()
           if (rhsResult.done) {
+            rhsDone = true
             break
           }
           yield [ lhsResult.value, rhsResult.value ]
         }
+      } catch (error) {
+        failed = true
+        throw error
       } finally {
-        // Close both sources whether we finished or the consumer stopped early.
-        lhsIterator.return?.()
-        rhsIterator.return?.()
+        // Close the sources that were not exhausted, whether we finished or the consumer stopped early.
+        if (!lhsDone) {
+          closeIterator(lhsIterator, failed)
+        }
+        if (!rhsDone) {
+          closeIterator(rhsIterator, failed)
+        }
       }
     }
 

@@ -13,3 +13,28 @@ await test('extreme', () => {
     max: values.slice().sort(f).reverse()[0]
   })
 })
+
+await test('does not close an exhausted source and keeps the comparator error when return() throws', () => {
+  const tracked = () => {
+    const tracker = {
+      returnCalls: 0,
+      [Symbol.iterator](): Iterator<number> {
+        const iterator = [ 3, 1, 2 ][Symbol.iterator]()
+        return {
+          next: () => iterator.next(),
+          return: () => {
+            tracker.returnCalls++
+            throw new Error('return boom')
+          }
+        }
+      }
+    }
+    return tracker
+  }
+  const full = tracked()
+  assert.deepEqual(G.extreme((a: number, b: number) => a - b)(full), { min: 1, max: 3 })
+  assert.equal(full.returnCalls, 0)
+  const failing = tracked()
+  assert.throws(() => G.extreme(() => { throw new Error('cmp boom') })(failing), /cmp boom/)
+  assert.equal(failing.returnCalls, 1)
+})
