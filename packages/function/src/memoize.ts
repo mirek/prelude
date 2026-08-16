@@ -38,6 +38,11 @@ const escape = `${tag}:`
 export const key =
   (args: unknown[]): string =>
     JSON.stringify(args, (_, value: unknown) => {
+      // JSON unwraps boxed primitives after the replacer ran, so unwrap first: a boxed string
+      // must be escaped like a primitive one, or it could spell out an escaped/tagged key.
+      if (value instanceof String || value instanceof Number || value instanceof Boolean) {
+        value = value.valueOf()
+      }
       switch (typeof value) {
         case 'undefined':
           return `${tag}undefined`

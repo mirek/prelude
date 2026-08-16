@@ -65,4 +65,8 @@ await test('default key keeps NUL-prefixed strings apart from tagged values', ()
   // Ordinary strings keep the plain JSON key.
   assert.equal(key(['a', '']), '["a",""]')
   assert.equal(key([`a${nul}`]), JSON.stringify([`a${nul}`]))
+  // Boxed strings are unwrapped before escaping, so they cannot spell out an escaped or tagged key.
+  assert.equal(key([new String(`${nul}x`)]), key([`${nul}x`]))
+  assert.notEqual(key([`${nul}x`]), key([new String(`${nul}:${nul}x`)]))
+  assert.notEqual(key([undefined]), key([new String(`${nul}undefined`)]))
 })
