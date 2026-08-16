@@ -30,6 +30,14 @@ declare function setInterval(handler: (...args: any[]) => void, ms?: number, ...
 declare function clearInterval(handle: TimerHandle | undefined): void;
 
 // ---------------------------------------------------------------------------
+// Microtasks
+//
+// queueMicrotask is a WHATWG global available in every modern runtime (Node
+// >= 11, browsers, Deno, Bun, workers, edge runtimes).
+
+declare function queueMicrotask(callback: () => void): void;
+
+// ---------------------------------------------------------------------------
 // Console
 //
 // Universally available in every JS runtime. We declare a minimal surface —

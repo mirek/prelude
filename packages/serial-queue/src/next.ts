@@ -1,4 +1,5 @@
 import type { Entry, SerialQueue } from './prelude.js'
+import notifyDrained from './notify-drained.js'
 
 /**
  * Runs the head entry. The queue advances (and the next entry starts) *before*
@@ -8,6 +9,9 @@ import type { Entry, SerialQueue } from './prelude.js'
  * Entries whose `f` throws synchronously are rejected and the queue advances in
  * a loop rather than by recursion, so long runs of failing entries cannot
  * overflow the stack.
+ *
+ * Every entry settles regardless of the `drained` hook: a throwing hook is
+ * isolated and rethrown asynchronously (see {@link notifyDrained}).
  */
 const next =
   <Args extends unknown[], R>(queue: SerialQueue<Args, R>): void => {
@@ -25,7 +29,7 @@ const next =
             if (queue.entries.length > 0) {
               next(queue)
             } else {
-              queue.drained?.()
+              notifyDrained(queue)
             }
           } else if (queue.entries.length > 0) {
             // Entries pushed after `rejectAll` while this one was still running.
@@ -42,7 +46,7 @@ const next =
         if (queue.entries[0] === entry) {
           queue.entries.shift()
           if (queue.entries.length === 0) {
-            queue.drained?.()
+            notifyDrained(queue)
           }
         }
         entry.reject(err)

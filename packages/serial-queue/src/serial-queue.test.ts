@@ -105,3 +105,71 @@ await test('push after rejectAll waits for the in-flight entry to settle', async
   assert.deepEqual(started, [ 0, 1 ])
   assert.equal(queue.entries.length, 0)
 })
+
+/**
+ * Runs `f` while collecting uncaught exceptions into `errors`, keeping them
+ * away from the test runner (which would otherwise fail the whole file).
+ */
+async function withUncaughtExceptions<T>(f: (errors: unknown[]) => Promise<T>): Promise<T> {
+  const errors: unknown[] = []
+  const listeners = process.rawListeners('uncaughtException')
+  process.removeAllListeners('uncaughtException')
+  process.on('uncaughtException', err => { errors.push(err) })
+  try {
+    return await f(errors)
+  } finally {
+    process.removeAllListeners('uncaughtException')
+    for (const listener of listeners) {
+      process.on('uncaughtException', listener)
+    }
+  }
+}
+
+/** Rejects if `promise` has not settled within `ms`. */
+const withinMs = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+  Promise.race([
+    promise,
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`still pending after ${ms}ms`)), ms))
+  ])
+
+await test('a throwing drained hook does not keep the last entry from settling', async () => {
+  await withUncaughtExceptions(async errors => {
+    const queue = Q.of(async (value: number) => value * 2)
+    queue.drained = () => { throw new Error('boom') }
+    assert.equal(await withinMs(Q.push(queue, 21), 100), 42)
+    assert.equal(queue.entries.length, 0)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    assert.deepEqual(errors.map(err => (err as Error).message), [ 'boom' ])
+  })
+})
+
+await test('a throwing drained hook does not mask a synchronously throwing f', async () => {
+  await withUncaughtExceptions(async errors => {
+    const queue = Q.of((_: number): Promise<number> => { throw new Error('sync boom') })
+    queue.drained = () => { throw new Error('boom') }
+    await assert.rejects(withinMs(Q.push(queue, 1), 100), /sync boom/)
+    assert.equal(queue.entries.length, 0)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    assert.deepEqual(errors.map(err => (err as Error).message), [ 'boom' ])
+  })
+})
+
+await test('rejectAll rejects every entry even when the drained hook throws', async () => {
+  await withUncaughtExceptions(async errors => {
+    const gate = deferred<void>()
+    const queue = Q.of(async (value: number) => {
+      await gate.promise
+      return value
+    })
+    queue.drained = () => { throw new Error('boom') }
+    const tasks = [ Q.push(queue, 0), Q.push(queue, 1) ]
+    Q.rejectAll(queue, new Error('reset'))
+    for (const task of tasks) {
+      await assert.rejects(withinMs(task, 100), /reset/)
+    }
+    assert.equal(queue.entries.length, 0)
+    await new Promise(resolve => setTimeout(resolve, 0))
+    assert.deepEqual(errors.map(err => (err as Error).message), [ 'boom' ])
+    gate.resolve()
+  })
+})
