@@ -124,6 +124,11 @@ export class Supervisor implements A.Supervisor, A.Supervised {
     if (terminal(child)) {
       throw new SupervisorError('Cannot supervise a terminated child.', 'invalid')
     }
+    // Transfer: the previous supervisor must not keep operating on (stopping, restarting) the child.
+    const previous = child.supervisor
+    if (previous instanceof Supervisor && previous !== this) {
+      previous.#forget(child)
+    }
     child.supervisor = this
     if (this.#children.includes(child)) {
       // Already listed: adopting twice would restart (and count) the child twice per decision.
@@ -131,11 +136,13 @@ export class Supervisor implements A.Supervisor, A.Supervised {
       return child
     }
     this.#children.push(child)
-    const forget = () => {
-      this.#children = this.#children.filter(other => other !== child)
-    }
+    const forget = () => this.#forget(child)
     child.done.then(forget, forget)
     return child
+  }
+
+  #forget(child: A.Supervised): void {
+    this.#children = this.#children.filter(other => other !== child)
   }
 
   /**

@@ -204,6 +204,7 @@ await test('supervise re-adopts a listed child that another supervisor took over
   assert.equal(first.supervise(a), a)
   assert.equal(a.supervisor, first)
   assert.deepEqual(first.children, [ a ])
+  assert.deepEqual(second.children, [], 'the previous supervisor no longer lists the child')
 
   await assert.rejects(a.ask('boom'), /a: boom/)
   await tick()
@@ -212,6 +213,18 @@ await test('supervise re-adopts a listed child that another supervisor took over
   assert.equal(second.restarts, 0, 'not by second')
   await first.stop()
   await second.stop()
+})
+
+await test('stopping the previous supervisor leaves a transferred child alone', async () => {
+  const first = Supervisor.of({ name: 'first' })
+  const second = Supervisor.of({ name: 'second' })
+  const a = first.spawn(worker('a'))
+  second.supervise(a)
+  assert.deepEqual(first.children, [])
+  await first.stop()
+  assert.equal(a.status, 'running')
+  await second.stop()
+  assert.equal(a.status, 'stopped')
 })
 
 await test('concurrent failures under all-for-one do not deadlock', async () => {
