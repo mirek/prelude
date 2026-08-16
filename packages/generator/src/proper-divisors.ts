@@ -20,6 +20,9 @@ export const properDivisors =
     if (n <= 1) {
       return
     }
+    // 1 always divides n: yield it before factoring so `first`/`take(1)` on a large prime
+    // does not pay for the whole sieve.
+    yield 1
     // Expanding prime factors produces divisors out of order (12 -> 1, 2, 4, 3, 6); collect and sort first.
     const divisors = [1]
     for (const [ prime, exponent ] of primeFactors(n)) {
@@ -36,7 +39,10 @@ export const properDivisors =
       }
     }
     divisors.sort((a, b) => a - b)
-    yield* divisors
+    // Skip the leading 1 already yielded.
+    for (let i = 1; i < divisors.length; i++) {
+      yield divisors[i]
+    }
   }
 
 export default properDivisors
