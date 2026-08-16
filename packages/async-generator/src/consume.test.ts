@@ -84,3 +84,62 @@ await test('a failing worker closes an event-driven source instead of waiting fo
   await assert.rejects(Promise.race([ consumed, timeout ]), /x/)
   assert.equal(channel.doneWriting, true)
 })
+
+await test('concurrent consume never overlaps next() calls on the shared iterator', async () => {
+  // An iterator that permits only one in-flight next(), like many hand-written async iterators.
+  const source: AsyncIterable<number> = {
+    [Symbol.asyncIterator]: () => {
+      let pending = false
+      let i = 0
+      return {
+        next: async () => {
+          if (pending) {
+            throw new Error('overlapping next()')
+          }
+          pending = true
+          await new Promise(resolve => setTimeout(resolve, 1))
+          pending = false
+          return i < 5 ? { done: false, value: i++ } : { done: true, value: undefined }
+        }
+      }
+    }
+  }
+  const seen: number[] = []
+  await G.consume(async (value: number) => {
+    await new Promise(resolve => setTimeout(resolve, 2))
+    seen.push(value)
+  }, { concurrency: 3 })(source)
+  assert.deepEqual(seen.toSorted((a, b) => a - b), [ 0, 1, 2, 3, 4 ])
+})
+
+await test('a failing callback stops queued pulls from calling next() after return()', async () => {
+  // A source that resolves a blocked next() from return() and records any next() after it was closed.
+  let closed = false
+  let pulledAfterClose = false
+  let release: undefined | (() => void)
+  const source: AsyncIterable<number> = {
+    [Symbol.asyncIterator]: () => ({
+      next: () => {
+        if (closed) {
+          pulledAfterClose = true
+          return Promise.resolve({ done: true, value: undefined })
+        }
+        return new Promise(resolve => {
+          release = () => resolve({ done: false, value: 1 })
+        })
+      },
+      return: () => {
+        closed = true
+        release?.()
+        return Promise.resolve({ done: true, value: undefined })
+      }
+    })
+  }
+  const consumed = G.consume(async () => {
+    throw new Error('callback boom')
+  }, { concurrency: 3 })(source)
+  await new Promise(resolve => setTimeout(resolve, 10))
+  release?.()
+  await assert.rejects(consumed, /callback boom/)
+  assert.equal(pulledAfterClose, false, 'no next() after return()')
+})
