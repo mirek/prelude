@@ -103,6 +103,8 @@ await test('range1 counts the inclusive endpoint in its size guard', () => {
   const start = performance.now()
   assert.throws(() => S.range1(0, 16_777_216), /at most 16777216 values, got 16777217/)
   assert.ok(performance.now() - start < 200)
+  // A non-integral span whose floored count fits the limit is allowed (indices 0 .. 16777215).
+  assert.equal(S.range1(0, 16_777_215.5).size, 16_777_216)
 })
 
 await test('the Readme usage example runs as written', () => {
