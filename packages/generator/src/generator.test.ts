@@ -70,3 +70,82 @@ await test('return and throw exist on a wrapped plain iterator', () => {
     break
   }
 })
+
+await test('wraps a frozen iterator', () => {
+  let n = 0
+  const iter = Object.freeze({ next: () => n < 3 ? { value: n++, done: false } : { value: undefined, done: true } })
+  assert.deepEqual([ ...G.generator(iter) ], [ 0, 1, 2 ])
+})
+
+await test('wraps an iterator with a non-configurable next', () => {
+  let n = 0
+  const iter = Object.defineProperty({}, 'next', {
+    value: () => n < 2 ? { value: n++, done: false } : { value: undefined, done: true },
+    writable: false,
+    configurable: false
+  }) as Iterator<number>
+  const gen = G.generator(iter)
+  assert.deepEqual(gen.next(), { value: 0, done: false })
+  assert.deepEqual([ ...gen ], [ 1 ])
+})
+
+await test('stays closed after a synthesized return', () => {
+  let n = 0
+  // Bounded source: on a wrapper that forgets it was closed, spread terminates instead of hanging.
+  const gen = G.generator({ next: () => n < 5 ? { value: n++, done: false } : { value: undefined, done: true } })
+  assert.deepEqual(gen.next(), { value: 0, done: false })
+  assert.deepEqual(gen.return(undefined), { done: true, value: undefined })
+  assert.deepEqual(gen.next(), { done: true, value: undefined })
+  assert.deepEqual([ ...gen ], [])
+})
+
+await test('stays closed after a for-of break', () => {
+  let n = 0
+  const gen = G.generator({ next: () => n < 5 ? { value: n++, done: false } : { value: undefined, done: true } })
+  for (const value of gen) {
+    assert.equal(value, 0)
+    break
+  }
+  assert.deepEqual([ ...gen ], [])
+})
+
+await test('stays closed after a synthesized throw', () => {
+  let n = 0
+  const gen = G.generator({ next: () => ({ value: n++, done: false }) })
+  assert.throws(() => gen.throw(new Error('boom')), /boom/)
+  assert.deepEqual(gen.next(), { done: true, value: undefined })
+})
+
+await test('stays closed after the wrapped iterator finishes its own return', () => {
+  let n = 0
+  const iter = {
+    next: () => ({ value: n++, done: false }),
+    return: (value?: unknown) => ({ done: true as const, value: value as number })
+  }
+  const gen = G.generator(iter)
+  assert.deepEqual(gen.next(), { value: 0, done: false })
+  assert.deepEqual(gen.return(7), { done: true, value: 7 })
+  assert.deepEqual(gen.next(), { done: true, value: undefined })
+})
+
+await test('wrapped iterators keep Symbol.iterator and the iterator helpers', () => {
+  const gen = G.generator([1, 2, 3][Symbol.iterator]())
+  assert.equal(gen[Symbol.iterator](), gen)
+  assert.deepEqual(gen.map(x => x * 2).toArray(), [2, 4, 6])
+})
+
+await test('a closed wrapper does not re-enter the source on throw() or return()', () => {
+  let recovered = 0
+  const source: Iterator<number> = {
+    next: () => ({ done: false, value: 1 }),
+    return: () => ({ done: true, value: undefined }),
+    throw: () => { recovered++; return { done: false, value: 2 } }
+  }
+  const gen = G.generator(source)
+  gen.next()
+  assert.deepEqual(gen.return(undefined), { done: true, value: undefined })
+  assert.throws(() => gen.throw(new Error('late')), /late/)
+  assert.equal(recovered, 0, 'source throw() must not run once the wrapper is closed')
+  assert.deepEqual(gen.return(7), { done: true, value: 7 })
+  assert.deepEqual(gen.next(), { done: true, value: undefined })
+})
