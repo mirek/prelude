@@ -7,7 +7,8 @@ import lift from './lift.js'
  */
 const exactPartial =
   <T extends Record<string, Primitive | Assert<unknown>>>(kvs: T): Assert<{ [k in keyof T]?: undefined | Lifted<T[k]> }> => {
-    const asserts: Record<string, Assert<unknown>> = {}
+    // Null prototype so a declared `__proto__` key becomes an own entry instead of invoking the legacy setter.
+    const asserts: Record<string, Assert<unknown>> = Object.create(null)
     for (const k in kvs) {
       asserts[k] = lift(kvs[k])
     }
@@ -16,7 +17,8 @@ const exactPartial =
         throw new AssertionError({ expected: 'an object', value })
       }
       for (const k in asserts) {
-        const v = (value as Record<string, unknown>)[k]
+        // Own lookup: an absent own `__proto__` must read as `undefined`, not as the prototype.
+        const v = Object.hasOwn(value, k) ? (value as Record<string, unknown>)[k] : undefined
         if (v === undefined) {
           continue
         }
