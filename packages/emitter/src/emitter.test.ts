@@ -282,6 +282,24 @@ await test('a newListener listener is not notified about itself', () => {
   assert.deepEqual(seen, [ 'message' ])
 })
 
+await test('on registers the listener when newListener removes the last existing listener', () => {
+  const emitter = Emitter.of<TestEvents>()
+  const a = mock.fn()
+  const b = mock.fn()
+  emitter.on('message', a)
+  emitter.on('newListener', name => {
+    if (name === 'message') {
+      emitter.off('message', a)
+    }
+  })
+  emitter.on('message', b)
+  emitter.emit('message', 'x')
+  assert.equal(a.mock.callCount(), 0)
+  assert.equal(b.mock.callCount(), 1)
+  assert.equal(emitter.listeners('message')?.size, 1)
+  assert.equal(emitter.hasListener('message', b), true)
+})
+
 await test('eventually should reject on timeout', async () => {
   const emitter = Emitter.of<TestEvents>()
 
