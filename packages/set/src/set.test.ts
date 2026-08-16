@@ -97,6 +97,14 @@ await test('a step below the ulp of the start fails fast instead of stalling', (
   assert.equal(S.range(0, 1000).size, 1000)
 })
 
+await test('range1 counts the inclusive endpoint in its size guard', () => {
+  // `(max - min) / step` is exactly the limit here, but the inclusive count is one more; without the
+  // `+ 1` the guard let it through and it ground for seconds before V8 rejected the last insert.
+  const start = performance.now()
+  assert.throws(() => S.range1(0, 16_777_216), /at most 16777216 values, got 16777217/)
+  assert.ok(performance.now() - start < 200)
+})
+
 await test('the Readme usage example runs as written', () => {
   const a = new Set([ 3, 1, 2 ])
   assert.deepEqual(S.sorted(a, Cmp.number), [ 1, 2, 3 ])

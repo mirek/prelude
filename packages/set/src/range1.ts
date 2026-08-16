@@ -6,8 +6,9 @@ const range1 =
     const min = Math.min(a, b)
     const max = Math.max(a, b)
     // A Set holds at most 2^24 entries; fail fast instead of grinding towards that limit.
-    if ((max - min) / step > 16_777_216) {
-      throw new RangeError(`Expected at most 16777216 values, got ${Math.ceil((max - min) / step)}.`)
+    // The range is inclusive, so the count is one more than the number of steps.
+    if ((max - min) / step + 1 > 16_777_216) {
+      throw new RangeError(`Expected at most 16777216 values, got ${Math.floor((max - min) / step) + 1}.`)
     }
     const set = new Set<number>()
     // Values are computed from the index so fractional steps do not drift and the inclusive end is reached;
