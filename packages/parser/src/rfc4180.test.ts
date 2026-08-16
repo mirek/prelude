@@ -21,3 +21,9 @@ await test('leading spaces are part of the first field', () => {
   assert.deepEqual(Rfc4180.parse('a,b '), [ [ 'a', 'b ' ] ])
   assert.deepEqual(Rfc4180.parse('  x'), [ [ '  x' ] ])
 })
+
+await test('leading UTF-8 BOM is skipped', () => {
+  assert.deepEqual(Rfc4180.parse('\ufeffa,b'), [ [ 'a', 'b' ] ])
+  assert.deepEqual(Rfc4180.parse('\ufeff a,b'), [ [ ' a', 'b' ] ])
+  assert.deepEqual(Rfc4180.parse('\ufeff"a",b\n1,2'), [ [ 'a', 'b' ], [ '1', '2' ] ])
+})
