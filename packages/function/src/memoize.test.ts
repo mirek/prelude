@@ -2,6 +2,8 @@ import * as F from './index.js'
 import { key } from './memoize.js'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { setFlagsFromString } from 'node:v8'
+import { runInNewContext } from 'node:vm'
 
 const factorial =
   F.memoize((n: number): bigint =>
@@ -69,4 +71,37 @@ await test('default key keeps NUL-prefixed strings apart from tagged values', ()
   assert.equal(key([new String(`${nul}x`)]), key([`${nul}x`]))
   assert.notEqual(key([`${nul}x`]), key([new String(`${nul}:${nul}x`)]))
   assert.notEqual(key([undefined]), key([new String(`${nul}undefined`)]))
+})
+
+await test('default key is stable per symbol and distinct across symbols', () => {
+  const a = Symbol('s')
+  const b = Symbol('s')
+  const registered = Symbol.for('memoize.test.registered')
+  assert.equal(key([a]), key([a]))
+  assert.equal(key([b]), key([b]))
+  assert.equal(key([registered]), key([Symbol.for('memoize.test.registered')]))
+  assert.notEqual(key([a]), key([b]))
+  assert.notEqual(key([a]), key([registered]))
+  assert.notEqual(key([b]), key([registered]))
+  assert.notEqual(key([Symbol.for('memoize.test.registered.other')]), key([registered]))
+  const f = F.memoize((s: symbol) => ({ s }))
+  assert.equal(f(a), f(a))
+  assert.equal(f(registered), f(Symbol.for('memoize.test.registered')))
+  assert.notEqual(f(a), f(b))
+  assert.notEqual(f(a), f(registered))
+})
+
+await test('default key does not retain non-registered symbols', async () => {
+  setFlagsFromString('--expose-gc')
+  const gc = runInNewContext('gc') as () => void
+  const ref =
+    (() => {
+      const s = Symbol('fresh')
+      key([s])
+      return new WeakRef(s)
+    })()
+  // A `WeakRef` target is kept alive until the end of the current job.
+  await new Promise(resolve => setTimeout(resolve, 0))
+  gc()
+  assert.equal(ref.deref(), undefined)
 })

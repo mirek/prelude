@@ -1,21 +1,23 @@
-const identities = new WeakMap<object, number>()
-const symbolIdentities = new Map<symbol, number>()
+/**
+ * Identity registry for values keyed by identity. Objects, functions and non-registered symbols
+ * are held weakly so a value forgotten by every caller is not retained here forever; registered
+ * symbols (`Symbol.for`) cannot be collected and are not valid `WeakMap` keys, so they use a
+ * strong `Map`.
+ */
+const identities = new WeakMap<WeakKey, number>()
+const registeredSymbolIdentities = new Map<symbol, number>()
 let nextIdentity = 0
 
 const identityOf =
   (value: object | symbol): number => {
-    if (typeof value === 'symbol') {
-      let id = symbolIdentities.get(value)
-      if (id === undefined) {
-        id = nextIdentity++
-        symbolIdentities.set(value, id)
-      }
-      return id
-    }
-    let id = identities.get(value)
+    const registry =
+      typeof value === 'symbol' && Symbol.keyFor(value) !== undefined ?
+        registeredSymbolIdentities :
+        identities
+    let id = registry.get(value)
     if (id === undefined) {
       id = nextIdentity++
-      identities.set(value, id)
+      registry.set(value, id)
     }
     return id
   }
