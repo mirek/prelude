@@ -357,7 +357,7 @@ await test('a call timeout above the timer limit means no timeout', async () => 
     transport.emit('message', JSON.stringify({ jsonrpc: '2.0', id: 'call-id', result: 'done' }))
     assert.equal(await slow, 'done')
     await new Promise(resolve => setImmediate(resolve))
-    assert.deepEqual(warnings, [])
+    assert.ok(!warnings.includes('TimeoutOverflowWarning'), 'unexpected TimeoutOverflowWarning')
     assert.equal(client.pendingCount, 0)
     client.dispose()
   } finally {

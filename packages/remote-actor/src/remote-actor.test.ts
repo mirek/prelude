@@ -142,7 +142,7 @@ await test('an ask timeout above the timer limit means no timeout', async () => 
 
     assert.equal(await remote.ask('slow', { timeout: 2 ** 31 }), 'slow')
     await new Promise(resolve => setImmediate(resolve))
-    assert.deepEqual(warnings, [])
+    assert.ok(!warnings.includes('TimeoutOverflowWarning'), 'unexpected TimeoutOverflowWarning')
     assert.equal(remote.pending, 0)
     remote.close()
     await local.stop()

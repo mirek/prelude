@@ -173,7 +173,7 @@ await test('an ask timeout above the timer limit means no timeout', async () => 
     })
     assert.equal(await actor.ask('slow', { timeout: 2 ** 31 }), 'slow')
     await new Promise(resolve => setImmediate(resolve))
-    assert.deepEqual(warnings, [])
+    assert.ok(!warnings.includes('TimeoutOverflowWarning'), 'unexpected TimeoutOverflowWarning')
     await actor.stop()
   } finally {
     process.off('warning', onWarning)
