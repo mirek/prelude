@@ -12,10 +12,13 @@ const range1 =
     const set = new Set<number>()
     // Values are computed from the index so fractional steps do not drift and the inclusive end is reached;
     // accumulating `i += step` could also stall forever once `step` fell below the ulp of `i`.
-    const tolerance = step * 1e-9
+    // The tolerance is a few ulps of the endpoints, so it only absorbs rounding error and can
+    // never span the interval.
+    const tolerance = 4 * Number.EPSILON * Math.max(Math.abs(min), Math.abs(max))
     for (let k = 0; ; k++) {
       const value = min + (k * step)
-      if (value > max + tolerance) {
+      // Compare distances rather than `max + tolerance`, which can overflow to Infinity.
+      if (!Number.isFinite(value) || value - max > tolerance) {
         break
       }
       set.add(Math.abs(value - max) <= tolerance ? max : value)

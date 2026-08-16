@@ -38,3 +38,19 @@ await test('zero, NaN and infinite steps are rejected instead of looping', () =>
   assert.deepEqual([ ...G.range(1, 5, -1) ], [])
   assert.deepEqual([ ...G.range(3, 3) ], [ 3 ])
 })
+
+await test('tolerance is ulp-scale, stays below the interval and never overflows the end', () => {
+  // A huge step must not let the start snap across the interval onto the end.
+  assert.deepEqual([ ...G.range(0, 1, 1e10) ], [ 0 ])
+  assert.deepEqual([ ...G.range(1, 5, -1e10) ], [])
+  assert.deepEqual([ ...G.range(1, 0, -1e10) ], [ 1 ])
+  // Ends that are genuinely (millions of ulps) away from a value are not snapped onto it.
+  assert.deepEqual([ ...G.range(0, 0.9999999995, 1) ], [ 0 ])
+  assert.deepEqual([ ...G.range(0, 1.0000000005, 1) ], [ 0, 1 ])
+  // ...but rounding error of a few ulps still reaches the inclusive end (3 * 0.7 = 2.0999999999999996).
+  assert.deepEqual([ ...G.range(0, 2.1, 0.7) ], [ 0, 0.7, 1.4, 2.1 ])
+  // `end + tolerance` must not overflow to Infinity, which made this loop forever.
+  assert.deepEqual(G.pipe(G.range(0, Number.MAX_VALUE, Number.MAX_VALUE), G.take(5), G.array), [ 0, Number.MAX_VALUE ])
+  // An infinite end gets no tolerance, so values are not snapped onto it.
+  assert.deepEqual(G.pipe(G.range(0, Infinity), G.take(3), G.array), [ 0, 1, 2 ])
+})

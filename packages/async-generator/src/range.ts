@@ -50,11 +50,14 @@ export const range =
       throw new RangeError(`Expected step to be a non-zero finite number, got ${step_}.`)
     }
     // Compute each value from the index instead of accumulating, so floating point steps do not
-    // drift and the documented inclusive end is reached (e.g. 0, 0.1, 0.2, 0.3).
-    const tolerance = Math.abs(step_) * 1e-9
+    // drift and the documented inclusive end is reached (e.g. 0, 0.1, 0.2, 0.3). The tolerance is a
+    // few ulps of the endpoints, so it only absorbs rounding error and can never span the interval;
+    // an infinite end is never reached and gets none, so `range(0, Infinity)` keeps counting.
+    const tolerance = Number.isFinite(end) ? 4 * Number.EPSILON * Math.max(Math.abs(start), Math.abs(end)) : 0
     for (let i = 0; ; i++) {
       const value = start + (i * step_)
-      if (step_ > 0 ? value > end + tolerance : value < end - tolerance) {
+      // Compare distances rather than `end + tolerance`, which can overflow to Infinity.
+      if (!Number.isFinite(value) || (step_ > 0 ? value - end > tolerance : end - value > tolerance)) {
         return
       }
       yield Math.abs(value - end) <= tolerance ? end : value
