@@ -460,6 +460,41 @@ await test('an actor created with the supervisor option is adopted on its first 
   assert.equal(actor.status, 'stopped')
 })
 
+await test('an unknown child is adopted only while it still names the deciding supervisor', async () => {
+  const first = Supervisor.of({ maxRestarts: 5 })
+  const second = Supervisor.of({ maxRestarts: 5 })
+  const gate = deferred()
+  const stub: Actor.Supervised = {
+    status: 'running',
+    done: new Promise<void>(() => {}),
+    stop: async () => {},
+    kill: async () => {},
+    restart: () => gate.promise
+  }
+  first.supervise(stub)
+  const restarting = first.restart()
+  const actor = new Actor.Actor<string, WorkerState, number>({ ...worker('moved'), supervisor: first })
+  const decision = first.failure(actor, new Error('boom'), 'boom')
+  second.supervise(actor)
+  assert.equal(actor.supervisor, second)
+  gate.resolve()
+  await restarting
+  assert.equal(await decision, 'stop', 'a child that no longer names us is not ours to restart')
+  assert.equal(actor.supervisor, second)
+  assert.equal(second.children.includes(actor), true)
+  assert.equal(first.children.includes(actor), false)
+  await first.stop()
+  assert.equal(actor.status, 'running', 'stopping the first supervisor leaves the other supervisor\'s child alone')
+
+  const foreign = new Actor.Actor<string, WorkerState, number>(worker('foreign'))
+  assert.equal(await second.failure(foreign, new Error('boom'), 'boom'), 'stop')
+  assert.equal(foreign.supervisor, undefined)
+  assert.equal(second.children.includes(foreign), false)
+  await second.stop()
+  assert.equal(actor.status, 'stopped')
+  await foreign.stop()
+})
+
 await test('supervising the same child twice does not duplicate it', async () => {
   const root = Supervisor.of({ strategy: 'all-for-one', maxRestarts: 10 })
   const a = root.spawn(worker('a'))
