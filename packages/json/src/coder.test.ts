@@ -111,6 +111,23 @@ await test('null-prototype objects are encoded like plain objects', () => {
   assert.deepEqual(Json.parse(Json.stringify(input)), { d: new Date(0), s: new Set([ 1 ]) })
 })
 
+await test('only own enumerable properties are encoded, like JSON.stringify', () => {
+  // An inherited tag-like key is not on the wire, so it must not be refused.
+  assert.equal(Json.stringify(Object.assign(Object.create({ '^Date$': 1 }), { safe: 1 })), '{"safe":1}')
+  // An inherited encodable value must not leak into the output as an own key.
+  assert.equal(Json.stringify(Object.assign(Object.create({ when: new Date(0) }), { safe: 1 })), '{"safe":1}')
+  // An enumerable tag-like key on Object.prototype must not break ordinary encodes or decodes.
+  Object.defineProperty(Object.prototype, '^Date$', { value: 'x', enumerable: true, configurable: true })
+  try {
+    assert.equal(Json.stringify({ safe: 1 }), '{"safe":1}')
+    assert.deepEqual(Json.parse('{"safe":1}'), { safe: 1 })
+    assert.deepEqual(Json.parse('{"d":{"^Date$":"1970-01-01T00:00:00.000Z"}}'), { d: new Date(0) })
+  } finally {
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    delete Object.prototype['^Date$']
+  }
+})
+
 await test('circular structures are reported as TypeError instead of overflowing the stack', () => {
   const circular: { a: number, self?: unknown } = { a: 1 }
   circular.self = circular
