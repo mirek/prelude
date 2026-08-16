@@ -18,3 +18,29 @@ await test('eventually retries until the predicate holds', async () => {
   assert.equal(await F.eventually(async () => ++calls >= 3, { retry: n => n < 5, delay: 1 }), true)
   assert.equal(calls, 3)
 })
+
+await test('eventually evaluates a stateful retry predicate once per candidate attempt', async () => {
+  let remaining = 3
+  let retries = 0
+  let calls = 0
+  await assert.rejects(
+    F.eventually(async () => { calls++; return false }, { retry: () => { retries++; return remaining-- > 0 }, delay: 1 }),
+    (err: unknown) => err instanceof Error && /within 3 attempt/.test(err.message)
+  )
+  assert.equal(calls, 3, 'f runs once per allowed attempt')
+  assert.equal(retries, 4, 'retry is asked once per candidate attempt, including the refused one')
+})
+
+await test('eventually does not overshoot a duration-based retry predicate by the delay', async () => {
+  let calls = 0
+  const durations: number[] = []
+  await assert.rejects(
+    F.eventually(async () => { calls++; return false }, {
+      retry: (_n, duration) => { durations.push(duration); return duration < 25 },
+      delay: 50
+    }),
+    (err: unknown) => err instanceof Error && /within 1 attempt/.test(err.message)
+  )
+  assert.equal(calls, 1, 'the second attempt would start after ~50ms, past the 25ms budget')
+  assert.ok(durations[1] >= 50, 'the predicate sees the time at which the attempt would start')
+})
