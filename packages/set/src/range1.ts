@@ -1,7 +1,7 @@
 const range1 =
   (a: number, b = 1, step = 1): Set<number> => {
-    if (!(step > 0)) {
-      throw new RangeError(`Expected step to be a positive number, got ${step}.`)
+    if (!(Number.isFinite(step) && step > 0)) {
+      throw new RangeError(`Expected step to be a positive finite number, got ${step}.`)
     }
     const min = Math.min(a, b)
     const max = Math.max(a, b)

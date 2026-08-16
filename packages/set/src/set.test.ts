@@ -73,6 +73,15 @@ await test('range rejects non-positive steps instead of running away', () => {
   assert.deepEqual([ ...S.range(5, 0) ], [ 0, 1, 2, 3, 4 ])
 })
 
+await test('range and range1 reject non-finite steps', () => {
+  // `range` is asserted first: on the unfixed code it returned `{NaN}` instead of throwing, whereas
+  // `range1(0, 1, Infinity)` looped forever, so this ordering fails fast instead of hanging.
+  assert.throws(() => S.range(0, 1, Infinity), RangeError)
+  assert.throws(() => S.range(0, 1, NaN), RangeError)
+  assert.throws(() => S.range1(0, 1, Infinity), RangeError)
+  assert.throws(() => S.range1(0, 1, NaN), RangeError)
+})
+
 await test('range and range1 handle fractional steps without drift', () => {
   assert.deepEqual([ ...S.range1(0, 0.3, 0.1) ], [ 0, 0.1, 0.2, 0.3 ])
   assert.deepEqual([ ...S.range(0, 0.3, 0.1) ], [ 0, 0.1, 0.2 ])
