@@ -126,6 +126,46 @@ await test('a result JSON cannot serialise becomes an internal error instead of 
   assert.ok(exceptions.every(error => error instanceof TypeError))
 })
 
+await test('responses are serialised once: getters and toJSON run a single time and the first evaluation is sent', async () => {
+  const transport = new MockTransport()
+  const exceptions: unknown[] = []
+  let getterCalls = 0
+  let toJsonCalls = 0
+  const options: Jsonrpc.HandleOptions = {
+    call: (method: string) => {
+      if (method === 'getter') {
+        return { get n() { return ++getterCalls } }
+      }
+      if (method === 'impure') {
+        // Serialisable on the first pass only; a second pass would throw and drop the batch.
+        return { toJSON: () => ++toJsonCalls === 1 ? 'once' : 1n }
+      }
+      return 'ok'
+    },
+    exception: error => exceptions.push(error)
+  }
+  await Jsonrpc.handlePayload(transport, '{"jsonrpc":"2.0","id":1,"method":"getter"}', options)
+  assert.equal(getterCalls, 1)
+  assert.match(transport.sent[0] ?? '', /"n":1/)
+
+  await Jsonrpc.handlePayload(transport, '[{"jsonrpc":"2.0","id":2,"method":"fine"},{"jsonrpc":"2.0","id":3,"method":"impure"}]', options)
+  assert.equal(toJsonCalls, 1)
+  assert.deepEqual(transport.messages(), [
+    { jsonrpc: '2.0', id: 1, result: { n: 1 } },
+    [
+      { jsonrpc: '2.0', id: 2, result: 'ok' },
+      { jsonrpc: '2.0', id: 3, result: 'once' }
+    ]
+  ])
+  assert.deepEqual(exceptions, [])
+
+  const response = await Jsonrpc.processMessage({ jsonrpc: '2.0', id: 4, method: 'getter' }, options)
+  assert.equal(getterCalls, 2)
+  assert.deepEqual(response, { jsonrpc: '2.0', id: 4, result: { n: 2 } })
+  assert.equal(JSON.stringify(response), '{"jsonrpc":"2.0","id":4,"result":{"n":2}}')
+  assert.equal(getterCalls, 2, 'processMessage returns inert data that can be re-serialised safely')
+})
+
 await test('throwing result/error hooks are reported through exception and do not drop batch responses', async () => {
   const transport = new MockTransport()
   const exceptions: unknown[] = []
