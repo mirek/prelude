@@ -31,8 +31,8 @@ test('packageDirectories rejects a directory without a manifest instead of skipp
   withPackages({ array: { name: 'array' }, graph: null, sketch: null }, parent => {
     assert.throws(
       () => packageDirectories(parent),
-      error => error.message.includes(`- ${path.basename(parent)}/graph`)
-        && error.message.includes(`- ${path.basename(parent)}/sketch`)
+      error => error.message.includes(`- ${path.join(path.basename(parent), 'graph')}`)
+        && error.message.includes(`- ${path.join(path.basename(parent), 'sketch')}`)
         && !error.message.includes('array')
     )
   })
