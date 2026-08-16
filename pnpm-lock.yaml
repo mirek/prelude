@@ -421,11 +421,10 @@ importers:
         version: link:../tsconfig
 
   packages/xml:
-    dependencies:
-      '@prelude/parser':
-        specifier: workspace:*
-        version: link:../parser
     devDependencies:
+      '@prelude/testing':
+        specifier: workspace:*
+        version: link:../testing
       '@prelude/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig

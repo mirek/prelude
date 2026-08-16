@@ -121,7 +121,7 @@ Generated from the workspace manifests by `pnpm docs:write`; `pnpm docs:check` f
 | `packages/testing` | `@prelude/testing` (private) | Workspace-internal test helpers: seeded pseudo-random generation and trace-based model checking with shrinking. |
 | `packages/tsconfig` | `@prelude/tsconfig` | Shared TypeScript configurations for the prelude monorepo. |
 | `packages/wait-group` | `@prelude/wait-group` | Go-style WaitGroup: count outstanding work and await completion, with invalid-counter protection. |
-| `packages/xml` | `@prelude/xml` | XML parser built on @prelude/parser producing a small AST, with JSON conversion helpers. |
+| `packages/xml` | `@prelude/xml` | XML 1.0 parser with namespace processing, precise error locations and JSON conversion helpers; no DTD processing or external resources. |
 <!-- package-index:end -->
 
 ## Package documentation

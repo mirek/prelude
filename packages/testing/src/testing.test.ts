@@ -20,6 +20,7 @@ await test('int, between, pick, shuffled and string stay within their bounds', (
     assert.ok([ 'a', 'b' ].includes(rng.pick([ 'a', 'b' ])))
     const s = rng.string('xy', 0, 3)
     assert.ok(s.length <= 3 && /^[xy]*$/.test(s))
+    assert.match(rng.string('😀', 2, 2), /^😀😀$/, 'astral characters are picked whole')
   }
   assert.deepEqual(rng.shuffled([ 1, 2, 3, 4 ]).sort((a, b) => a - b), [ 1, 2, 3, 4 ])
   assert.throws(() => rng.int(0), RangeError)
