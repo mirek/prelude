@@ -116,7 +116,7 @@ const check =
     }
     assertNormalized(union.ranges, 'union')
     assert.deepEqual(sortedEntries(expand(union.ranges)), sortedEntries(expectedUnion), 'union')
-    // CANON assertCanonical(union.ranges, "union")
+    assertCanonical(union.ranges, 'union')
 
     // intersection: keys in both sides, merged left-to-right.
     const intersection = RangeSet.intersection(A, B)
@@ -129,7 +129,7 @@ const check =
     }
     assertNormalized(intersection.ranges, 'intersection')
     assert.deepEqual(sortedEntries(expand(intersection.ranges)), sortedEntries(expectedIntersection), 'intersection')
-    // CANON assertCanonical(intersection.ranges, "intersection")
+    assertCanonical(intersection.ranges, 'intersection')
 
     // difference: keys of a not in b, values untouched.
     const difference = RangeSet.difference(A, B)
