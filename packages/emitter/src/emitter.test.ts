@@ -392,3 +392,11 @@ await test('a numeric third argument still means the timeout', async () => {
   const emitter = Emitter.of<Emitter.Events & { ready: [ number ] }>()
   await assert.rejects(emitter.eventuallyIf('ready', () => true, 1), /Timeout of 1/)
 })
+
+await test('a newListener handler that aborts the signal inside on() still leaves no listener behind', async () => {
+  const emitter = Emitter.of<Emitter.Events & { ready: [ number ] }>()
+  const controller = new AbortController()
+  emitter.on('newListener', () => controller.abort(new Error('reentrant')))
+  await assert.rejects(emitter.eventually('ready', { signal: controller.signal }), /reentrant/)
+  assert.equal(emitter.hasListener('ready'), false)
+})

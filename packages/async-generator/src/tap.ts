@@ -1,5 +1,6 @@
 import * as Ch from '@prelude/channel'
 import abortConcurrent from './abort.js'
+import { abortable, raceAbort } from './abortable.js'
 import assertConcurrency from './assert-concurrency.js'
 import pool from './pool.js'
 
@@ -16,13 +17,11 @@ function serialTap<T>(
 ) {
   return async function* (values: AsyncIterable<T>) {
     let index = 0
-    // Cooperative: checked before every pull, so an abort takes effect once the current value is done.
-    signal?.throwIfAborted()
-    for await (const value of values) {
-      signal?.throwIfAborted()
-      await Promise.resolve(f(value, index++, 0))
+    // Both the pull and the callback are raced against the signal, so an abort takes effect at once;
+    // a callback in flight is left to settle on its own.
+    for await (const value of abortable(values, signal)) {
+      await raceAbort(Promise.resolve(f(value, index++, 0)), signal)
       yield value
-      signal?.throwIfAborted()
     }
   }
 }

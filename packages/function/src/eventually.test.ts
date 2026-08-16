@@ -66,14 +66,29 @@ await test('an already aborted signal makes eventually reject before the first a
   assert.equal(calls, 0)
 })
 
-await test('an abort during an attempt rejects once the attempt settles, without another attempt', async () => {
+await test('an abort during an attempt rejects at once; the attempt settles on its own and its outcome is dropped', async () => {
   const controller = new AbortController()
   let calls = 0
-  const pending = F.eventually(async () => {
-    calls++
-    controller.abort(new Error('stop'))
-    return false
-  }, { retry: n => n < 5, delay: 1, signal: controller.signal })
+  let release: (value: boolean) => void = () => {}
+  const pending = F.eventually(() => { calls++; return new Promise<boolean>(resolve => { release = resolve }) }, { retry: n => n < 5, delay: 1, signal: controller.signal })
+  await new Promise(resolve => setTimeout(resolve, 5))
+  controller.abort(new Error('stop'))
   await assert.rejects(pending, /stop/)
   assert.equal(calls, 1)
+  release(true)
+  await new Promise(resolve => setTimeout(resolve, 5))
+  assert.equal(calls, 1, 'no further attempt after the abandoned one settles')
+  // A never-settling attempt does not hang cancellation, and a rejecting abandoned attempt is not unhandled.
+  const c2 = new AbortController()
+  const hung = F.eventually(() => new Promise<never>(() => {}), { signal: c2.signal })
+  c2.abort(new Error('hung'))
+  await assert.rejects(hung, /hung/)
+  const c3 = new AbortController()
+  let fail: (error: Error) => void = () => {}
+  const failing = F.eventually(() => new Promise<never>((_, reject) => { fail = reject }), { signal: c3.signal, reject: () => { throw new Error('rethrown') } })
+  await new Promise(resolve => setTimeout(resolve, 5))
+  c3.abort(new Error('stop'))
+  await assert.rejects(failing, /stop/)
+  fail(new Error('late'))
+  await new Promise(resolve => setTimeout(resolve, 5))
 })

@@ -61,7 +61,7 @@ import * as G from '@prelude/async-generator'
 
 ### Cancellation
 
-`sleep`, `jitter`, `ofInterval`, `map`, `tap` and `consume` accept `signal` in their options. Aborting makes the generator throw (or `consume` reject) with `signal.reason`, clears timers and stops pulling from the source, which is returned. Concurrent `map`/`tap` fail their output at once and drop the results of mappings still in flight; serial `map`/`tap` check the signal between values; `consume` awaits callbacks already in flight before rejecting.
+`sleep`, `jitter`, `ofInterval`, `map`, `tap` and `consume` accept `signal` in their options. Aborting makes the generator throw (or `consume` reject) with `signal.reason`, clears timers and stops pulling from the source, which is returned. `map`/`tap` throw at once — concurrent ones fail their output and close their input, serial ones race the pending pull and mapping against the signal — and drop the results of mappings still in flight; `consume` awaits callbacks already in flight before rejecting.
 
 ```ts
 const controller = new AbortController()

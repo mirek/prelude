@@ -160,3 +160,14 @@ await test('aborting a channel of an async iterable returns the source after its
   assert.equal(returned, true)
   assert.ok(pulls <= 3, `stopped pulling (${pulls})`)
 })
+
+await test('an already aborted signal makes ofIterable and ofAsyncIterable fail without touching the source', async () => {
+  let pulled = 0
+  const sync = { [Symbol.iterator]: () => ({ next: () => { pulled++; return { done: false, value: pulled } } }) }
+  const asyncSource = { [Symbol.asyncIterator]: () => ({ next: async () => { pulled++; return { done: false, value: pulled } } }) }
+  const signal = AbortSignal.abort(new Error('never'))
+  await assert.rejects(Ch.ofIterable(sync, 0, { signal }).read(), /never/)
+  await assert.rejects(Ch.ofAsyncIterable(asyncSource, 0, { signal }).read(), /never/)
+  await new Promise(resolve => setTimeout(resolve, 5))
+  assert.equal(pulled, 0)
+})

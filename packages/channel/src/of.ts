@@ -23,22 +23,26 @@ export function of<T>(cap = 0) {
  * The producer notices on its next write (which rejects) and stops.
  */
 const failOnAbort =
-  (ch: Pick<Channel<unknown>, 'fail' | 'onceDoneWriting'>, signal: undefined | AbortSignal) => {
+  (ch: Pick<Channel<unknown>, 'fail' | 'onceDoneWriting'>, signal: undefined | AbortSignal): boolean => {
     if (!signal) {
-      return
+      return false
     }
     const onAbort = () => ch.fail(signal.reason)
     if (signal.aborted) {
       onAbort()
-      return
+      return true
     }
     signal.addEventListener('abort', onAbort, { once: true })
     ch.onceDoneWriting(() => signal.removeEventListener('abort', onAbort))
+    return false
   }
 
 export function ofIterable<T>(iterable: Iterable<T>, cap = 0, { signal }: { signal?: AbortSignal } = {}) {
   const ch = new Channel<T>(cap)
-  failOnAbort(ch, signal)
+  if (failOnAbort(ch, signal)) {
+    // Already aborted: the source is never touched.
+    return ch
+  }
   const produce =
     async () => {
       for (const value of iterable) {
@@ -73,7 +77,10 @@ export function ofIterable<T>(iterable: Iterable<T>, cap = 0, { signal }: { sign
  */
 export function ofAsyncIterable<T>(asyncIterable: AsyncIterable<T>, cap = 0, { signal }: { signal?: AbortSignal } = {}) {
   const ch = new Channel<T>(cap)
-  failOnAbort(ch, signal)
+  if (failOnAbort(ch, signal)) {
+    // Already aborted: the source is never touched.
+    return ch
+  }
   const produce =
     async () => {
       for await (const value of asyncIterable) {

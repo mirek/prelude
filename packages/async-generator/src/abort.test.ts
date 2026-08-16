@@ -77,24 +77,45 @@ await test('an unordered map and a concurrent tap abort the same way, and an abo
   }
 })
 
-await test('serial map and tap check the signal between values', async () => {
-  const controller = new AbortController()
-  const seen: number[] = []
-  const numbers = G.ofIterable([ 1, 2, 3, 4 ])
-  await assert.rejects((async () => {
-    for await (const value of G.map((x: number) => { if (x === 2) { controller.abort(new Error('stop')) } return x }, { signal: controller.signal })(numbers)) {
-      seen.push(value)
-    }
-  })(), /stop/)
-  assert.deepEqual(seen, [ 1, 2 ], 'the value being processed is still yielded, the next one is not pulled')
-  const c2 = new AbortController()
-  const tapped: number[] = []
-  await assert.rejects((async () => {
-    for await (const value of G.tap((x: number) => { tapped.push(x); if (x === 1) { c2.abort(new Error('stop')) } }, { signal: c2.signal })(G.ofIterable([ 1, 2, 3 ]))) {
-      void value
-    }
-  })(), /stop/)
-  assert.deepEqual(tapped, [ 1 ])
+await test('serial map and tap reject at once when aborted during a pending mapping or pull', async () => {
+  for (const transform of [
+    (signal: AbortSignal, seen: number[]) => G.map(async (x: number) => { seen.push(x); await G.sleep(30); return x }, { signal }),
+    (signal: AbortSignal, seen: number[]) => G.tap(async (x: number) => { seen.push(x); await G.sleep(30) }, { signal })
+  ]) {
+    // Abort while the mapper/callback is pending: reject now, drop the result, return the source.
+    const controller = new AbortController()
+    const seen: number[] = []
+    const yielded: number[] = []
+    const holder = source()
+    const consumer = (async () => {
+      for await (const value of transform(controller.signal, seen)(holder.iterable)) {
+        yielded.push(value)
+      }
+    })()
+    holder.ch.writeIgnore(1)
+    holder.ch.writeIgnore(2)
+    await new Promise(resolve => setTimeout(resolve, 5))
+    const start = Date.now()
+    controller.abort(new Error('stop'))
+    await assert.rejects(consumer, /stop/)
+    assert.ok(Date.now() - start < 25, 'rejected before the pending mapping settled')
+    assert.deepEqual(seen, [ 1 ])
+    assert.deepEqual(yielded, [])
+    await new Promise(resolve => setTimeout(resolve, 5))
+    assert.equal(holder.returned, true, 'the source was returned')
+
+    // Abort while the pull is pending (source silent): reject now, return the source once the pull settles.
+    const c2 = new AbortController()
+    const silent = source()
+    const pending = (async () => { for await (const _ of transform(c2.signal, [])(silent.iterable)) { void _ } })()
+    await new Promise(resolve => setTimeout(resolve, 5))
+    c2.abort(new Error('silent'))
+    await assert.rejects(pending, /silent/)
+    assert.equal(silent.returned, false, 'return() waits for the in-flight pull')
+    silent.ch.writeIgnore(9)
+    await new Promise(resolve => setTimeout(resolve, 5))
+    assert.equal(silent.returned, true, 'the source is returned once the pull settled')
+  }
 })
 
 await test('consume stops pulling on abort, returns the source, awaits in-flight callbacks and rejects with the reason', async () => {

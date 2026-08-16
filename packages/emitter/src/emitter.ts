@@ -268,6 +268,10 @@ export class Emitter<T extends Events> implements Interface<T> {
           resolve(values)
         }
       })
+      // A `newListener` handler may abort the signal synchronously inside on(), before `off` exists.
+      if (signal?.aborted) {
+        cleanup()
+      }
     })
   }
 

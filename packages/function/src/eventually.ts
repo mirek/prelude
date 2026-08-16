@@ -1,5 +1,31 @@
 import sleep from './sleep.js'
 
+/** Settles like `promise` or rejects with `signal.reason` on abort; a later outcome of `promise` is dropped. */
+const raceAbort =
+  <T>(promise: Promise<T>, signal: undefined | AbortSignal): Promise<T> => {
+    if (!signal) {
+      return promise
+    }
+    return new Promise<T>((resolve, reject) => {
+      const onAbort =
+        () => {
+          promise.catch(() => {})
+          reject(signal.reason)
+        }
+      signal.addEventListener('abort', onAbort, { once: true })
+      promise.then(
+        value => {
+          signal.removeEventListener('abort', onAbort)
+          resolve(value)
+        },
+        (error: unknown) => {
+          signal.removeEventListener('abort', onAbort)
+          reject(error)
+        }
+      )
+    })
+  }
+
 /**
  * Repeatedly run `f` until `predicate` holds for its result.
  *
@@ -25,10 +51,11 @@ const eventually =
       predicate?: (value: T | U) => boolean,
       reject?: (err: unknown) => U,
       /**
-       * Aborting stops retrying: a pending delay is cut short and no further
-       * attempt starts. The returned promise rejects with `signal.reason`
-       * (not through `reject`). An attempt already in flight is left to settle
-       * on its own; pass the same signal to `f` when it should stop too.
+       * Aborting rejects the returned promise with `signal.reason` at once
+       * (not through `reject`): a pending delay is cut short, no further
+       * attempt starts, and an attempt already in flight is left to settle on
+       * its own with its outcome dropped — pass the same signal to `f` when
+       * its work should stop too.
        */
       signal?: AbortSignal
     } = {}
@@ -38,7 +65,9 @@ const eventually =
     let i = 0
     let again = retry(i, 0)
     while (again) {
-      const r = await f().catch(reject)
+      // The attempt is raced against the signal: an abort rejects at once and the attempt's
+      // eventual outcome is dropped (and never left as an unhandled rejection).
+      const r = await raceAbort(f().catch(reject), signal)
       if (predicate(r)) {
         return r
       }

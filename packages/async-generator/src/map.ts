@@ -1,5 +1,6 @@
 import * as Ch from '@prelude/channel'
 import abortConcurrent from './abort.js'
+import { abortable, raceAbort } from './abortable.js'
 import assertConcurrency from './assert-concurrency.js'
 import type { Transformer } from './prelude.js'
 import pool from './pool.js'
@@ -17,12 +18,10 @@ type F<T, R> = (value: T, index: number, worker: number) => R
 function serial<T, R>(f: F<T, R>, signal: undefined | AbortSignal): Transformer<T, Awaited<R>> {
   return async function* (values: AsyncIterable<T>) {
     let index = 0
-    // Cooperative: checked before every pull, so an abort takes effect once the current value is done.
-    signal?.throwIfAborted()
-    for await (const value of values) {
-      signal?.throwIfAborted()
-      yield await f(value, index++, 0)
-      signal?.throwIfAborted()
+    // Both the pull and the mapping are raced against the signal, so an abort takes effect at once;
+    // a mapping in flight is left to settle on its own and its result is dropped.
+    for await (const value of abortable(values, signal)) {
+      yield await raceAbort(Promise.resolve(f(value, index++, 0)), signal)
     }
   }
 }
