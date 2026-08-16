@@ -1,27 +1,34 @@
 import * as Reader from './reader.js'
 import * as Result from './result.js'
 import type * as Parser from './parser.js'
-import next from './next.js'
 
 /**
- * Tries to find all maches advancing by single character until end of reader.
+ * Tries to find all matches, scanning forward by single character.
+ * Every offset up to and including the end of input is tried, so parsers matching
+ * zero width at the end (`end`, `eol`, `maybe`) contribute a terminal match uniformly
+ * for empty and non-empty input alike. A zero-width match advances by one character
+ * from where it was found; a consuming match continues from the consumed offset.
  * Always fully consumes reader.
+ * @see {@link next} to find single match.
  */
 export function all<T>(parser: Parser.t<T>) {
-  const next_ = next(parser)
   return (reader: Reader.t) => {
     const values: T[] = []
-    let reader_ = reader
-    while (!Reader.end(reader_)) {
-      const result = next_(reader_)
-      if (Result.failed(result)) {
+    const reader_ = Reader.mutable(reader)
+    while (true) {
+      const result = parser(reader_)
+      if (!Result.failed(result)) {
+        values.push(result.value)
+        if (result.reader.offset > reader_.offset) {
+          reader_.offset = result.reader.offset
+          continue
+        }
+      }
+      if (Reader.end(reader_)) {
         break
       }
-      values.push(result.value)
-      // A zero-width match must still advance, or the same position would match forever.
-      reader_ = result.reader.offset === reader_.offset ?
-        Reader.of(reader_.input, reader_.offset + 1) :
-        result.reader
+      // Failed or zero-width match, advance by single character from this position.
+      reader_.offset++
     }
     return Result.ok(Reader.of(reader.input, reader.input.length), values)
   }
