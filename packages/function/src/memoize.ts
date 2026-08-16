@@ -24,9 +24,16 @@ const identityOf =
 const tag = String.fromCharCode(0)
 
 /**
+ * Literal strings that happen to start with NUL are escaped with this prefix so they can never
+ * collide with a generated tag (no tag starts with `\0:`).
+ */
+const escape = `${tag}:`
+
+/**
  * Default cache key: `JSON.stringify` of the arguments, except that values JSON cannot
  * represent are tagged so they do not collapse into `null` (or throw): `undefined`, `NaN`,
- * `±Infinity`, bigints, and functions/symbols (keyed by identity).
+ * `±Infinity`, bigints, and functions/symbols (keyed by identity). Literal strings starting with
+ * NUL are escaped so they stay distinct from those tags; other strings are kept as-is.
  */
 export const key =
   (args: unknown[]): string =>
@@ -42,6 +49,8 @@ export const key =
           return `${tag}function#${identityOf(value)}`
         case 'symbol':
           return `${tag}symbol#${identityOf(value)}`
+        case 'string':
+          return value.startsWith(tag) ? `${escape}${value}` : value
         default:
           return value
       }
