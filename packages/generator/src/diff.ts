@@ -52,8 +52,29 @@ export const diff =
       const rhsCmp =
         (a: Rhs, b: Rhs) =>
           directionCmp(comparableRhs(a), comparableRhs(b))
-      // Materialise the sorted rhs: a one-shot generator would make the returned function single-use.
-      const rhsValues_ = Array.from(rhsValues).sort(rhsCmp)
+      // Materialise the sorted rhs lazily, on first iteration of the returned generator (not when the
+      // operator is constructed), and memoise it: a one-shot generator would make the returned function
+      // single-use.
+      // A materialisation failure is memoised too: the one-shot source is spent, so a later
+      // application must replay the error rather than silently see an empty rhs.
+      let sorted: undefined | Rhs[]
+      let failure: undefined | { error: unknown }
+      const rhsValues_: Iterable<Rhs> = {
+        [Symbol.iterator]: () => {
+          if (failure) {
+            throw failure.error
+          }
+          if (sorted === undefined) {
+            try {
+              sorted = Array.from(rhsValues).sort(rhsCmp)
+            } catch (error) {
+              failure = { error }
+              throw error
+            }
+          }
+          return sorted[Symbol.iterator]()
+        }
+      }
       return diff(rhsValues_, cmp, { comparableLhs, comparableRhs, sortLhs, sortRhs: false, direction })
     }
     if (sortLhs) {
