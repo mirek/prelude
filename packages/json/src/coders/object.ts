@@ -34,7 +34,8 @@ export const encode =
 const encodeProperties =
   (input: object, encoder: Encoder.t) => {
     let output: object = input
-    for (const key in input) {
+    // Own enumerable keys only, like JSON.stringify: inherited keys are not on the wire.
+    for (const key of Object.keys(input)) {
       if (isTagLike(key)) {
         // Such a key would be decoded as an encoded value (or fail decoding); refuse it up front.
         throw new Error(`Cannot encode property ${JSON.stringify(key)}: keys ending in ^Type$ are reserved for encoded values.`)
@@ -100,7 +101,8 @@ export const decode =
     let key: null | string = null
     let value: unknown = null
     let replaced = false
-    for (const inputKey in mutableInput as object) {
+    // Own keys only: parsed JSON has no inherited keys, so a polluted prototype must not be walked.
+    for (const inputKey of Object.keys(mutableInput as object)) {
       count++
 
       const lastChar = inputKey[inputKey.length - 1]
