@@ -1,3 +1,5 @@
+import closeIterator from './close-iterator.js'
+
 /**
  * Finds both the minimum and maximum values in an iterable based on a comparison function.
  *
@@ -42,9 +44,12 @@ export const extreme =
             result.min = next.value
           }
         }
-      } finally {
-        // Close the source even if the comparator throws.
-        iterator.return?.()
+      } catch (error) {
+        // Close the source when the comparator throws, without letting a throwing `return()` mask the error.
+        if (!next.done) {
+          closeIterator(iterator, true)
+        }
+        throw error
       }
       return result
     }

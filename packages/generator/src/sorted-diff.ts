@@ -1,4 +1,5 @@
 import * as Cmp from '@prelude/cmp'
+import closeIterator from './close-iterator.js'
 
 /**
  * Returns a generator that compares two sorted iterables and yields tuples of corresponding elements.
@@ -26,9 +27,12 @@ export const sortedDiff =
     function* (lhsValues: Iterable<Lhs>): Generator<[lhs: undefined | Lhs, rhs: undefined | Rhs]> {
       const lhsIterator = lhsValues[Symbol.iterator]()
       const rhsIterator = rhsValues[Symbol.iterator]()
+      let lhsValue: IteratorResult<Lhs> | undefined
+      let rhsValue: IteratorResult<Rhs> | undefined
+      let failed = false
       try {
-        let lhsValue = lhsIterator.next()
-        let rhsValue = rhsIterator.next()
+        lhsValue = lhsIterator.next()
+        rhsValue = rhsIterator.next()
         while (!lhsValue.done && !rhsValue.done) {
           // Normalise so comparators returning arbitrary magnitudes (e.g. `a - b`) work.
           switch (Math.sign(cmp(lhsValue.value, rhsValue.value))) {
@@ -54,10 +58,17 @@ export const sortedDiff =
           yield [undefined, rhsValue.value]
           rhsValue = rhsIterator.next()
         }
+      } catch (error) {
+        failed = true
+        throw error
       } finally {
-        // Close both sources whether we finished or the consumer stopped early.
-        lhsIterator.return?.()
-        rhsIterator.return?.()
+        // Close the sources that were not exhausted, whether we finished or the consumer stopped early.
+        if (!lhsValue?.done) {
+          closeIterator(lhsIterator, failed)
+        }
+        if (!rhsValue?.done) {
+          closeIterator(rhsIterator, failed)
+        }
       }
     }
 

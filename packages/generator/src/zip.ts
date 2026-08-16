@@ -1,3 +1,4 @@
+import closeIterator from './close-iterator.js'
 import type { Value } from './prelude.js'
 
 /**
@@ -28,29 +29,36 @@ export const zip =
     if (iterators.length === 0) {
       return
     }
+    // The source that reported `done` (at most one) must not be closed again.
+    let exhausted: Iterator<unknown> | undefined
+    let failed = false
     try {
       while (true) {
         // Pull one source at a time and stop at the first exhausted one, so later sources are
         // not advanced past the value they would otherwise have kept.
         const values: unknown[] = []
-        let done = false
         for (const iterator of iterators) {
           const result = iterator.next()
           if (result.done) {
-            done = true
+            exhausted = iterator
             break
           }
           values.push(result.value)
         }
-        if (done) {
+        if (exhausted) {
           break
         }
         yield values as { [K in keyof Args]: Value<Args[K]> }
       }
+    } catch (error) {
+      failed = true
+      throw error
     } finally {
-      // Close every source whether we finished or the consumer stopped early.
+      // Close every source that was not exhausted, whether we finished or the consumer stopped early.
       for (const iterator of iterators) {
-        iterator.return?.()
+        if (iterator !== exhausted) {
+          closeIterator(iterator, failed)
+        }
       }
     }
   }
