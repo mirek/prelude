@@ -1,4 +1,4 @@
-import * as Map_ from '../src/map.js'
+import * as Map_ from './map.js'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 

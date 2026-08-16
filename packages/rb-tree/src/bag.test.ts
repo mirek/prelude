@@ -1,4 +1,4 @@
-import * as Bag from '../src/bag.js'
+import * as Bag from './bag.js'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 

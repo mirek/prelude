@@ -1,8 +1,7 @@
 {
   "extends": "@prelude/tsconfig/workspace-test.json",
   "include": [
-    "src/**/*.test.ts",
-    "test/**/*.test.ts"
+    "src/**/*.test.ts"
   ],
   "exclude": [
     "node_modules"
