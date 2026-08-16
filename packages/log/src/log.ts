@@ -36,6 +36,25 @@ export interface Interface extends Target.t {
 }
 
 /**
+ * Converts a caught value to a string without ever throwing: the message of
+ * error-like values, otherwise `String(value)`, or a constant when even that
+ * conversion fails (e.g. a null-prototype object or a hostile proxy).
+ * @param err - The caught value
+ * @returns A string describing the value
+ */
+const safeString =
+  (err: unknown): string => {
+    try {
+      if (typeof err === 'object' && err !== null && 'message' in err) {
+        return String(err.message)
+      }
+      return String(err)
+    } catch {
+      return 'value cannot be converted to a string'
+    }
+  }
+
+/**
  * `JSON.stringify` that never throws: bigints are rendered as `123n` and
  * circular references as `[Circular]`, so logging never crashes the caller.
  */
@@ -64,7 +83,7 @@ const stringify =
       }) ?? String(value)
     } catch (err) {
       // toJSON/getters that throw, revoked proxies, ...: describe the failure rather than propagate it.
-      return `[Unserializable: ${err instanceof Error ? err.message : String(err)}]`
+      return `[Unserializable: ${safeString(err)}]`
     }
   }
 
@@ -88,7 +107,7 @@ const mapEntry =
       return stringify(value)
     } catch (err) {
       // e.g. a revoked proxy throws on instanceof; logging must never take the caller down.
-      return `[Unserializable: ${err instanceof Error ? err.message : String(err)}]`
+      return `[Unserializable: ${safeString(err)}]`
     }
   }
 

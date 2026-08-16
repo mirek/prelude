@@ -62,3 +62,18 @@ await test('formatting never throws, whatever the entry does', () => {
   }
   assert.doesNotThrow(() => log.info('deep', deep))
 })
+
+await test('formatting survives an error value that cannot be stringified', () => {
+  const target = new Log.Target.Memory()
+  const log = Log.of('test', { level: 'info', target })
+  // `instanceof Error` runs the trap, which throws a null-prototype object; `String(err)` on that throws too.
+  const hostile = new Proxy({}, { getPrototypeOf() { throw Object.create(null) } })
+  assert.doesNotThrow(() => log.info('hostile', hostile))
+  assert.match(String((target.last as unknown[])[3]), /Unserializable/)
+  const toJSON = () => { throw Object.create(null) }
+  assert.doesNotThrow(() => log.info('hostile toJSON', { toJSON }))
+  assert.match(String((target.last as unknown[])[3]), /Unserializable/)
+  const message = new Proxy({ message: 'oops' }, { getPrototypeOf() { throw Object.create(null) } })
+  assert.doesNotThrow(() => log.info('hostile with message', { toJSON() { throw message } }))
+  assert.match(String((target.last as unknown[])[3]), /Unserializable: oops/)
+})
