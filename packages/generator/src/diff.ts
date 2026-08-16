@@ -52,8 +52,14 @@ export const diff =
       const rhsCmp =
         (a: Rhs, b: Rhs) =>
           directionCmp(comparableRhs(a), comparableRhs(b))
-      // Materialise the sorted rhs: a one-shot generator would make the returned function single-use.
-      const rhsValues_ = Array.from(rhsValues).sort(rhsCmp)
+      // Materialise the sorted rhs lazily, on first iteration of the returned generator (not when the
+      // operator is constructed), and memoise it: a one-shot generator would make the returned function
+      // single-use.
+      let sorted: undefined | Rhs[]
+      const rhsValues_: Iterable<Rhs> = {
+        [Symbol.iterator]: () =>
+          (sorted ??= Array.from(rhsValues).sort(rhsCmp))[Symbol.iterator]()
+      }
       return diff(rhsValues_, cmp, { comparableLhs, comparableRhs, sortLhs, sortRhs: false, direction })
     }
     if (sortLhs) {
