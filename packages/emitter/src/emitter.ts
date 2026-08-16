@@ -162,7 +162,9 @@ export class Emitter<T extends Events> implements Interface<T> {
       this._listeners.set(name, listeners as Set<Listener>)
     }
     if (listeners.has(listener as Listener)) {
-      throw Err.error('duplicate', `Expected listener to not be already registered for ${String(name)} event.`)
+      // The 'newListener' listener registered this very listener itself: it is active, so hand
+      // back its disposer rather than failing a registration that effectively succeeded.
+      return () => this.off(name, listener)
     }
     listeners.add(listener as Listener)
     const n = listeners.size

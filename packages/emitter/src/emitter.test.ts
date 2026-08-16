@@ -300,6 +300,22 @@ await test('on registers the listener when newListener removes the last existing
   assert.equal(emitter.hasListener('message', b), true)
 })
 
+await test('on returns a disposer when newListener registered the listener itself', () => {
+  const emitter = Emitter.of<TestEvents>()
+  const b = mock.fn()
+  emitter.on('newListener', (name, listener) => {
+    if (name === 'message' && listener === b) {
+      emitter.on('message', b)
+    }
+  })
+  const off = emitter.on('message', b)
+  emitter.emit('message', 'x')
+  assert.equal(b.mock.callCount(), 1)
+  assert.equal(emitter.listeners('message')?.size, 1)
+  off()
+  assert.equal(emitter.hasListener('message', b), false)
+})
+
 await test('eventually should reject on timeout', async () => {
   const emitter = Emitter.of<TestEvents>()
 
