@@ -7,7 +7,14 @@ export const normalize =
     // Only a zero vector needs guarding: clamping the magnitude to Number.EPSILON would
     // shrink any vector smaller than that (e.g. [1e-20, 0]) instead of normalising it.
     const m = magnitude(values)
-    return scale(values, m === 0 ? 0 : 1 / m)
+    if (m === 0) {
+      return scale(values, 0)
+    }
+    // Divide rather than multiply by `1 / m`: the reciprocal of a subnormal magnitude overflows.
+    for (let i = 0; i < values.length; ++i) {
+      values[i] /= m
+    }
+    return values
   }
 
 export default normalize

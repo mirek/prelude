@@ -25,6 +25,11 @@ await test('normalized does not mistake tiny or huge vectors for the zero vector
   assert.deepEqual(A.normalized([ 1e-200, 0 ]), [ 1, 0 ])
   assert.deepEqual(A.normalized([ 1e200, 0 ]), [ 1, 0 ])
   assert.deepEqual(A.normalized([ 0, -1e200 ]), [ 0, -1 ])
+  // Subnormal: `1 / m` would overflow to Infinity.
+  assert.deepEqual(A.normalized([ 1e-320, 0 ]), [ 1, 0 ])
+  const subnormal = [ 0, 1e-320 ]
+  A.normalize(subnormal)
+  assert.deepEqual(subnormal, [ 0, 1 ])
   assert.ok(Math.abs(A.magnitude(A.normalized([ 1e-160, 3e-160 ])) - 1) < 1e-12)
   assert.ok(Math.abs(A.magnitude(A.normalized([ 1e160, 3e160 ])) - 1) < 1e-12)
 })
