@@ -38,6 +38,21 @@ test('packageDirectories rejects a directory without a manifest instead of skipp
   })
 })
 
+test('packageDirectories ignores a removed package that only left node_modules behind', () => {
+  withPackages({ array: { name: 'array' }, gone: null }, parent => {
+    rmSync(path.join(parent, 'gone', 'src'), { recursive: true })
+    mkdirSync(path.join(parent, 'gone', 'node_modules', '.pnpm'), { recursive: true })
+    assert.deepEqual(packageDirectories(parent), [path.join(parent, 'array')])
+  })
+})
+
+test('packageDirectories still rejects an empty directory', () => {
+  withPackages({ array: { name: 'array' } }, parent => {
+    mkdirSync(path.join(parent, 'empty'))
+    assert.throws(() => packageDirectories(parent), /- .*empty/)
+  })
+})
+
 test('readPackages resolves against the real workspace', () => {
   const names = readPackages().map(pkg => pkg.manifest.name)
   assert.ok(names.includes('@prelude/tsconfig'))
