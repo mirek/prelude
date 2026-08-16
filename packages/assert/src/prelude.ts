@@ -152,13 +152,17 @@ export const phrase =
       case 'predicate': text = 'a value satisfying the predicate'; break
       case 'text': text = expected.text; break
     }
-    // "x or null" only describes a top-level failure; a nested one keeps its own description.
-    if (!failure.path.some(segment => segment.kind === 'key' || segment.kind === 'index' || segment.kind === 'keyOf')) {
-      for (let i = failure.path.length - 1; i >= 0; i--) {
-        const segment = failure.path[i]
-        if (segment.kind === 'or') {
+    // A wrapper adds "or null" only when what it wraps failed directly: once the failure comes from
+    // deeper inside a container ("nullOr(object({ a }))" failing at .a), the leaf keeps its own words.
+    let deeper = false
+    for (let i = failure.path.length - 1; i >= 0; i--) {
+      const segment = failure.path[i]
+      if (segment.kind === 'or') {
+        if (!deeper) {
           text += ` or ${segment.alternative}`
         }
+      } else {
+        deeper = true
       }
     }
     return text
