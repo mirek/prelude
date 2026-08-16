@@ -4,7 +4,7 @@ import path from 'node:path'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { readPlans } from './release-lib.mjs'
+import { assertTagsMatchHead, publishPrepared, readPlans } from './release-lib.mjs'
 
 function withPlansDirectory(run) {
   const directory = mkdtempSync(path.join(tmpdir(), 'release-plans-'))
@@ -61,4 +61,73 @@ test('readPlans ignores non-json files and sorts plans by name', () => {
     writeFileSync(path.join(directory, 'notes.md'), 'ignored')
     assert.deepEqual(readPlans(directory).map(plan => plan.file), ['a.json', 'b.json'])
   })
+})
+
+const head = 'a'.repeat(40)
+const other = 'b'.repeat(40)
+const prepared = {
+  schemaVersion: 1,
+  packages: [
+    { name: '@mirek/array', version: '1.0.1', tag: '@mirek/array@1.0.1' },
+    { name: '@mirek/map', version: '2.0.0', tag: '@mirek/map@2.0.0' }
+  ]
+}
+
+test('assertTagsMatchHead throws when a remote tag points at another commit', () => {
+  const remote = new Map([['@mirek/map@2.0.0', other]])
+  assert.throws(
+    () => assertTagsMatchHead(prepared, head, tag => remote.get(tag)),
+    { message: `Remote tag @mirek/map@2.0.0 points at ${other}, expected ${head}` }
+  )
+})
+
+test('assertTagsMatchHead returns the remote commit for every prepared tag', () => {
+  const remote = new Map([['@mirek/array@1.0.1', head]])
+  const commits = assertTagsMatchHead(prepared, head, tag => remote.get(tag))
+  assert.deepEqual([...commits], [
+    ['@mirek/array@1.0.1', head],
+    ['@mirek/map@2.0.0', undefined]
+  ])
+})
+
+test('publishPrepared validates every tag before publishing anything', () => {
+  const remote = new Map([['@mirek/map@2.0.0', other]])
+  const published = []
+  const packages = new Map(prepared.packages.map(item => [item.name, {
+    directory: `/packages/${item.name}`,
+    manifest: { name: item.name, version: item.version }
+  }]))
+  assert.throws(() => publishPrepared({
+    prepared,
+    packages,
+    head,
+    remoteTagCommit: tag => remote.get(tag),
+    isPublished: () => false,
+    publish: entry => published.push(entry.manifest.name),
+    log: () => {}
+  }), /Remote tag @mirek\/map@2\.0\.0 points at/)
+  assert.deepEqual(published, [])
+})
+
+test('publishPrepared publishes unpublished packages and returns the remote tag commits', () => {
+  const remote = new Map([['@mirek/array@1.0.1', head]])
+  const published = []
+  const packages = new Map(prepared.packages.map(item => [item.name, {
+    directory: `/packages/${item.name}`,
+    manifest: { name: item.name, version: item.version }
+  }]))
+  const commits = publishPrepared({
+    prepared,
+    packages,
+    head,
+    remoteTagCommit: tag => remote.get(tag),
+    isPublished: name => name === '@mirek/array',
+    publish: entry => published.push(entry.manifest.name),
+    log: () => {}
+  })
+  assert.deepEqual(published, ['@mirek/map'])
+  assert.deepEqual([...commits], [
+    ['@mirek/array@1.0.1', head],
+    ['@mirek/map@2.0.0', undefined]
+  ])
 })
