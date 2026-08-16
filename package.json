@@ -12,6 +12,7 @@
     "test:check": "node scripts/check-tests.mjs",
     "test:r": "pnpm -r test",
     "test": "tsx --test 'packages/*/src/**/*.test.ts'",
+    "test:scripts": "node --test scripts/*.test.mjs",
     "build": "node scripts/build.mjs",
     "manifests:check": "node scripts/normalize-package-manifests.mjs --check",
     "manifests:write": "node scripts/normalize-package-manifests.mjs --write",
@@ -21,7 +22,7 @@
     "release:prepare": "node scripts/release-prepare.mjs",
     "release:publish": "node scripts/release-publish.mjs",
     "pack:check": "node scripts/pack-check.mjs",
-    "verify": "pnpm manifests:check && pnpm release-hooks:check && pnpm test:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm pack:check"
+    "verify": "pnpm manifests:check && pnpm release-hooks:check && pnpm test:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:scripts && pnpm build && pnpm pack:check"
   },
   "keywords": [],
   "author": "",
