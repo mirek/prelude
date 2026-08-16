@@ -46,6 +46,13 @@ test('packageDirectories ignores a removed package that only left node_modules b
   })
 })
 
+test('packageDirectories still rejects an empty directory', () => {
+  withPackages({ array: { name: 'array' } }, parent => {
+    mkdirSync(path.join(parent, 'empty'))
+    assert.throws(() => packageDirectories(parent), /- .*empty/)
+  })
+})
+
 test('readPackages resolves against the real workspace', () => {
   const names = readPackages().map(pkg => pkg.manifest.name)
   assert.ok(names.includes('@prelude/tsconfig'))

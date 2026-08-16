@@ -16,7 +16,8 @@ const dependencyFields = [
 // (git never tracks it, and pnpm does not delete it on install); ignore it
 // rather than force every developer to clean it by hand after switching branches.
 function isLeftoverNodeModules(directory) {
-  return readdirSync(directory).every(name => name === 'node_modules')
+  const entries = readdirSync(directory)
+  return entries.length > 0 && entries.every(name => name === 'node_modules')
 }
 
 /**
