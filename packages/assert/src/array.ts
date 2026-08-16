@@ -1,32 +1,6 @@
-import { AssertionError, type Assert } from './prelude.js'
-import unknown_ from './unknown.js'
+import * as V from '@prelude/validation'
+import { toValidator, asserting, type Assert } from './prelude.js'
 
-/** Asserts `value` is an array where each element satisfies `a`. */
-const array_ =
-  <T>(a: Assert<T>): Assert<T[]> =>
-    value => {
-      if (!Array.isArray(value)) {
-        throw new AssertionError({ expected: 'an array', value })
-      }
-      if (a === unknown_) {
-        return value as T[]
-      }
-      for (let i = 0; i < value.length; i++) {
-        try {
-          a(value[i])
-        } catch (err) {
-          if (err instanceof AssertionError) {
-            throw new AssertionError({
-              expected: err.expected,
-              value: err.value,
-              key: i,
-              cause: err
-            })
-          }
-          throw err
-        }
-      }
-      return value as T[]
-    }
+const array_ = <T>(a: Assert<T>): Assert<T[]> => asserting(V.array(toValidator(a) as V.Validator<T>))
 
 export default array_

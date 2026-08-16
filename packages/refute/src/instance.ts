@@ -1,15 +1,6 @@
-import { ok, fail, type Refute, type Constructor } from './prelude.js'
+import * as V from '@prelude/validation'
+import { refuting, type Refute, type Constructor } from './prelude.js'
 
-/**
- * Creates a refute function that checks if a value is an instance of the specified class.
- * @param class_ - The constructor to check instances against
- * @returns A refute function that validates if a value is an instance of the specified class
- */
-const instance =
-  <T extends Constructor>(class_: T): Refute<InstanceType<T>> =>
-    (value: unknown) =>
-      value instanceof class_ ?
-        ok(value as InstanceType<T>) :
-        fail(value, `not an instance of ${class_.name}`)
+const instance = <T extends Constructor>(class_: T): Refute<InstanceType<T>> => refuting(V.instance(class_))
 
 export default instance

@@ -1,10 +1,9 @@
-import { ok, fail, type Result } from './prelude.js'
+import * as V from '@prelude/validation'
+import { toFail, ok, type Result } from './prelude.js'
 
-/** @returns refute for defined value type. */
-const defined =
-  <T>(value: T): Result<Exclude<T, undefined>> =>
-    typeof value === 'undefined' ?
-      fail(value, 'expected defined') :
-      ok(value as Exclude<T, undefined>)
+const defined = <T>(value: T): Result<Exclude<T, undefined>> => {
+  const outcome = V.defined(value)
+  return outcome.ok ? ok(outcome.value) : toFail(outcome)
+}
 
 export default defined

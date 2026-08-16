@@ -1,16 +1,7 @@
-import { inspect } from 'util'
-import { AssertionError, type Assert } from './prelude.js'
+import * as V from '@prelude/validation'
+import { asserting, type Assert } from './prelude.js'
 
-/** Asserts `value` strictly equals (`===`) `a`. */
-const eq =
-  <T>(a: T): Assert<T> => {
-    const expected = inspect(a)
-    return value => {
-      if (value === a) {
-        return value as T
-      }
-      throw new AssertionError({ expected, value })
-    }
-  }
+/** Asserts strict equality (`===`) with `a`. */
+const eq = <T>(a: T): Assert<T> => asserting(V.eq(a))
 
 export default eq

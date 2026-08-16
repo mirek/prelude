@@ -18,6 +18,7 @@ import is from './is.js'
 import lift from './lift.js'
 import lt from './lt.js'
 import lte from './lte.js'
+import nonBlankString from './non-blank-string.js'
 import null_ from './null.js'
 import nullish from './nullish.js'
 import nullishOr from './nullish-or.js'
@@ -67,6 +68,7 @@ export {
   lift,
   lt,
   lte,
+  nonBlankString,
   null_ as null,
   nullish,
   nullishOr,

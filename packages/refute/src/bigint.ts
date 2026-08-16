@@ -1,10 +1,6 @@
-import { ok, fail, type Refute } from './prelude.js'
+import * as V from '@prelude/validation'
+import { refuting, type Refute } from './prelude.js'
 
-/** @returns refute for `bigint` type. */
-const bigint_: Refute<bigint> =
-  (value: unknown) =>
-    typeof value === 'bigint' ?
-      ok(value) :
-      fail(value, 'expected bigint')
+const bigint_: Refute<bigint> = refuting(V.bigint)
 
 export default bigint_

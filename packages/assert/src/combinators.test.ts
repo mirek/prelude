@@ -48,3 +48,11 @@ await test('lifted primitives in object', () => {
   assert.deepEqual(a({ kind: 'user', n: 1 }), { kind: 'user', n: 1 })
   assert.throws(() => a({ kind: 'admin', n: 1 }), /Expected \.kind to be 'user'/)
 })
+
+await test('an optional leaf inside a container keeps its alternative in the message', () => {
+  assert.throws(() => $.tuple($.nullOr($.number))([ 'x' ]), /Expected \.0 to be a number or null, got 'x'\./)
+  assert.throws(() => $.object({ a: $.undefinedOr($.string) })({ a: 1 }), /Expected \.a to be a string or undefined, got 1\./)
+  // ...while a wrapper around a container does not describe a failure deeper inside it.
+  assert.throws(() => $.nullOr($.object({ a: $.number }))({ a: 'x' }), /Expected \.a to be a number, got 'x'\./)
+  assert.throws(() => $.nullOr($.undefinedOr($.string))(1), /Expected a string or undefined or null, got 1\./)
+})

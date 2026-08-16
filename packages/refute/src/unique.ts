@@ -1,26 +1,8 @@
-import { ok, fail, failed, refail, type Refute, type Result, type Primitive } from './prelude.js'
+import * as V from '@prelude/validation'
+import { toValidator, refuting, type Refute, type Primitive } from './prelude.js'
 
-/** @returns confirmation of an unique array. */
-const unique =
-  <T>(a: Refute<T>, f?: (value: T) => Primitive) =>
-    (values: unknown): Result<T[]> => {
-      if (!Array.isArray(values)) {
-        return fail(values, 'expected array')
-      }
-      const set = new Set
-      for (let i = 0; i < values.length; i++) {
-        const value = values[i]
-        const refute = a(value)
-        if (failed(refute)) {
-          return refail(refute, `at index ${i}`)
-        }
-        const key = f ? f(value) : value
-        if (set.has(key)) {
-          return fail(value, `duplicate value at index ${i}`)
-        }
-        set.add(key)
-      }
-      return ok(values)
-    }
+/** Refutes an array whose validated elements are unique, by `f` when given. */
+const unique = <T>(a: Refute<T>, f?: (value: T) => Primitive): Refute<T[]> =>
+  refuting(V.unique(toValidator(a) as V.Validator<T>, f))
 
 export default unique

@@ -1,10 +1,6 @@
-import { ok, fail, type Refute } from './prelude.js'
+import * as V from '@prelude/validation'
+import { refuting, type Refute } from './prelude.js'
 
-/** @returns ok if value is number, failure otherwise. */
-const number_: Refute<number> =
-  (value: unknown) =>
-    typeof value === 'number' ?
-      ok(value) :
-      fail(value, 'expected number')
+const number_: Refute<number> = refuting(V.number)
 
 export default number_

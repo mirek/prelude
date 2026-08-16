@@ -1,10 +1,6 @@
-import { ok, fail, type Refute } from './prelude.js'
+import * as V from '@prelude/validation'
+import { refuting, type Refute } from './prelude.js'
 
-/** @returns refute for `symbol` type. */
-const symbol_: Refute<symbol> =
-  (value: unknown) =>
-    typeof value === 'symbol' ?
-      ok(value) :
-      fail(value, 'expected symbol')
+const symbol_: Refute<symbol> = refuting(V.symbol)
 
 export default symbol_

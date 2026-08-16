@@ -1,23 +1,6 @@
-import { AssertionError, type Assert } from './prelude.js'
+import * as V from '@prelude/validation'
+import { toValidator, asserting, type Assert } from './prelude.js'
 
-/** Asserts `value` is `null`, `undefined`, or satisfies `a`. */
-const nullishOr =
-  <T>(a: Assert<T>): Assert<null | undefined | T> =>
-    value => {
-      if (value == null) {
-        return value as null | undefined
-      }
-      try {
-        return a(value)
-      } catch (err) {
-        if (err instanceof AssertionError && !err.cause) {
-          throw new AssertionError({
-            expected: `${err.expected} or nullish`,
-            value
-          })
-        }
-        throw err
-      }
-    }
+const nullishOr = <T>(a: Assert<T>): Assert<null | undefined | T> => asserting(V.nullishOr(toValidator(a) as V.Validator<T>))
 
 export default nullishOr

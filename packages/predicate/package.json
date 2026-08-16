@@ -1,7 +1,7 @@
 {
   "name": "@prelude/predicate",
   "version": "0.2.0",
-  "description": "Predicate combinators.",
+  "description": "Type-guard combinators for primitives, objects, arrays, tuples, records and unions; built on @prelude/validation.",
   "type": "module",
   "directories": {
     "test": "test"
@@ -53,5 +53,8 @@
     "directory": "packages/predicate"
   },
   "homepage": "https://github.com/mirek/prelude/tree/main/packages/predicate#readme",
-  "bugs": "https://github.com/mirek/prelude/issues"
+  "bugs": "https://github.com/mirek/prelude/issues",
+  "dependencies": {
+    "@prelude/validation": "workspace:*"
+  }
 }

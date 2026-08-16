@@ -48,6 +48,10 @@ importers:
         version: link:../tsconfig
 
   packages/assert:
+    dependencies:
+      '@prelude/validation':
+        specifier: workspace:*
+        version: link:../validation
     devDependencies:
       '@prelude/tsconfig':
         specifier: workspace:*
@@ -213,6 +217,10 @@ importers:
         version: link:../tsconfig
 
   packages/predicate:
+    dependencies:
+      '@prelude/validation':
+        specifier: workspace:*
+        version: link:../validation
     devDependencies:
       '@prelude/tsconfig':
         specifier: workspace:*
@@ -283,7 +291,17 @@ importers:
         version: link:../tsconfig
 
   packages/refute:
+    dependencies:
+      '@prelude/validation':
+        specifier: workspace:*
+        version: link:../validation
     devDependencies:
+      '@prelude/assert':
+        specifier: workspace:*
+        version: link:../assert
+      '@prelude/predicate':
+        specifier: workspace:*
+        version: link:../predicate
       '@prelude/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
@@ -413,6 +431,12 @@ importers:
       '@types/node':
         specifier: ^22.19.0
         version: 22.20.1
+
+  packages/validation:
+    devDependencies:
+      '@prelude/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
 
   packages/wait-group:
     devDependencies:

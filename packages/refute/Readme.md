@@ -155,6 +155,19 @@ console.log($.reason(refute)({ bar: 'a' }))
 // Invalid value at key bar, expected number, got a.
 ```
 
+# Shared core and deliberate differences
+
+Every check is implemented once in [`@prelude/validation`](../validation) and shared with `@prelude/assert` and `@prelude/predicate`; this package renders the structured failure into `Fail { status: 'refuted', reason, received }`, where `reason` spells the path (`at key a, at index 1, expected number`) and `received` is the innermost failing value. `predicate`, `assert`, `reason` and `safeReason` interpret a refute in the other modes. Built-in refutes carry their core validator, so containers compose structurally; a hand-written `Refute` is adapted from its `Fail`.
+
+The three packages accept exactly the same values (`packages/refute/src/matrix.test.ts` checks that). Where they describe a failure differently, it is deliberate and kept for compatibility:
+
+- a duplicate in `unique` is `duplicate value at index 1` here, `.1 ... a unique value` in assert;
+- extra keys are named in words (`has unexpected extra key b`, `unexpected key b` for `exactPartial`), assert puts the first one in the path (`.b ... no extra keys`);
+- a failing `record` key is `key, expected ...`, assert names it (`.a1 ...`);
+- `nullOr`/`undefinedOr`/`nullishOr` prefix `was not null, ` here and suffix ` or null` in assert (only for a top-level failure there);
+- `strftime` reports `received: { value, index }`;
+- `predicate` takes the value first in `record`.
+
 # License
 
 This package is dedicated to the public domain under [CC0 1.0](./License.md).

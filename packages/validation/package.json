@@ -1,0 +1,52 @@
+{
+  "name": "@prelude/validation",
+  "version": "0.0.0",
+  "description": "Shared validator core behind @prelude/assert, @prelude/predicate and @prelude/refute: one implementation of the primitive, container and combinator checks producing structured, path-carrying failures.",
+  "type": "module",
+  "scripts": {
+    "test": "make test",
+    "prepack": "node ../../scripts/build-package.mjs"
+  },
+  "keywords": [
+    "prelude",
+    "validation",
+    "schema",
+    "assert",
+    "predicate",
+    "refute"
+  ],
+  "author": "Mirek Rusin (https://github.com/mirek)",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "@prelude/tsconfig": "workspace:*"
+  },
+  "module": "./mjs/index.js",
+  "exports": {
+    ".": {
+      "types": "./mjs/index.d.ts",
+      "import": "./mjs/index.js"
+    },
+    "./*.js": {
+      "types": "./mjs/*.d.ts",
+      "import": "./mjs/*.js"
+    }
+  },
+  "types": "./mjs/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mirek/prelude.git",
+    "directory": "packages/validation"
+  },
+  "homepage": "https://github.com/mirek/prelude/tree/main/packages/validation#readme",
+  "bugs": "https://github.com/mirek/prelude/issues",
+  "files": [
+    "mjs",
+    "Readme.md",
+    "README.md",
+    "License.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  }
+}

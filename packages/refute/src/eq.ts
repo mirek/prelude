@@ -1,15 +1,6 @@
-import { ok, fail, type Refute } from './prelude.js'
+import * as V from '@prelude/validation'
+import { refuting, type Refute } from './prelude.js'
 
-/**
- * Creates a refute function that checks if a value strictly equals the specified value.
- * @param a - The value to compare against
- * @returns A refute function that validates if a value strictly equals the specified value
- */
-const eq =
-  <T>(a: T): Refute<T> =>
-    (value: unknown) =>
-      value === a ?
-        ok(value as T) :
-        fail(value, `expected ${String(a)}`)
+const eq = <T>(a: T): Refute<T> => refuting(V.eq(a))
 
 export default eq

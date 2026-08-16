@@ -1,10 +1,6 @@
-import { ok, fail, type Refute } from './prelude.js'
+import * as V from '@prelude/validation'
+import { refuting, type Refute } from './prelude.js'
 
-/** @returns refute for `undefined` type. */
-const undefined_: Refute<undefined> =
-  (value: unknown) =>
-    value === undefined ?
-      ok(value) :
-      fail(value, 'expected undefined')
+const undefined_: Refute<undefined> = refuting(V.undefined_)
 
 export default undefined_

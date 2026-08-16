@@ -1,12 +1,6 @@
-import { AssertionError, type Assert } from './prelude.js'
+import * as V from '@prelude/validation'
+import { asserting, type Assert } from './prelude.js'
 
-/** Asserts `value` is a `bigint`. */
-const bigint_: Assert<bigint> =
-  value => {
-    if (typeof value === 'bigint') {
-      return value
-    }
-    throw new AssertionError({ expected: 'a bigint', value })
-  }
+const bigint_: Assert<bigint> = asserting(V.bigint)
 
 export default bigint_

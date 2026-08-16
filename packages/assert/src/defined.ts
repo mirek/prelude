@@ -1,12 +1,12 @@
-import { AssertionError } from './prelude.js'
+import * as V from '@prelude/validation'
+import { toError } from './prelude.js'
 
-/** Asserts `value` is not `undefined`. */
-const defined =
-  <T>(value: T): Exclude<T, undefined> => {
-    if (value === undefined) {
-      throw new AssertionError({ expected: 'defined', value })
-    }
-    return value as Exclude<T, undefined>
+const defined = <T>(value: T): Exclude<T, undefined> => {
+  const outcome = V.defined(value)
+  if (!outcome.ok) {
+    throw toError(outcome)
   }
+  return outcome.value
+}
 
 export default defined

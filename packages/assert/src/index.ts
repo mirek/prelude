@@ -1,6 +1,7 @@
 import and from './and.js'
 import array from './array.js'
 import between from './between.js'
+import calendarDate from './calendar-date.js'
 import bigint_ from './bigint.js'
 import boolean_ from './boolean.js'
 import defined from './defined.js'
@@ -16,7 +17,9 @@ import is from './is.js'
 import lift from './lift.js'
 import lt from './lt.js'
 import lte from './lte.js'
+import nonBlankString from './non-blank-string.js'
 import null_ from './null.js'
+import nullish from './nullish.js'
 import nullishOr from './nullish-or.js'
 import nullOr from './null-or.js'
 import number_ from './number.js'
@@ -29,6 +32,7 @@ import predicate from './predicate.js'
 import record from './record.js'
 import regexp from './regexp.js'
 import safeInteger from './safe-integer.js'
+import strftime from './strftime.js'
 import string_ from './string.js'
 import symbol_ from './symbol.js'
 import true_ from './true.js'
@@ -44,6 +48,7 @@ export {
   and,
   array,
   between,
+  calendarDate,
   bigint_ as bigint,
   boolean_ as boolean,
   defined,
@@ -59,7 +64,9 @@ export {
   lift,
   lt,
   lte,
+  nonBlankString,
   null_ as null,
+  nullish,
   nullishOr,
   nullOr,
   number_ as number,
@@ -72,6 +79,7 @@ export {
   record,
   regexp,
   safeInteger,
+  strftime,
   string_ as string,
   symbol_ as symbol,
   true_ as true,

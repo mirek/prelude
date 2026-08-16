@@ -1,27 +1,13 @@
-import { ok, fail, refail, failed, type Primitive, type Refute, type Result, type Lifted } from './prelude.js'
-import lift from './lift.js'
+import * as V from '@prelude/validation'
+import { toValidator, refuting, type Refute, type Primitive, type Lifted } from './prelude.js'
 
-/**
- * Refute combinator over an inexact object.
- *
- * @see partial
- * @see exact
- * @see exactPartial
- */
-const object_ =
-  <T extends Record<string, Primitive | Refute<unknown>>>(kvs: T) =>
-    (value: unknown): Result<{ [k in keyof T]: Lifted<T[k]> }> => {
-      if (typeof value !== 'object' || value === null) {
-        return fail(value, 'expected object')
-      }
-      for (const k in kvs) {
-        const v = value[k as keyof typeof value]
-        const r = lift(kvs[k])(v)
-        if (failed(r)) {
-          return refail(r, `at key ${k}`)
-        }
-      }
-      return ok(value as { [k in keyof T]: Lifted<T[k]> })
-    }
+/** Refutes an object whose declared properties validate; other properties are ignored. */
+const object_ = <T extends Record<string, Primitive | Refute<unknown>>>(kvs: T): Refute<{ [k in keyof T]: Lifted<T[k]> }> => {
+  const validators: Record<string, V.Validator<unknown>> = Object.create(null)
+  for (const k in kvs) {
+    validators[k] = toValidator(kvs[k])
+  }
+  return refuting(V.object(validators) as V.Validator<{ [k in keyof T]: Lifted<T[k]> }>)
+}
 
- export default object_
+export default object_

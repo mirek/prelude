@@ -1,12 +1,6 @@
-import { AssertionError, type Assert } from './prelude.js'
+import * as V from '@prelude/validation'
+import { asserting, type Assert } from './prelude.js'
 
-/** Asserts `value` is `undefined`. */
-const undefined_: Assert<undefined> =
-  value => {
-    if (value === undefined) {
-      return value
-    }
-    throw new AssertionError({ expected: 'undefined', value })
-  }
+const undefined_: Assert<undefined> = asserting(V.undefined_)
 
 export default undefined_

@@ -1,12 +1,6 @@
-import { AssertionError, type Assert } from './prelude.js'
+import * as V from '@prelude/validation'
+import { asserting, type Assert } from './prelude.js'
 
-/** Asserts `value` is `null`. */
-const null_: Assert<null> =
-  value => {
-    if (value === null) {
-      return value
-    }
-    throw new AssertionError({ expected: 'null', value })
-  }
+const null_: Assert<null> = asserting(V.null_)
 
 export default null_

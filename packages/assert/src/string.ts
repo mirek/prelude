@@ -1,12 +1,6 @@
-import { AssertionError, type Assert } from './prelude.js'
+import * as V from '@prelude/validation'
+import { asserting, type Assert } from './prelude.js'
 
-/** Asserts `value` is a `string`. */
-const string_: Assert<string> =
-  value => {
-    if (typeof value === 'string') {
-      return value
-    }
-    throw new AssertionError({ expected: 'a string', value })
-  }
+const string_: Assert<string> = asserting(V.string)
 
 export default string_
