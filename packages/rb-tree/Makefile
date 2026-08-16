@@ -10,7 +10,7 @@ build: build-mjs
 rebuild: clean build
 
 test:
-	pnpm tsx --test test/**/*.test.ts
+	pnpm tsx --test 'src/**/*.test.ts'
 
 update:
 	@pnpm npm-check --update --save-exact

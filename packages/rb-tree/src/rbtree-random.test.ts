@@ -1,10 +1,18 @@
-import * as RbTree from '../src/rb-tree.js'
+import * as RbTree from './rb-tree.js'
 import * as Arrays from '@prelude/array'
 import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
 
 const slow = process.env.SLOW_TESTS ? describe : describe.skip
 const slowTest = process.env.SLOW_TESTS ? test : test.skip
+
+function sequence(seed: number) {
+  let state = seed >>> 0
+  return () => {
+    state = (Math.imul(state, 1_664_525) + 1_013_904_223) >>> 0
+    return state / 0x1_0000_0000
+  }
+}
 
 await test('basic values', () => {
   const tree = RbTree.of(RbTree.Cmp.string, (_: string) => _)
@@ -33,9 +41,10 @@ await test('complex elements', () => {
 })
 
 await test('random numbers', () => {
+  const random = sequence(0x5eed)
   const rb = RbTree.of(RbTree.Cmp.number, (_: number) => _)
   for (let i = 0; i < 100; i++) {
-    RbTree.insert(rb, Math.random())
+    RbTree.insert(rb, random())
   }
   let last = 0
   for (const _ of RbTree.each(rb)) {
@@ -59,12 +68,13 @@ await slowTest('permutations', () => {
 await slow('pop', async () => {
 
   const n = 1_000
+  const random = sequence(0x5eed)
   const rb = RbTree.of(RbTree.Cmp.number, (_: number) => _)
   const xs: number[] = []
 
   await test(`insert ${n}`, () => {
     for (let i = 0; i < n; i++) {
-      RbTree.insert(rb, Math.random())
+      RbTree.insert(rb, random())
       RbTree.assert(rb)
       if (rb.root?.s !== i + 1) {
         throw new Error(`${rb.root?.s} != ${i + 1}`)
@@ -95,12 +105,13 @@ await slow('pop', async () => {
 
 await slow('deletes', async () => {
   const n = 1_000
+  const random = sequence(0x5eed)
   const rb = RbTree.of(RbTree.Cmp.number, (_: number) => _)
   const xs: number[] = []
 
   await test(`insert ${n}`, () => {
     for (let i = 0; i < n; i++) {
-      const value = Math.random()
+      const value = random()
       xs.push(value)
       RbTree.insert(rb, value)
       RbTree.assert(rb)
@@ -110,7 +121,7 @@ await slow('deletes', async () => {
   await test('deletions', () => {
     assert.equal(RbTree.count(rb), n)
     for (let i = 0; i < n; i++) {
-      const value = Arrays.deleteSwapRandom(xs)
+      const value = Arrays.swapDeleteAt(xs, Math.floor(random() * xs.length))
       assert.equal(RbTree.has(rb, value), true)
       RbTree.delete(rb, value)
       RbTree.assert(rb)
