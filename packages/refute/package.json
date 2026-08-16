@@ -45,5 +45,8 @@
     "License.md",
     "LICENSE"
   ],
-  "types": "./mjs/index.d.ts"
+  "types": "./mjs/index.d.ts",
+  "engines": {
+    "node": ">=22"
+  }
 }

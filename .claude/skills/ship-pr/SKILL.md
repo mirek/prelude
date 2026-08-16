@@ -30,7 +30,7 @@ Codex threads piled up on merged PRs on 2026-08-15 and had to be re-audited.
    `paths`; no build needed. `pnpm verify` runs every CI gate.
 3. **Push and open the PR** (`gh pr create --fill` or with a body that links
    the motivating issue/review comment). Never push directly to `main`.
-4. **Wait for CI**: `gh pr checks <n> --watch` (Node 22 + Node 24 matrix,
+4. **Wait for CI**: `gh pr checks <n> --watch` (Node 22 + 24 + 26 matrix,
    ~4–6 min). Fix failures and push again.
 5. **Wait for the Codex review — for the commit you are about to merge.**
    Take the head SHA (`gh pr view <n> --json headRefOid -q .headRefOid`) and

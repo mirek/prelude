@@ -32,11 +32,18 @@ export function pair(): [ Transport, Transport ] {
   return [ end(0), end(1) ]
 }
 
-/** The subset of MessagePort / Worker / BroadcastChannel this package needs. */
+/**
+ * The subset of MessagePort / Worker / BroadcastChannel this package needs.
+ *
+ * The listener takes `unknown` rather than `{ data: unknown }` so that both the
+ * DOM typings (`MessageEvent`) and `@types/node` 22's `EventListener` (a plain
+ * `Event`, which declares no `data`) satisfy it; {@link fromPort} reads `data`
+ * defensively.
+ */
 export interface PortLike {
   postMessage(data: unknown): void
-  addEventListener(type: 'message', listener: (event: { readonly data: unknown }) => void): void
-  removeEventListener(type: 'message', listener: (event: { readonly data: unknown }) => void): void
+  addEventListener(type: 'message', listener: (event: unknown) => void): void
+  removeEventListener(type: 'message', listener: (event: unknown) => void): void
   start?(): void
 }
 
@@ -48,9 +55,10 @@ export function fromPort(port: PortLike): Transport {
     },
     subscribe(listener) {
       const onMessage =
-        (event: { readonly data: unknown }) => {
-          if (isFrame(event.data)) {
-            listener(event.data)
+        (event: unknown) => {
+          const data = (event as { readonly data?: unknown } | null)?.data
+          if (isFrame(data)) {
+            listener(data)
           }
         }
       port.addEventListener('message', onMessage)

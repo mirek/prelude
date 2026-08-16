@@ -210,6 +210,72 @@ if (packageDirectories.length === 0) {
   throw new Error('No publishable packages found')
 }
 
+// A package is isomorphic when its library project extends the isomorphic
+// config, which compiles with `types: []` and no `node:` module resolution.
+const isomorphicPackages = new Set(
+  readPackages()
+    .filter(({ directory }) => {
+      const project = path.join(directory, 'tsconfig.lib.json')
+      return existsSync(project) && /isomorphic\.json"/.test(readFileSync(project, 'utf8'))
+    })
+    .map(({ manifest }) => manifest.name)
+)
+
+function isomorphicRuntimeScript(specifiers) {
+  return `import { isBuiltin, registerHooks } from 'node:module'
+
+registerHooks({
+  resolve(specifier, context, next) {
+    if (isBuiltin(specifier)) {
+      throw new Error(\`isomorphic package imports Node builtin \${specifier} from \${context.parentURL}\`)
+    }
+    return next(specifier, context)
+  }
+})
+
+for (const name of ${JSON.stringify(nodeOnlyGlobals)}) {
+  delete globalThis[name]
+}
+
+for (const specifier of ${JSON.stringify(specifiers, null, 2)}) {
+  await import(specifier)
+}
+`
+}
+
+// Globals that exist in Node but not in browsers, workers or edge runtimes.
+const nodeOnlyGlobals = [
+  'Buffer',
+  'clearImmediate',
+  'global',
+  'module',
+  'process',
+  'require',
+  'setImmediate'
+]
+
+// `skipLibCheck: false` matters: the packed .d.ts files are exactly what is
+// under test, and with skipLibCheck on tsc ignores an unresolvable `node:fs`
+// import inside them.
+function typecheckConsumer(fileName, specifiers, extendsConfig) {
+  const typeImports = specifiers
+    .map((specifier, index) => `import type * as Package${index} from '${specifier}'`)
+    .join('\n')
+  const configName = fileName.replace(/\.ts$/, '.tsconfig.json')
+  writeFileSync(path.join(fixtureDirectory, fileName), `${typeImports}\n`)
+  writeFileSync(path.join(fixtureDirectory, configName), `${JSON.stringify({
+    extends: extendsConfig,
+    compilerOptions: {
+      noEmit: true,
+      noUnusedLocals: false,
+      noUnusedParameters: false,
+      skipLibCheck: false
+    },
+    include: [fileName]
+  }, null, 2)}\n`)
+  run(process.execPath, [tsc, '--project', configName], { cwd: fixtureDirectory })
+}
+
 const temporaryDirectory = mkdtempSync(path.join(tmpdir(), 'prelude-pack-check-'))
 const tarballDirectory = path.join(temporaryDirectory, 'tarballs')
 const fixtureDirectory = path.join(temporaryDirectory, 'consumer')
@@ -282,30 +348,34 @@ try {
 
   runPnpm(['install', '--ignore-scripts', '--no-frozen-lockfile'], fixtureDirectory)
 
+  const specifiersOf = ([name, data]) => [name, data.subpath].filter(Boolean)
   const runtimeSpecifiers = [...packagesByName.entries()]
     .filter(([name]) => name !== '@prelude/tsconfig')
-    .flatMap(([name, data]) => [name, data.subpath].filter(Boolean))
+    .flatMap(specifiersOf)
+  const isomorphicSpecifiers = [...packagesByName.entries()]
+    .filter(([name]) => isomorphicPackages.has(name))
+    .flatMap(specifiersOf)
 
+  // Every package must load on the Node that runs this check (CI covers the
+  // supported floor and the current LTS).
   writeFileSync(
     path.join(fixtureDirectory, 'runtime.mjs'),
     `for (const specifier of ${JSON.stringify(runtimeSpecifiers, null, 2)}) {\n  await import(specifier)\n}\n`
   )
   run(process.execPath, ['runtime.mjs'], { cwd: fixtureDirectory })
 
-  const typeImports = runtimeSpecifiers
-    .map((specifier, index) => `import type * as Package${index} from '${specifier}'`)
-    .join('\n')
-  writeFileSync(path.join(fixtureDirectory, 'imports.ts'), `${typeImports}\n`)
-  writeFileSync(path.join(fixtureDirectory, 'tsconfig.json'), `${JSON.stringify({
-    extends: '@prelude/tsconfig/backend.json',
-    compilerOptions: {
-      noEmit: true,
-      noUnusedLocals: false,
-      noUnusedParameters: false
-    },
-    include: ['imports.ts']
-  }, null, 2)}\n`)
-  run(process.execPath, [tsc, '--project', 'tsconfig.json'], { cwd: fixtureDirectory })
+  // Isomorphic packages must also load with Node's platform globals removed
+  // and with every Node builtin unresolvable — the closest a Node process can
+  // get to a browser, worker or edge runtime without a second toolchain.
+  writeFileSync(path.join(fixtureDirectory, 'runtime-isomorphic.mjs'), isomorphicRuntimeScript(isomorphicSpecifiers))
+  run(process.execPath, ['runtime-isomorphic.mjs'], { cwd: fixtureDirectory })
+
+  // The packed declarations must type-check from a consumer project: with
+  // Node types for every package, and with no platform types at all for the
+  // isomorphic ones (a `@types/node` type leaking into their .d.ts would
+  // break browser consumers).
+  typecheckConsumer('imports.ts', runtimeSpecifiers, '@prelude/tsconfig/backend.json')
+  typecheckConsumer('imports-isomorphic.ts', isomorphicSpecifiers, '@prelude/tsconfig/isomorphic.json')
 } finally {
   rmSync(temporaryDirectory, { force: true, recursive: true })
 }

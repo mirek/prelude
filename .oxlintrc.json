@@ -1,7 +1,32 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "unicorn", "oxc"],
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc"
+  ],
   "categories": {
     "correctness": "error"
+  },
+  "rules": {
+    "no-restricted-globals": [
+      "error",
+      {
+        "name": "DisposableStack",
+        "message": "Not available in Node 22, the supported floor (see README, Supported runtimes)."
+      },
+      {
+        "name": "AsyncDisposableStack",
+        "message": "Not available in Node 22, the supported floor (see README, Supported runtimes)."
+      },
+      {
+        "name": "SuppressedError",
+        "message": "Not available in Node 22, the supported floor (see README, Supported runtimes)."
+      },
+      {
+        "name": "Float16Array",
+        "message": "Not available in Node 22, the supported floor (see README, Supported runtimes)."
+      }
+    ]
   }
 }
