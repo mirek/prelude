@@ -28,32 +28,50 @@
  * // Result: [0, 1, 2, 3, 4]
  */
 export const generator =
-  <T>(values: Iterator<T>): Generator<T> =>
-    new Proxy(values, {
-      get(target, key, receiver) {
-        if (key === Symbol.iterator) {
-          return () => receiver
+  <T>(values: Iterator<T>): Generator<T> => {
+    // A real generator stays finished once `return()`/`throw()` completed it; remember that for
+    // plain iterators, which otherwise keep yielding after a synthesized (or their own) `return`.
+    let closed = false
+    // A plain wrapper rather than a Proxy over `values`: proxy invariants forbid returning a bound
+    // `next` for frozen / non-configurable iterators, yet native iterator methods need the real
+    // iterator as `this`, so forward each call explicitly.
+    const wrapper = {
+      next: (...args: [] | [unknown]) => closed ?
+        { done: true, value: undefined } :
+        values.next(...args),
+      return: (value?: unknown) => {
+        if (values.return === undefined) {
+          closed = true
+          return { done: true, value }
         }
-        const value = Reflect.get(target, key)
-        if (value === undefined) {
-          // Plain iterators may lack the optional protocol methods a Generator promises.
-          if (key === 'return') {
-            return (returnValue?: unknown) => ({ done: true, value: returnValue })
-          }
-          if (key === 'throw') {
-            return (error?: unknown) => {
-              throw error
-            }
-          }
+        try {
+          const result = values.return(value)
+          closed ||= result.done === true
+          return result
+        } catch (error) {
+          closed = true
+          throw error
         }
-        // Native iterator methods (`next` of array/map iterators) require the real iterator as `this`.
-        return typeof value === 'function' ?
-          value.bind(target) :
-          value
       },
-      has(target, key) {
-        return key === Symbol.iterator || key === 'return' || key === 'throw' || key in target
+      throw: (error?: unknown) => {
+        if (values.throw === undefined) {
+          closed = true
+          throw error
+        }
+        try {
+          const result = values.throw(error)
+          closed ||= result.done === true
+          return result
+        } catch (thrown) {
+          closed = true
+          throw thrown
+        }
+      },
+      [Symbol.iterator]() {
+        return this
       }
-    }) as Generator<T>
+    }
+    return wrapper as Generator<T>
+  }
 
 export default generator
