@@ -108,6 +108,12 @@ await test('exact and exactPartial preserve an explicitly declared __proto__ key
   const p = $.exactPartial(decl)
   assert.equal(p(ok), ok)
   assert.throws(() => p(bad), /Expected \.__proto__ to be a string, got 1\./)
+  // An absent own `__proto__` reads as missing, not as `Object.prototype`.
+  const empty = {}
+  assert.equal(p(empty), empty)
+  assert.throws(() => a(empty), /Expected \.__proto__ to be a string, got undefined\./)
+  const anyProto = $.exact(Object.defineProperty({}, '__proto__', { value: $.object({}), enumerable: true }) as Record<string, ReturnType<typeof $.object>>)
+  assert.throws(() => anyProto(empty), /Expected \.__proto__ to be an object/)
 })
 
 await test('tuple rejects arrays missing required positions but allows optional tails', () => {

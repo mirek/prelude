@@ -17,7 +17,8 @@ const exactPartial =
         throw new AssertionError({ expected: 'an object', value })
       }
       for (const k in asserts) {
-        const v = (value as Record<string, unknown>)[k]
+        // Own lookup: an absent own `__proto__` must read as `undefined`, not as the prototype.
+        const v = Object.hasOwn(value, k) ? (value as Record<string, unknown>)[k] : undefined
         if (v === undefined) {
           continue
         }

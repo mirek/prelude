@@ -21,7 +21,8 @@ const exact =
       }
       for (const k in asserts) {
         try {
-          asserts[k]!((value as Record<string, unknown>)[k])
+          // Own lookup: an absent own `__proto__` must read as `undefined`, not as the prototype.
+          asserts[k]!(Object.hasOwn(value, k) ? (value as Record<string, unknown>)[k] : undefined)
         } catch (err) {
           if (err instanceof AssertionError) {
             throw new AssertionError({
