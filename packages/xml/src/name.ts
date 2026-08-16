@@ -4,28 +4,25 @@ import * as S from './string.js'
 export type t =
   Name
 
-/** @todo support string as qname? */
-export const eq =
-  (a: t, b: t) => {
-    if (typeof a === 'string' && typeof b === 'string') {
-      return a === b
-    }
-    if (typeof a !== 'string' && typeof b !== 'string') {
-      return a.namespace === b.namespace && a.name === b.name
-    }
-    return false
-  }
+/** Builds a name; unprefixed and without a namespace by default. */
+export const of =
+  (local: string, prefix = '', namespace?: string): Name =>
+    ({ prefix, local, namespace })
 
+/** Same prefix and local part: the literal name as written. */
+export const eq =
+  (a: t, b: t): boolean =>
+    a.prefix === b.prefix && a.local === b.local
+
+/** Same expanded name: namespace and local part, whatever the prefix. */
+export const same =
+  (a: t, b: t): boolean =>
+    a.namespace === b.namespace && a.local === b.local
+
+/** `prefix:local` (or `local`), optionally prefixed with `prefix`; `format: 'local'` drops the namespace prefix. */
 export const string =
-  (node: t, { prefix, format = 'qualified' }: {
+  (name: t, { prefix, format = 'qualified' }: {
     prefix?: null | string,
     format?: 'local' | 'qualified'
-  } = {}) => {
-    if (typeof node === 'string') {
-      return S.maybeWithPrefix(node, prefix)
-    }
-    if (format === 'local') {
-      return S.maybeWithPrefix(node.name, prefix)
-    }
-    return S.maybeWithPrefix(`${node.namespace}:${node.name}`, prefix)
-  }
+  } = {}): string =>
+    S.maybeWithPrefix(format === 'local' || name.prefix === '' ? name.local : `${name.prefix}:${name.local}`, prefix)

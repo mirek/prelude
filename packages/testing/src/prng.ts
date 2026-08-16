@@ -58,12 +58,13 @@ export class Prng {
     return result
   }
 
-  /** @returns a random string over `alphabet` with a length in [minLength, maxLength]. */
+  /** @returns a random string of [minLength, maxLength] code points drawn from `alphabet` (astral characters stay whole). */
   string(alphabet: string, minLength: number, maxLength: number): string {
+    const characters = Array.from(alphabet)
     const length = this.between(minLength, maxLength)
     let result = ''
     for (let i = 0; i < length; i++) {
-      result += alphabet[this.int(alphabet.length)]
+      result += characters[this.int(characters.length)]
     }
     return result
   }

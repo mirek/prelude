@@ -1,7 +1,7 @@
 {
   "name": "@prelude/xml",
   "version": "0.0.0",
-  "description": "XML parser built on @prelude/parser producing a small AST, with JSON conversion helpers.",
+  "description": "XML 1.0 parser with namespace processing, precise error locations and JSON conversion helpers; no DTD processing or external resources.",
   "type": "module",
   "scripts": {
     "test": "make test",
@@ -30,10 +30,8 @@
       "import": "./mjs/*.js"
     }
   },
-  "dependencies": {
-    "@prelude/parser": "workspace:*"
-  },
   "devDependencies": {
+    "@prelude/testing": "workspace:*",
     "@prelude/tsconfig": "workspace:*"
   },
   "files": [
