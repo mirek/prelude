@@ -34,3 +34,18 @@ await test('throttle emits an immediate and one trailing call per window', () =>
   callbacks.shift()?.()
   assert.equal(callbacks.length, 0)
 })
+
+await test('an aborted throttle drops the trailing call and ignores further calls', () => {
+  const controller = new AbortController()
+  const timers: Array<() => void> = []
+  let calls = 0
+  const g = F.throttle(100, () => { calls++ }, { setTimeout: (callback: () => void) => { timers.push(callback) } }, { signal: controller.signal })
+  g()
+  g()
+  assert.equal(calls, 1)
+  controller.abort()
+  timers.shift()!()
+  assert.equal(calls, 1, 'the coalesced trailing call is dropped')
+  g()
+  assert.equal(calls, 1, 'calls after abort never reach f')
+})

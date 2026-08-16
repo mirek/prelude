@@ -44,3 +44,36 @@ await test('eventually does not overshoot a duration-based retry predicate by th
   assert.equal(calls, 1, 'the second attempt would start after ~50ms, past the 25ms budget')
   assert.ok(durations[1] >= 50, 'the predicate sees the time at which the attempt would start')
 })
+
+await test('aborting eventually cuts the delay short, stops retrying and rejects with the reason', async () => {
+  const controller = new AbortController()
+  let calls = 0
+  const start = Date.now()
+  const pending = F.eventually(async () => { calls++; return false }, { retry: n => n < 10, delay: 1000, signal: controller.signal })
+  await new Promise(resolve => setTimeout(resolve, 10))
+  controller.abort(new Error('stop'))
+  await assert.rejects(pending, /stop/)
+  assert.ok(Date.now() - start < 500, 'no full delay')
+  await new Promise(resolve => setTimeout(resolve, 20))
+  assert.equal(calls, 1, 'no further attempt')
+})
+
+await test('an already aborted signal makes eventually reject before the first attempt', async () => {
+  const controller = new AbortController()
+  controller.abort(new Error('never'))
+  let calls = 0
+  await assert.rejects(F.eventually(async () => { calls++; return true }, { signal: controller.signal }), /never/)
+  assert.equal(calls, 0)
+})
+
+await test('an abort during an attempt rejects once the attempt settles, without another attempt', async () => {
+  const controller = new AbortController()
+  let calls = 0
+  const pending = F.eventually(async () => {
+    calls++
+    controller.abort(new Error('stop'))
+    return false
+  }, { retry: n => n < 5, delay: 1, signal: controller.signal })
+  await assert.rejects(pending, /stop/)
+  assert.equal(calls, 1)
+})

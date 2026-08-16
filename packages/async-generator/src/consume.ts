@@ -20,6 +20,10 @@ import assertConcurrency from './assert-concurrency.js'
  * @param callback - Optional function to apply to each value
  * @param options - Configuration options
  * @param options.concurrency - Number of concurrent worker threads (default: 1)
+ * @param options.signal - Aborting stops pulling values, returns the source iterator, waits for
+ *   callbacks already in flight and rejects with `signal.reason`
+ * @param options.signal - Aborting stops pulling values, returns the source iterator, waits for
+ *   callbacks already in flight and rejects with `signal.reason`
  * @returns A consumer function that returns a promise resolving to void
  *
  * @example
@@ -57,10 +61,11 @@ import assertConcurrency from './assert-concurrency.js'
  */
 export function consume<T>(
   callback?: (value: T, index: number, worker: number) => unknown,
-  { concurrency = 1 }: { concurrency?: number } = {}
+  { concurrency = 1, signal }: { concurrency?: number, signal?: AbortSignal } = {}
 ): Consumer<T, void> {
   assertConcurrency(concurrency)
   return async function (values) {
+    signal?.throwIfAborted()
     let index = 0
     // Share one iterator between workers; iterating `values` per worker would replay
     // re-iterable async iterables `concurrency` times.
@@ -86,8 +91,20 @@ export function consume<T>(
         }
       }
     })
+    // Aborting behaves like a worker failure with `signal.reason`: no more values are pulled,
+    // the source is returned, callbacks already in flight are awaited, then the reason is thrown.
+    let offAbort: () => void = () => {}
+    const aborted = new Promise<never>((_, reject) => {
+      if (!signal) {
+        return
+      }
+      const onAbort = () => reject(signal.reason)
+      signal.addEventListener('abort', onAbort, { once: true })
+      offAbort = () => signal.removeEventListener('abort', onAbort)
+    })
+    aborted.catch(() => {})
     try {
-      await Promise.all(workers)
+      await Promise.race([ Promise.all(workers), aborted ])
     } catch (error: unknown) {
       failed = true
       // Close the source first: workers blocked in `iterator.next()` on an event-driven source
@@ -98,6 +115,8 @@ export function consume<T>(
       }
       await Promise.allSettled(workers)
       throw error
+    } finally {
+      offAbort()
     }
   }
 }

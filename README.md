@@ -64,6 +64,19 @@ Every published `@prelude/*` package declares `"engines": { "node": ">=22" }`; t
 make clean
 ```
 
+## Cancellation
+
+Long-lived asynchronous operations across the packages share one cancellation convention, built on the platform's `AbortSignal`:
+
+- An operation that can wait accepts an optional `signal` (usually in a trailing options object: `sleep(ms, { signal })`, `channel.read({ signal })`, `map(f, { concurrency, signal })`, `select({ signal }, ...attempts)`).
+- A signal that is already aborted makes the operation reject (or the generator throw) at once, before it touches anything.
+- Aborting a pending operation removes its listeners, clears its timers, withdraws its pending reads/writes/queue entries and rejects it with **`signal.reason`** — the same value everywhere; no package wraps or replaces it. `AbortController.abort()` without a reason yields the platform's `AbortError` `DOMException`.
+- Once an operation has settled it detaches from the signal, so aborting later is a no-op and never produces an unhandled rejection.
+- Work that is already in flight in user code (a mapping function, a queue task, `f` in `timeout`) is **not interrupted** — JavaScript cannot interrupt it — its eventual result is dropped. Pass the same signal into that work when it should stop too. `consume` is the exception: it awaits callbacks already in flight before rejecting, as it does on failure.
+- Consumers that want a graceful stop rather than an error use the iterator protocol (`break` out of `for await`, `return()`), which closes upstream resources; a signal is for stopping from the outside.
+
+Packages following the convention: `function` (`sleep`, `timeout`, `eventually`, `throttle`), `emitter` (`eventually`, `eventuallyIf`), `channel` (`read`, `maybeRead`, `write`, `maybeWrite`, `writeIgnore`, `select`/`selectNext`/`selectAsync`, `after`, `ofIterable`, `ofAsyncIterable`), `serial-queue` (`pushWith`), `progress` (`start`, also disposable), `remote-clock` (`midSeconds`, `midSecondsInterval`), `async-generator` (`sleep`, `jitter`, `ofInterval`, `map`, `tap`, `consume`), plus `actor`/`remote-actor` (`ask`) and `jsonrpc` (`call`) which already did. Operations without a signal are either instantaneous or already have an explicit stop (`Emitter.on` returns an unregister function, `throttle` returns a function whose pending call the signal drops, `serial-queue.rejectAll` empties a queue).
+
 ## Package index
 
 Generated from the workspace manifests by `pnpm docs:write`; `pnpm docs:check` fails when it drifts.

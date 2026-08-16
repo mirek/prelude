@@ -356,3 +356,39 @@ await test('meta events work with standard event types', () => {
   emitter.on('message', regularListener)
   assert.deepEqual((metaListener).mock.calls.at(-1)?.arguments, ['message', regularListener])
 })
+
+await test('aborting the signal rejects a pending eventually with the reason and removes the listener and timer', async () => {
+  const emitter = Emitter.of<Emitter.Events & { ready: [ number ] }>()
+  const controller = new AbortController()
+  const pending = emitter.eventually('ready', { timeout: 10_000, signal: controller.signal })
+  assert.equal(emitter.listeners('ready')?.size, 1)
+  controller.abort(new Error('stop'))
+  await assert.rejects(pending, /stop/)
+  assert.equal(emitter.hasListener('ready'), false, 'listener removed on abort')
+  // A later event or timeout has nobody to notify; emitting must not throw.
+  emitter.emit('ready', 1)
+})
+
+await test('an already aborted signal rejects eventually without registering anything', async () => {
+  const emitter = Emitter.of<Emitter.Events & { ready: [ number ] }>()
+  const controller = new AbortController()
+  controller.abort()
+  await assert.rejects(emitter.eventuallyIf('ready', () => true, { signal: controller.signal }), (error: unknown) => error instanceof DOMException && error.name === 'AbortError')
+  assert.equal(emitter.hasListener('ready'), false)
+})
+
+await test('a resolved or timed out wait detaches from the signal', async () => {
+  const emitter = Emitter.of<Emitter.Events & { ready: [ number ] }>()
+  const controller = new AbortController()
+  const pending = emitter.eventually('ready', { signal: controller.signal })
+  emitter.emit('ready', 7)
+  assert.deepEqual(await pending, [ 7 ])
+  await assert.rejects(emitter.eventually('ready', { timeout: 1, signal: controller.signal }), (error: unknown) => error instanceof Error && /Timeout/.test(error.message))
+  controller.abort()
+  assert.equal(emitter.hasListener('ready'), false)
+})
+
+await test('a numeric third argument still means the timeout', async () => {
+  const emitter = Emitter.of<Emitter.Events & { ready: [ number ] }>()
+  await assert.rejects(emitter.eventuallyIf('ready', () => true, 1), /Timeout of 1/)
+})

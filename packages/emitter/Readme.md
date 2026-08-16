@@ -65,6 +65,15 @@ emitter.emit('progress', { percent: 25 })
 off()
 ```
 
-## License
+### Cancellation
+
+`eventually(name, options)` and `eventuallyIf(name, predicate, options)` take a timeout in milliseconds or `{ timeout, signal }`. Aborting the signal removes the listener and the timer and rejects with `signal.reason`; a timeout rejects with an `Err` of code `timeout`.
+
+```ts
+const controller = new AbortController()
+const [ payload ] = await emitter.eventually('ready', { timeout: 5_000, signal: controller.signal })
+```
+
+# License
 
 This package is dedicated to the public domain under [CC0 1.0](./License.md).

@@ -88,6 +88,7 @@ export function of(length = 1) {
 export class Progress {
 
   #intervalId?: ReturnType<typeof setInterval>
+  #offAbort?: () => void
   #workers: Worker[]
 
   constructor(length = 1) {
@@ -127,15 +128,31 @@ export class Progress {
     process.stdout.write(ansi.up(this.#workers.length + 1))
   }
 
+  /** Stops rendering: clears the interval and detaches from the `start` signal, if any. Idempotent. */
   stop() {
     if (this.#intervalId) {
       clearInterval(this.#intervalId)
       this.#intervalId = undefined
     }
+    this.#offAbort?.()
+    this.#offAbort = undefined
   }
 
-  start(fps = 12) {
+  /**
+   * Starts rendering `fps` times per second. A running progress is restarted.
+   * @param options.signal - aborting stops rendering (same as `stop()`); an
+   *   already aborted signal starts nothing.
+   */
+  start(fps = 12, { signal }: { signal?: AbortSignal } = {}) {
     this.stop()
+    if (signal?.aborted) {
+      return this
+    }
+    if (signal) {
+      const onAbort = () => this.stop()
+      signal.addEventListener('abort', onAbort, { once: true })
+      this.#offAbort = () => signal.removeEventListener('abort', onAbort)
+    }
     this.#intervalId = setInterval(() => {
       for (const worker of this.#workers) {
         const diff = worker.target - worker.progress
@@ -144,6 +161,16 @@ export class Progress {
       this.print()
     }, 1000 / fps)
     return this
+  }
+
+  /** `true` while rendering. */
+  get running() {
+    return this.#intervalId !== undefined
+  }
+
+  /** `using progress = Progress.of(2).start()` stops rendering when the scope ends. */
+  [Symbol.dispose]() {
+    this.stop()
   }
 
 }

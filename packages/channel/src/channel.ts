@@ -227,7 +227,20 @@ export class Channel<T> implements AsyncIterableIterator<T> {
   }
 
   next(): Promise<IteratorResult<T>> {
+    return this.#next(undefined)
+  }
+
+  /**
+   * Reads the next iterator result. Aborting `signal` withdraws the pending
+   * read (nothing is consumed) and rejects with `signal.reason`; a signal that
+   * is already aborted rejects without touching the channel.
+   */
+  #next(signal: undefined | AbortSignal): Promise<IteratorResult<T>> {
     return new Promise((resolve, reject) => {
+      if (signal?.aborted) {
+        reject(signal.reason)
+        return
+      }
       if (this.#failure) {
         reject(this.#failure.error)
         return
@@ -236,22 +249,32 @@ export class Channel<T> implements AsyncIterableIterator<T> {
         resolve({ done: true, value: undefined })
         return
       }
-      this.#reads.push(result => {
+      const read: Read<T> = result => {
+        signal?.removeEventListener('abort', onAbort)
         if (result.done && this.#failure) {
           reject(this.#failure.error)
         } else {
           resolve(result)
         }
-      })
+      }
+      const onAbort = () => {
+        this.#removeRead(read)
+        reject(signal!.reason)
+      }
+      signal?.addEventListener('abort', onAbort, { once: true })
+      this.#reads.push(read)
       if (this.#writes.length > 0) {
         this.#consume()
       }
     })
   }
 
-  /** @throws if channel is closed. */
-  async read(): Promise<T> {
-    const result = await this.next()
+  /**
+   * @param options.signal - aborting withdraws the pending read and rejects with `signal.reason`
+   * @throws if channel is closed.
+   */
+  async read({ signal }: { signal?: AbortSignal } = {}): Promise<T> {
+    const result = await this.#next(signal)
     if (result.done) {
       throw new Error('Channel closed.')
     }
@@ -264,9 +287,11 @@ export class Channel<T> implements AsyncIterableIterator<T> {
    * When `T` includes `undefined`, a queued `undefined` value and channel
    * completion have the same return value. Use `next()` and inspect `done` when
    * that distinction matters.
+   *
+   * @param options.signal - aborting withdraws the pending read and rejects with `signal.reason`
    */
-  async maybeRead(): Promise<undefined | T> {
-    const result = await this.next()
+  async maybeRead({ signal }: { signal?: AbortSignal } = {}): Promise<undefined | T> {
+    const result = await this.#next(signal)
     return result.done ?
       undefined :
       result.value
@@ -285,8 +310,20 @@ export class Channel<T> implements AsyncIterableIterator<T> {
     return new ReadAttempt(this, perform)
   }
 
-  write(value: T) {
+  /**
+   * Writes `value`; resolves once a reader took it or it was buffered.
+   *
+   * Aborting `signal` while the write is still blocked withdraws it — the
+   * value is never delivered — and rejects with `signal.reason`; a write that
+   * was already accepted is unaffected. A signal that is already aborted
+   * rejects without touching the channel.
+   */
+  write(value: T, { signal }: { signal?: AbortSignal } = {}) {
     return new Promise<void>((resolve, reject) => {
+      if (signal?.aborted) {
+        reject(signal.reason)
+        return
+      }
       if (this.#doneWriting) {
         reject(new Error('Channel closed.'))
         return
@@ -303,11 +340,12 @@ export class Channel<T> implements AsyncIterableIterator<T> {
         }
         return
       }
-      this.#writes.push({
+      const write: Write<T> = {
         value,
         // A failed channel rejects its blocked writer whatever the reason is, even a falsy one;
         // a clean close (`closeWriting()` / `close()` without a reason) resolves it.
         enqueued: (err: unknown) => {
+          signal?.removeEventListener('abort', onAbort)
           if (this.#failure) {
             // Prefer the recorded reason: a `onceDoneWriting` callback draining the channel between
             // `fail()` recording it and `closeWriting()` settling the writes calls this without one.
@@ -318,19 +356,26 @@ export class Channel<T> implements AsyncIterableIterator<T> {
             resolve(undefined)
           }
         }
-      })
+      }
+      const onAbort = () => {
+        this.#removeWrite(write)
+        reject(signal!.reason)
+      }
+      signal?.addEventListener('abort', onAbort, { once: true })
+      this.#writes.push(write)
     })
   }
 
-  async maybeWrite(value: T) {
+  /** Like {@link write}, resolving with `false` instead of rejecting (including on abort). */
+  async maybeWrite(value: T, options: { signal?: AbortSignal } = {}) {
     return this
-      .write(value)
+      .write(value, options)
       .then(() => true)
       .catch(() => false)
   }
 
-  writeIgnore(value: T) {
-    this.write(value).catch(() => {})
+  writeIgnore(value: T, options: { signal?: AbortSignal } = {}) {
+    this.write(value, options).catch(() => {})
   }
 
   writeAttempt<R>(value: T, perform: (value: T) => IteratorResult<R>) {

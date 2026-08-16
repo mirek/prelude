@@ -59,6 +59,19 @@ import * as G from '@prelude/async-generator'
 - **[withIndex](src/with-index.ts)**: Pairs each value with its sequential index in an object
 - **[yield](src/yield.ts)**: Creates an async generator that yields a single value once
 
-## License
+### Cancellation
+
+`sleep`, `jitter`, `ofInterval`, `map`, `tap` and `consume` accept `signal` in their options. Aborting makes the generator throw (or `consume` reject) with `signal.reason`, clears timers and stops pulling from the source, which is returned. Concurrent `map`/`tap` fail their output at once and drop the results of mappings still in flight; serial `map`/`tap` check the signal between values; `consume` awaits callbacks already in flight before rejecting.
+
+```ts
+const controller = new AbortController()
+await G.pipe(
+  source,
+  G.map(fetchOne, { concurrency: 4, signal: controller.signal }),
+  G.consume(store, { signal: controller.signal })
+)
+```
+
+# License
 
 This package is dedicated to the public domain under [CC0 1.0](./License.md).

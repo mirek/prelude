@@ -1,16 +1,36 @@
-import { Channel, ReadAttempt, WriteAttempt, Attempt, Attempted, Thunk } from './channel.js'
+import { AttemptBase, Channel, ReadAttempt, WriteAttempt, Attempt, Attempted, Thunk } from './channel.js'
+
+/** Options accepted, as the first argument, by {@link select}, {@link selectNext} and {@link selectAsync}. */
+export type SelectOptions = {
+  /** Aborting withdraws every pending attempt (nothing is consumed or delivered) and rejects with `signal.reason`. */
+  signal?: AbortSignal
+}
+
+const isAttempt =
+  (value: unknown): value is Attempt =>
+    value instanceof Channel || value instanceof AttemptBase
+
+/** Splits an optional leading options object from the attempts. */
+const split =
+  <Attempts extends Attempt[]>(args: [ SelectOptions, ...Attempts ] | Attempts): [ SelectOptions, Attempts ] =>
+    args.length > 0 && !isAttempt(args[0]) ?
+      [ args[0] as SelectOptions, args.slice(1) as Attempts ] :
+      [ {}, args as Attempts ]
 
 /**
  * Selects from multiple attempts asynchronously.
  * @typeparam Attempts - Tuple of attempt types.
- * @param attempts - Variadic attempts to select from.
+ * @param attempts - Variadic attempts to select from, optionally preceded by {@link SelectOptions}.
  * @returns An async generator that yields selected values.
  */
+export function select<Attempts extends Attempt[]>(...attempts: Attempts): AsyncGenerator<Attempted<Attempts[number]>>
+export function select<Attempts extends Attempt[]>(options: SelectOptions, ...attempts: Attempts): AsyncGenerator<Attempted<Attempts[number]>>
 export async function* select<Attempts extends Attempt[]>(
-  ...attempts: Attempts
+  ...args: [ SelectOptions, ...Attempts ] | Attempts
 ): AsyncGenerator<Attempted<Attempts[number]>> {
+  const [ options, attempts ] = split<Attempts>(args)
   while (true) {
-    const result = await selectNext(...attempts)
+    const result = await selectNext(options, ...attempts)
     if (result.done) {
       break
     }
@@ -19,28 +39,45 @@ export async function* select<Attempts extends Attempt[]>(
 }
 
 /**
- * Performs a single selection attempt.
+ * Performs a single selection attempt: synchronously when an attempt is ready, asynchronously otherwise.
  * @typeparam Attempts - Tuple of attempt types.
- * @param attempts - Variadic attempts to select from.
+ * @param attempts - Variadic attempts to select from, optionally preceded by {@link SelectOptions}.
  * @returns A promise that resolves with the selected value or error.
  */
-/**
- * Performs an asynchronous selection.
- * @typeparam Attempts - Tuple of attempt types.
- * @param attempts - Variadic attempts to select from.
- * @returns A promise that resolves with the selected value or error.
- */
+export function selectNext<Attempts extends Attempt[]>(...attempts: Attempts): Promise<IteratorResult<Attempted<Attempts[number]>>>
+export function selectNext<Attempts extends Attempt[]>(options: SelectOptions, ...attempts: Attempts): Promise<IteratorResult<Attempted<Attempts[number]>>>
 export async function selectNext<Attempts extends Attempt[]>(
-  ...attempts: Attempts
+  ...args: [ SelectOptions, ...Attempts ] | Attempts
 ): Promise<IteratorResult<Attempted<Attempts[number]>>> {
-  return selectSync(attempts) ?? await selectAsync(attempts)
+  const [ options, attempts ] = split<Attempts>(args)
+  options.signal?.throwIfAborted()
+  return selectSync(attempts) ?? await selectAsync(attempts, options)
 }
 
+/**
+ * Performs an asynchronous selection: registers a read or write on every attempt and settles with the first one to complete.
+ * @param attempts - Attempts to select from.
+ * @param options.signal - aborting withdraws every pending attempt and rejects with `signal.reason`.
+ */
 export function selectAsync<Attempts extends Attempt[]>(
-  attempts: Attempts
+  attempts: Attempts,
+  { signal }: SelectOptions = {}
 ): Promise<IteratorResult<Attempted<Attempts[number]>>> {
   return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(signal.reason)
+      return
+    }
     const undos: Thunk[] = []
+    if (signal) {
+      const onAbort = () => {
+        undos.forEach(undo => undo())
+        reject(signal.reason)
+      }
+      signal.addEventListener('abort', onAbort, { once: true })
+      // Undone with the attempts: whichever settles first removes the others.
+      undos.push(() => signal.removeEventListener('abort', onAbort))
+    }
     for (const attempt of attempts) {
       if (attempt instanceof Channel) {
         undos.push(attempt.pushRead(result => {

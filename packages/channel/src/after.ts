@@ -10,8 +10,18 @@ const maxDelay = 2_147_483_647
  * @param milliseconds - The time in milliseconds after which to close the channel.
  * @returns A channel that closes automatically after the specified time.
  */
-export function after<T = unknown>(milliseconds: number) {
+export function after<T = unknown>(milliseconds: number, { signal }: { signal?: AbortSignal } = {}) {
   const ch = new Channel<T>()
+  if (signal) {
+    // Aborting fails the channel with the reason: readers waiting for the deadline reject.
+    const onAbort = () => ch.fail(signal.reason)
+    if (signal.aborted) {
+      onAbort()
+      return ch
+    }
+    signal.addEventListener('abort', onAbort, { once: true })
+    ch.onceDoneWriting(() => signal.removeEventListener('abort', onAbort))
+  }
   if (!Number.isFinite(milliseconds)) {
     return ch
   }

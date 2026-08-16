@@ -89,3 +89,48 @@ await test('text() of an unknown worker index is empty', () => {
   assert.equal(progress.text(1), 'b')
   assert.equal(progress.text(5), '')
 })
+
+await test('aborting the start signal stops rendering, and stop is idempotent', async () => {
+  const writes: string[] = []
+  const original = process.stdout.write.bind(process.stdout)
+  process.stdout.write = ((chunk: string) => { writes.push(chunk); return true }) as typeof process.stdout.write
+  try {
+    const controller = new AbortController()
+    const progress = Progress.of(1).start(100, { signal: controller.signal })
+    assert.equal(progress.running, true)
+    await new Promise(resolve => setTimeout(resolve, 30))
+    assert.ok(writes.length > 0, 'renders while running')
+    controller.abort()
+    assert.equal(progress.running, false)
+    const count = writes.length
+    await new Promise(resolve => setTimeout(resolve, 30))
+    assert.equal(writes.length, count, 'no render after abort')
+    progress.stop()
+    progress.stop()
+    // An already aborted signal starts nothing.
+    assert.equal(Progress.of(1).start(100, { signal: AbortSignal.abort() }).running, false)
+    // stop() detaches from the signal: a later abort must not touch a restarted progress.
+    const c2 = new AbortController()
+    const restarted = Progress.of(1).start(100, { signal: c2.signal })
+    restarted.stop()
+    restarted.start(100)
+    c2.abort()
+    assert.equal(restarted.running, true)
+    restarted.stop()
+  } finally {
+    process.stdout.write = original
+  }
+})
+
+await test('a Progress is disposable', () => {
+  const original = process.stdout.write.bind(process.stdout)
+  process.stdout.write = (() => true) as typeof process.stdout.write
+  try {
+    const progress = Progress.of(1).start(100)
+    assert.equal(progress.running, true)
+    progress[Symbol.dispose]()
+    assert.equal(progress.running, false)
+  } finally {
+    process.stdout.write = original
+  }
+})
