@@ -12,10 +12,15 @@ const range =
     const set = new Set<number>()
     // Values are computed from the index so fractional steps do not drift;
     // accumulating `i += step` could also stall forever once `step` fell below the ulp of `i`.
-    const tolerance = step * 1e-9
+    // The tolerance is a few ulps of the endpoints, so it only absorbs rounding error and can
+    // never span the interval or exclude a value that is genuinely below the bound.
+    // Capped below half the step and half the interval, so a narrow interval at a large magnitude
+    // (e.g. `range(1e16, 1e16 + 2, 1)`) can never have distinct values collapsed onto the bound.
+    const tolerance = Math.min(4 * Number.EPSILON * Math.max(Math.abs(min), Math.abs(max)), step / 2, (max - min) / 2)
     for (let k = 0; ; k++) {
       const value = min + (k * step)
-      if (value >= max - tolerance) {
+      // Compare distances rather than `max - tolerance` so a huge `max` never overflows.
+      if (!Number.isFinite(value) || max - value <= tolerance) {
         break
       }
       set.add(value)
