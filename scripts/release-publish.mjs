@@ -75,7 +75,7 @@ if (prepared.schemaVersion !== 1 || !Array.isArray(prepared.packages)) {
   throw new Error('Unsupported prepared release format')
 }
 
-const remoteCommits = publishPrepared({
+publishPrepared({
   prepared,
   packages: readPackages(),
   head,
@@ -95,7 +95,13 @@ const remoteCommits = publishPrepared({
 })
 
 for (const item of prepared.packages) {
-  if (remoteCommits.get(item.tag)) {
+  // Re-query rather than trust the preflight: publishing can take a while and a tag deleted or
+  // moved meanwhile must be re-created or reported, not silently skipped.
+  const remoteCommit = remoteTagCommit(item.tag)
+  if (remoteCommit) {
+    if (remoteCommit !== head) {
+      throw new Error(`Remote tag ${item.tag} points at ${remoteCommit}, expected ${head}`)
+    }
     console.log(`skip existing tag ${item.tag}`)
     continue
   }
