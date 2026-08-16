@@ -32,11 +32,13 @@ Codex threads piled up on merged PRs on 2026-08-15 and had to be re-audited.
    the motivating issue/review comment). Never push directly to `main`.
 4. **Wait for CI**: `gh pr checks <n> --watch` (Node 22 + Node 24 matrix,
    ~4–6 min). Fix failures and push again.
-5. **Wait for the Codex review.** Poll
-   `gh api repos/mirek/prelude/pulls/<n>/reviews` and
-   `gh api repos/mirek/prelude/pulls/<n>/comments` until either a
-   `chatgpt-codex-connector[bot]` review appears or ~8 minutes have passed
-   since the last push with CI already green. Every push restarts the wait.
+5. **Wait for the Codex review — for the commit you are about to merge.**
+   Take the head SHA (`gh pr view <n> --json headRefOid -q .headRefOid`) and
+   poll `gh api repos/mirek/prelude/pulls/<n>/reviews` until either a
+   `chatgpt-codex-connector[bot]` review whose `commit_id` equals that SHA
+   appears, or ~8 minutes have passed since that push with CI already green.
+   Reviews of earlier commits do not count: every push restarts the wait, and
+   an old review must never satisfy the gate for a new head.
 6. **Address every Codex thread** on the PR:
    - Verify the claim against the code (Codex is usually right but not
      always). If it is a real defect: fix it in this PR *with a test*, push,
@@ -47,7 +49,9 @@ Codex threads piled up on merged PRs on 2026-08-15 and had to be re-audited.
      (`gh api graphql -f query='mutation{resolveReviewThread(input:{threadId:"<id>"}){thread{isResolved}}}'`;
      thread ids come from `pullRequest.reviewThreads` in GraphQL).
 7. **Merge** only when CI is green, the Codex wait is over, and no
-   unresolved threads remain: `gh pr merge <n> --squash --delete-branch`.
+   unresolved threads remain — and pin the SHA you verified so a concurrent
+   push cannot slip past the gate:
+   `gh pr merge <n> --squash --delete-branch --match-head-commit <sha>`.
 8. If the PR fixes a review comment left on an *earlier* PR, reply on that
    original thread with a link to the new PR and resolve it too.
 
