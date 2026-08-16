@@ -72,11 +72,13 @@ export function consume<T>(
     const workers = Array.from({ length: concurrency }, async (_, worker) => {
       // Stop pulling as soon as any worker failed; otherwise the others would keep draining the source.
       while (!failed) {
-        const next = pull.then(() => iterator.next())
+        // Re-check inside the chain: `return()` may have settled an earlier pull after this one was queued.
+        const next: Promise<IteratorResult<T>> = pull.then(() => failed ? { done: true, value: undefined } : iterator.next())
         pull = next
         const result = await next
         if (result.done) {
-          exhausted = true
+          // Only a real `done` from the source counts as exhaustion (not the post-failure sentinel).
+          exhausted ||= !failed
           return
         }
         if (callback) {

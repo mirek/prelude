@@ -111,3 +111,35 @@ await test('concurrent consume never overlaps next() calls on the shared iterato
   }, { concurrency: 3 })(source)
   assert.deepEqual(seen.toSorted((a, b) => a - b), [ 0, 1, 2, 3, 4 ])
 })
+
+await test('a failing callback stops queued pulls from calling next() after return()', async () => {
+  // A source that resolves a blocked next() from return() and records any next() after it was closed.
+  let closed = false
+  let pulledAfterClose = false
+  let release: undefined | (() => void)
+  const source: AsyncIterable<number> = {
+    [Symbol.asyncIterator]: () => ({
+      next: () => {
+        if (closed) {
+          pulledAfterClose = true
+          return Promise.resolve({ done: true, value: undefined })
+        }
+        return new Promise(resolve => {
+          release = () => resolve({ done: false, value: 1 })
+        })
+      },
+      return: () => {
+        closed = true
+        release?.()
+        return Promise.resolve({ done: true, value: undefined })
+      }
+    })
+  }
+  const consumed = G.consume(async () => {
+    throw new Error('callback boom')
+  }, { concurrency: 3 })(source)
+  await new Promise(resolve => setTimeout(resolve, 10))
+  release?.()
+  await assert.rejects(consumed, /callback boom/)
+  assert.equal(pulledAfterClose, false, 'no next() after return()')
+})
