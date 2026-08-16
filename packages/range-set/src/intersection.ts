@@ -1,6 +1,7 @@
 import * as RangeSet from './range-set.js'
 import * as Range from './range.js'
 import * as Key from './key.js'
+import push from './push.js'
 
 /**
  * Computes the intersection of two range sets, finding overlapping portions.
@@ -35,7 +36,8 @@ export const intersection = <K, V>(
     const end = Key.min(key, xEndNext, yEndNext)
 
     if (key.cmp(start, end) < 0) {
-      ranges.push({
+      // Merged values can make neighbouring pieces equal; keep the result canonical.
+      push(rangeSet, ranges, {
         start,
         end: rangeSet.key.prev(end),
         value: rangeSet.value.merge(x.value, y.value)

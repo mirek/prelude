@@ -1,60 +1,51 @@
 import * as Range from './range.js'
 import overBoth from './over-both.js'
+import push from './push.js'
 import type * as RangeSet from './range-set.js'
 
 const reduction = <K, V>(
-  { key, value }: Pick<RangeSet.T<K, V>, 'key' | 'value'>,
+  rangeSet: Pick<RangeSet.T<K, V>, 'key' | 'value'>,
   rs: Range.T<K, V>[],
   x: Range.T<K, V>
 ): Range.T<K, V>[] => {
+  const { key, value } = rangeSet
+
   // The very first range stays as is.
-  let r = rs.pop()
+  const r = rs.pop()
   if (r == null) {
-    rs.push(x)
+    push(rangeSet, rs, x)
     return rs
   }
 
-  // There is no overlap, both ranges stay as is.
-  if (key.cmp(key.next(r.end), x.start) < 0) {
-    rs.push(r)
-    rs.push(x)
-    return rs
-  }
-
-  // Ranges are touching but not overlapping.
-  if (key.cmp(key.next(r.end), x.start) === 0) {
-    if (value.eq(r.value, x.value)) {
-      // Both ranges have the same values, merge into one.
-      rs.push({ ...r, start: r.start, end: x.end })
-    } else {
-      // Ranges have different values, leave them as is.
-      rs.push(r)
-      rs.push(x)
-    }
+  // No overlap (touching ranges with equal values are joined by `push`).
+  if (key.cmp(key.next(r.end), x.start) <= 0) {
+    push(rangeSet, rs, r)
+    push(rangeSet, rs, x)
     return rs
   }
 
   // First part. Never mutate `r`: it may be one of the caller's input ranges.
+  let head = r
   if (key.cmp(x.start, r.start) > 0) {
-    rs.push({ ...r, end: key.prev(x.start) })
-    r = { ...r, start: x.start }
+    push(rangeSet, rs, { ...r, end: key.prev(x.start) })
+    head = { ...r, start: x.start }
   }
 
   // Unify shared part.
-  rs.push({
-    value: value.merge(r.value, x.value),
-    start: r.start,
+  push(rangeSet, rs, {
+    value: value.merge(head.value, x.value),
+    start: head.start,
     end: key.cmp(x.end, r.end) < 0 ? x.end : r.end
   })
 
   // Remaining part covered by current range.
   if (key.cmp(x.end, r.end) > 0) {
-    rs.push({ ...x, start: key.next(r.end) })
+    push(rangeSet, rs, { ...x, start: key.next(r.end) })
   }
 
   // Remaining part covered by last range.
   if (key.cmp(x.end, r.end) < 0) {
-    rs.push({ ...r, start: key.next(x.end) })
+    push(rangeSet, rs, { ...r, start: key.next(x.end) })
   }
 
   return rs
