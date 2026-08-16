@@ -67,3 +67,10 @@ await test('a group that did not participate is a parse failure, a missing group
   // Failing on a non-participating group lets alternatives take over.
   assert.deepEqual(P.parse(P.first(second, P.regexp(/(a)|(b)/, 1)), 'a'), 'a')
 })
+
+await test('numeric group selectors must be integers', () => {
+  assert.throws(() => P.regexp(/(a)/, 0.5)(P.Reader.of('a')), /invalid value group 0\.5/)
+  assert.throws(() => P.regexp(/(a)/, 0, 0.5)(P.Reader.of('a')), /invalid advance group 0\.5/)
+  assert.throws(() => P.regexp(/(a)/, NaN)(P.Reader.of('a')), /invalid value group NaN/)
+  assert.deepEqual(P.parse(P.regexp(/(a)/, 1, 0), 'a'), 'a')
+})

@@ -27,7 +27,7 @@ export function regexp(
       (group: number | string) =>
         typeof group === 'string' ?
           match.groups !== undefined && group in match.groups :
-          group >= 0 && group < match.length
+          Number.isInteger(group) && group >= 0 && group < match.length
     if (!hasGroup(valueGroup)) {
       throw new Error(`invalid value group ${String(valueGroup)}`)
     }
