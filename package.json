@@ -18,11 +18,12 @@
     "manifests:write": "node scripts/normalize-package-manifests.mjs --write",
     "release-hooks:check": "node scripts/normalize-release-hooks.mjs --check",
     "release-hooks:write": "node scripts/normalize-release-hooks.mjs --write",
+    "makefiles:check": "node scripts/check-makefiles.mjs",
     "release:plan": "node scripts/release-plan.mjs",
     "release:prepare": "node scripts/release-prepare.mjs",
     "release:publish": "node scripts/release-publish.mjs",
     "pack:check": "node scripts/pack-check.mjs",
-    "verify": "pnpm manifests:check && pnpm release-hooks:check && pnpm test:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:scripts && pnpm build && pnpm pack:check"
+    "verify": "pnpm manifests:check && pnpm release-hooks:check && pnpm makefiles:check && pnpm test:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:scripts && pnpm build && pnpm pack:check"
   },
   "keywords": [],
   "author": "",
