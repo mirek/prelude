@@ -127,3 +127,9 @@ await test('stays closed after the wrapped iterator finishes its own return', ()
   assert.deepEqual(gen.return(7), { done: true, value: 7 })
   assert.deepEqual(gen.next(), { done: true, value: undefined })
 })
+
+await test('wrapped iterators keep Symbol.iterator and the iterator helpers', () => {
+  const gen = G.generator([1, 2, 3][Symbol.iterator]())
+  assert.equal(gen[Symbol.iterator](), gen)
+  assert.deepEqual(gen.map(x => x * 2).toArray(), [2, 4, 6])
+})

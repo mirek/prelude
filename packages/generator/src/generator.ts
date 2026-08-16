@@ -27,6 +27,11 @@
  * const values = [...gen]
  * // Result: [0, 1, 2, 3, 4]
  */
+// %IteratorPrototype%: gives the wrapper `Symbol.iterator` and the iterator helpers
+// (`map`, `take`, ...) that a real generator inherits.
+const iteratorPrototype: object =
+  Object.getPrototypeOf(Object.getPrototypeOf([][Symbol.iterator]()))
+
 export const generator =
   <T>(values: Iterator<T>): Generator<T> => {
     // A real generator stays finished once `return()`/`throw()` completed it; remember that for
@@ -36,6 +41,7 @@ export const generator =
     // `next` for frozen / non-configurable iterators, yet native iterator methods need the real
     // iterator as `this`, so forward each call explicitly.
     const wrapper = {
+      __proto__: iteratorPrototype,
       next: (...args: [] | [unknown]) => closed ?
         { done: true, value: undefined } :
         values.next(...args),
@@ -66,12 +72,9 @@ export const generator =
           closed = true
           throw thrown
         }
-      },
-      [Symbol.iterator]() {
-        return this
       }
     }
-    return wrapper as Generator<T>
+    return wrapper as unknown as Generator<T>
   }
 
 export default generator
