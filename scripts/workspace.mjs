@@ -12,12 +12,15 @@ const dependencyFields = [
   'peerDependencies'
 ]
 
-// A directory left behind by a removed package holds only its node_modules
-// (git never tracks it, and pnpm does not delete it on install); ignore it
-// rather than force every developer to clean it by hand after switching branches.
-function isLeftoverNodeModules(directory) {
+// A directory left behind by a removed package holds only untracked output:
+// its node_modules (pnpm does not delete it on install) and/or its mjs build.
+// Ignore it rather than force every developer to clean it by hand after
+// switching branches; anything tracked or unknown still counts as an orphan.
+const leftoverEntries = new Set([ 'node_modules', 'mjs' ])
+
+function isLeftover(directory) {
   const entries = readdirSync(directory)
-  return entries.length > 0 && entries.every(name => name === 'node_modules')
+  return entries.length > 0 && entries.every(name => leftoverEntries.has(name))
 }
 
 /**
@@ -30,7 +33,7 @@ export function packageDirectories(parent = packagesDirectory) {
   const directories = readdirSync(parent, { withFileTypes: true })
     .filter(entry => entry.isDirectory())
     .map(entry => path.join(parent, entry.name))
-    .filter(directory => existsSync(path.join(directory, 'package.json')) || !isLeftoverNodeModules(directory))
+    .filter(directory => existsSync(path.join(directory, 'package.json')) || !isLeftover(directory))
     .sort()
   const orphans = directories.filter(directory => !existsSync(path.join(directory, 'package.json')))
   if (orphans.length > 0) {

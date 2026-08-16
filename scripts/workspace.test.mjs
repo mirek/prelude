@@ -38,10 +38,13 @@ test('packageDirectories rejects a directory without a manifest instead of skipp
   })
 })
 
-test('packageDirectories ignores a removed package that only left node_modules behind', () => {
-  withPackages({ array: { name: 'array' }, gone: null }, parent => {
+test('packageDirectories ignores a removed package that only left node_modules and build output behind', () => {
+  withPackages({ array: { name: 'array' }, gone: null, built: null }, parent => {
     rmSync(path.join(parent, 'gone', 'src'), { recursive: true })
     mkdirSync(path.join(parent, 'gone', 'node_modules', '.pnpm'), { recursive: true })
+    rmSync(path.join(parent, 'built', 'src'), { recursive: true })
+    mkdirSync(path.join(parent, 'built', 'mjs'), { recursive: true })
+    mkdirSync(path.join(parent, 'built', 'node_modules'), { recursive: true })
     assert.deepEqual(packageDirectories(parent), [path.join(parent, 'array')])
   })
 })
