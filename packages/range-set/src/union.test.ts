@@ -210,7 +210,7 @@ await test('union (closed, max)', () => {
   // b: - - 5 5 5 -
   // r: - 3 5 5 5 -
   a = RangeSet.union(a, { ranges: [r(2, 4, 5)] })
-  assert.deepEqual(a.ranges, [r(1, 1, 3), r(2, 3, 5), r(4, 4, 5)])
+  assert.deepEqual(a.ranges, [r(1, 1, 3), r(2, 4, 5)])
 })
 
 await test('union (closed, min)', () => {
@@ -234,7 +234,7 @@ await test('union (closed, min)', () => {
   // b: - - 5 5 5 -
   // r: - 8 5 5 5 -
   a = RangeSet.union(a, { ranges: [r(2, 4, 5)] })
-  assert.deepEqual(a.ranges, [r(1, 1, 8), r(2, 3, 5), r(4, 4, 5)])
+  assert.deepEqual(a.ranges, [r(1, 1, 8), r(2, 4, 5)])
 })
 
 await test('union (closed, sum) - empty range set', () => {
@@ -364,4 +364,22 @@ await test('union does not mutate the input ranges', () => {
   assert.deepEqual(A, [ r(1, 5, 1) ])
   assert.deepEqual(B, [ r(3, 7, 2) ])
   assert.deepEqual(result.ranges, [ r(1, 2, 1), r(3, 5, 3), r(6, 7, 2) ])
+})
+
+await test('union and intersection merge the equal-valued pieces an overlap produces', () => {
+  const closedMax = (ranges: RangeSet.Range.T<number, number>[]) => ({ ranges, key: RangeSet.Key.closed, value: RangeSet.Value.max })
+
+  // i: 0 ... 10 11
+  // a:  -     - 1
+  // b:  -     3 3
+  // r:  -     3 3   (one range, not [10,10]=3 followed by [11,11]=3)
+  assert.deepEqual(RangeSet.union(closedMax([ r(11, 11, 1) ]), { ranges: [ r(10, 11, 3) ] }).ranges, [ r(10, 11, 3) ])
+
+  // sum: the untouched head of a range and the merged overlap can be equal too.
+  const closedSum = { ranges: [ r(0, 5, 1) ], key: RangeSet.Key.closed, value: RangeSet.Value.sum }
+  assert.deepEqual(RangeSet.union(closedSum, { ranges: [ r(2, 3, 0) ] }).ranges, [ r(0, 5, 1) ])
+
+  // intersection with min: [0,2] ∩ ... and [3,5] ∩ ... both come out as 1.
+  const closedMin = { ranges: [ r(0, 5, 1) ], key: RangeSet.Key.closed, value: RangeSet.Value.min }
+  assert.deepEqual(RangeSet.intersection(closedMin, { ranges: [ r(0, 2, 1), r(3, 5, 2) ] }).ranges, [ r(0, 5, 1) ])
 })
