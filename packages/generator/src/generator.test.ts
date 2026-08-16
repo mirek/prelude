@@ -133,3 +133,19 @@ await test('wrapped iterators keep Symbol.iterator and the iterator helpers', ()
   assert.equal(gen[Symbol.iterator](), gen)
   assert.deepEqual(gen.map(x => x * 2).toArray(), [2, 4, 6])
 })
+
+await test('a closed wrapper does not re-enter the source on throw() or return()', () => {
+  let recovered = 0
+  const source: Iterator<number> = {
+    next: () => ({ done: false, value: 1 }),
+    return: () => ({ done: true, value: undefined }),
+    throw: () => { recovered++; return { done: false, value: 2 } }
+  }
+  const gen = G.generator(source)
+  gen.next()
+  assert.deepEqual(gen.return(undefined), { done: true, value: undefined })
+  assert.throws(() => gen.throw(new Error('late')), /late/)
+  assert.equal(recovered, 0, 'source throw() must not run once the wrapper is closed')
+  assert.deepEqual(gen.return(7), { done: true, value: 7 })
+  assert.deepEqual(gen.next(), { done: true, value: undefined })
+})

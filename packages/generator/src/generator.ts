@@ -46,7 +46,8 @@ export const generator =
         { done: true, value: undefined } :
         values.next(...args),
       return: (value?: unknown) => {
-        if (values.return === undefined) {
+        // A completed generator stays completed: do not re-enter the source.
+        if (closed || values.return === undefined) {
           closed = true
           return { done: true, value }
         }
@@ -60,7 +61,8 @@ export const generator =
         }
       },
       throw: (error?: unknown) => {
-        if (values.throw === undefined) {
+        // A completed generator rethrows without re-entering the source.
+        if (closed || values.throw === undefined) {
           closed = true
           throw error
         }
