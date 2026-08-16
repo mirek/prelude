@@ -9,10 +9,12 @@ const timeout =
   <T, U>(wait: number, f: () => Promise<T>, g: () => U): Promise<T | U> =>
     new Promise((resolve, reject) => {
       let id: undefined | ReturnType<typeof setTimeout>
-      let remaining = wait
+      // Chain from an absolute deadline so a late chunk (event-loop lag, process suspension)
+      // does not push the timeout out by the accumulated lateness.
+      const deadline = Date.now() + wait
       const schedule = () => {
+        const remaining = deadline - Date.now()
         if (remaining > maxDelay) {
-          remaining -= maxDelay
           id = setTimeout(schedule, maxDelay)
         } else {
           id = setTimeout(() => {
@@ -21,7 +23,7 @@ const timeout =
             } catch (err: unknown) {
               reject(err)
             }
-          }, remaining)
+          }, Math.max(0, remaining))
         }
       }
       if (Number.isFinite(wait)) {

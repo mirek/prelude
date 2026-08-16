@@ -25,13 +25,15 @@ export const after =
       return () => {}
     }
     let id: null | ReturnType<typeof setTimeout> = null
-    let remaining = milliseconds
+    // Chain from an absolute deadline so a late chunk (event-loop lag, process suspension)
+    // does not push the callback out by the accumulated lateness.
+    const deadline = Date.now() + milliseconds
     const schedule = () => {
+      const remaining = deadline - Date.now()
       if (remaining > maxDelay) {
-        remaining -= maxDelay
         id = setTimeout(schedule, maxDelay)
       } else {
-        id = setTimeout(callback, remaining)
+        id = setTimeout(callback, Math.max(0, remaining))
       }
     }
     schedule()
