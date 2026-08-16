@@ -12,13 +12,31 @@ const dependencyFields = [
   'peerDependencies'
 ]
 
-/** Every directory under packages/ that has a package.json, with its parsed manifest. */
-export function readPackages() {
-  return readdirSync(packagesDirectory, { withFileTypes: true })
+/**
+ * Every directory under packages/, sorted. Throws when a directory has no
+ * package.json: pnpm, the build, typecheck and pack scripts all discover
+ * packages by manifest, so a manifest-less directory would otherwise be
+ * silently excluded from every verification step.
+ */
+export function packageDirectories(parent = packagesDirectory) {
+  const directories = readdirSync(parent, { withFileTypes: true })
     .filter(entry => entry.isDirectory())
-    .map(entry => path.join(packagesDirectory, entry.name))
-    .filter(directory => existsSync(path.join(directory, 'package.json')))
+    .map(entry => path.join(parent, entry.name))
     .sort()
+  const orphans = directories.filter(directory => !existsSync(path.join(directory, 'package.json')))
+  if (orphans.length > 0) {
+    throw new Error(
+      `Directories under packages/ without a package.json are not workspace packages and are skipped by every check; add a manifest or remove them:\n${
+        orphans.map(directory => `- ${path.relative(path.dirname(parent), directory)}`).join('\n')
+      }`
+    )
+  }
+  return directories
+}
+
+/** Every workspace package with its parsed manifest. */
+export function readPackages() {
+  return packageDirectories()
     .map(directory => ({
       directory,
       manifest: JSON.parse(readFileSync(path.join(directory, 'package.json'), 'utf8'))

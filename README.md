@@ -4,7 +4,7 @@ A pnpm workspace containing small, focused TypeScript utility packages published
 
 ## What this repository contains
 
-This repository is organized as a monorepo. Workspace packages are the directories under `packages/*` that contain a `package.json`; a directory without one (currently `packages/graph`, a prototype) is not a workspace package.
+This repository is organized as a monorepo. Every directory under `packages/*` is a workspace package with its own `package.json`; `pnpm manifests:check` fails on a directory without one, because the build, typecheck and pack scripts discover packages by manifest and would otherwise skip it silently.
 
 - Shared workspace configuration at the root (`pnpm-workspace.yaml`, root `package.json`).
 - Individual package source, tests, and package-level docs in each `packages/<name>` directory.
