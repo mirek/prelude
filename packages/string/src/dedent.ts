@@ -13,14 +13,18 @@ import * as Lines from './lines.js'
  * `) // 'hello\nworld'
  */
 export function dedent(value: string): string {
-  const lines = Lines.of(value)
-  // Remove every blank line at the beginning and end, as documented.
-  while (lines.length > 0 && isBlank(lines[0])) {
-    lines.shift()
+  const all = Lines.of(value)
+  // Remove every blank line at the beginning and end, as documented. Find the
+  // bounds first and slice once so many blank lines stay linear.
+  let start = 0
+  while (start < all.length && isBlank(all[start])) {
+    start++
   }
-  while (lines.length > 0 && isBlank(lines[lines.length - 1])) {
-    lines.pop()
+  let end = all.length
+  while (end > start && isBlank(all[end - 1])) {
+    end--
   }
+  const lines = all.slice(start, end)
   let n = Infinity
   for (const line of lines) {
     for (let i = 0; i < line.length; i++) {
