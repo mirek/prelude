@@ -104,4 +104,6 @@ await test('a throwing rhs does not throw at construction', () => {
   const d = G.diff(rhs(), Cmp.number)
   const g = d([ 1 ])
   assert.throws(() => [ ...g ], /boom/)
+  // The failure is memoised: a second application replays it instead of seeing an empty rhs.
+  assert.throws(() => [ ...d([ 1 ]) ], /boom/)
 })
