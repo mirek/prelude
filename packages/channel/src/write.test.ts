@@ -42,6 +42,20 @@ await test('fail with a falsy reason still rejects a blocked write', async () =>
   await assert.rejects(write, /real/)
 })
 
+await test('a blocked write rejected while a doneWriting callback drains the channel gets the failure reason', async () => {
+  const ch = Ch.of<number>()
+  const write = ch.write(1)
+  // Runs after `fail()` recorded the reason but before `closeWriting()` settled the write.
+  ch.onceDoneWriting(() => ch.close())
+  ch.fail(new Error('real'))
+  await assert.rejects(write, /real/)
+  const ch0 = Ch.of<number>()
+  const write0 = ch0.write(1)
+  ch0.onceDoneWriting(() => ch0.close())
+  ch0.fail(0)
+  await assert.rejects(write0, err => err === 0)
+})
+
 await test('closeWriting without a reason resolves a blocked write', async () => {
   const ch = Ch.of<number>()
   const write = ch.write(1)

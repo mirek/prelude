@@ -308,7 +308,11 @@ export class Channel<T> implements AsyncIterableIterator<T> {
         // A failed channel rejects its blocked writer whatever the reason is, even a falsy one;
         // a clean close (`closeWriting()` / `close()` without a reason) resolves it.
         enqueued: (err: unknown) => {
-          if (err || this.#failure) {
+          if (this.#failure) {
+            // Prefer the recorded reason: a `onceDoneWriting` callback draining the channel between
+            // `fail()` recording it and `closeWriting()` settling the writes calls this without one.
+            reject(this.#failure.error)
+          } else if (err) {
             reject(err)
           } else {
             resolve(undefined)
