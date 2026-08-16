@@ -479,7 +479,8 @@ await test('an unknown child is adopted only while it still names the deciding s
   assert.equal(actor.supervisor, second)
   gate.resolve()
   await restarting
-  assert.equal(await decision, 'stop', 'a child that no longer names us is not ours to restart')
+  assert.equal(await decision, 'restart', 'the queued failure is decided by the child\'s current supervisor')
+  assert.equal(second.restarts, 1)
   assert.equal(actor.supervisor, second)
   assert.equal(second.children.includes(actor), true)
   assert.equal(first.children.includes(actor), false)
@@ -493,6 +494,38 @@ await test('an unknown child is adopted only while it still names the deciding s
   await second.stop()
   assert.equal(actor.status, 'stopped')
   await foreign.stop()
+})
+
+await test('a real failure queued before a handover restarts the actor under its new supervisor', async () => {
+  const first = Supervisor.of({ maxRestarts: 5 })
+  const second = Supervisor.of({ maxRestarts: 5 })
+  const gate = deferred()
+  const stub: Actor.Supervised = {
+    status: 'running',
+    done: new Promise<void>(() => {}),
+    stop: async () => {},
+    kill: async () => {},
+    restart: () => gate.promise
+  }
+  first.supervise(stub)
+  const restarting = first.restart()
+  const actor = first.spawn(worker('moved'))
+  // The handler throws while first's decision queue is blocked; the escalation is queued on first.
+  const asked = assert.rejects(actor.ask('boom'), /boom/)
+  await tick()
+  second.supervise(actor)
+  gate.resolve()
+  await restarting
+  await asked
+  await tick()
+  assert.equal(actor.status, 'running', 'the reparented actor is restarted, not stopped')
+  assert.equal(actor.restarts, 1)
+  assert.equal(second.restarts, 1, 'decided by the new supervisor')
+  assert.equal(second.children.includes(actor), true)
+  await first.stop()
+  assert.equal(actor.status, 'running')
+  await second.stop()
+  assert.equal(actor.status, 'stopped')
 })
 
 await test('supervising the same child twice does not duplicate it', async () => {

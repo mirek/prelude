@@ -244,10 +244,13 @@ export class Supervisor implements A.Supervisor, A.Supervised {
       return 'stop'
     }
     if (!this.#children.includes(child)) {
+      if (child.supervisor !== undefined && child.supervisor !== this) {
+        // Handed over to another supervisor while this decision was queued (or reported by a
+        // stranger): the failure is theirs to decide. Returning 'stop' would terminate their child.
+        return child.supervisor.failure(child, error, message)
+      }
       // A child that names us as its supervisor (e.g. `new Actor({ supervisor })`) without having
-      // been passed to `supervise()`: adopt it now rather than silently stopping it. A child that
-      // names someone else (handed over while this decision was queued, or reported by a stranger)
-      // is not ours to restart, let alone to take back from its supervisor.
+      // been passed to `supervise()`: adopt it now rather than silently stopping it.
       if (this.#status !== 'running' || child.supervisor !== this || terminal(child)) {
         return 'stop'
       }
