@@ -51,6 +51,8 @@ jobs:
         run: pnpm typecheck 2>&1 | tee typecheck.log
       - name: Test
         run: pnpm test 2>&1 | tee test.log
+      - name: Test scripts
+        run: pnpm test:scripts 2>&1 | tee test-scripts.log
       - name: Build packages
         run: pnpm build 2>&1 | tee build.log
       - name: Validate tarballs

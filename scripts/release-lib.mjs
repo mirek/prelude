@@ -56,16 +56,16 @@ export function readPackages() {
   return new Map(packages.map(entry => [entry.manifest.name, entry]))
 }
 
-export function readPlans() {
-  if (!existsSync(plansDirectory)) {
+export function readPlans(directory = plansDirectory) {
+  if (!existsSync(directory)) {
     return []
   }
 
-  return readdirSync(plansDirectory)
+  return readdirSync(directory)
     .filter(file => file.endsWith('.json'))
     .sort()
     .map(file => {
-      const filePath = path.join(plansDirectory, file)
+      const filePath = path.join(directory, file)
       const plan = JSON.parse(readFileSync(filePath, 'utf8'))
       if (typeof plan.summary !== 'string' || plan.summary.trim() === '') {
         throw new Error(`${file} must contain a non-empty summary`)
@@ -73,7 +73,9 @@ export function readPlans() {
       if (!plan.packages || typeof plan.packages !== 'object' || Array.isArray(plan.packages)) {
         throw new Error(`${file} must contain a packages object`)
       }
-      return { file, filePath, ...plan }
+      // Copy only the schema fields so plan data can never override the
+      // internal paths that release:prepare later removes.
+      return { file, filePath, summary: plan.summary, packages: plan.packages }
     })
 }
 
