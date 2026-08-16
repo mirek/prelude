@@ -148,17 +148,24 @@ export class Emitter<T extends Events> implements Interface<T> {
    * @throws Error if the listener is already registered for this event
    */
   on<K extends keyof T>(name: K, listener: Listener<T[K]>) {
+    if (this.listeners(name)?.has(listener as Listener)) {
+      throw Err.error('duplicate', `Expected listener to not be already registered for ${String(name)} event.`)
+    }
+    // Announce before adding (like Node's EventEmitter): a 'newListener' listener must not be
+    // told about its own registration.
+    this.emit('newListener', name, listener as Listener)
+    // Re-fetch the set after the meta-event: a 'newListener' listener may have removed the last
+    // listener for `name` (dropping its set from the map) or registered this very listener.
     let listeners = this.listeners(name)
     if (!listeners) {
       listeners = new Set
       this._listeners.set(name, listeners as Set<Listener>)
     }
     if (listeners.has(listener as Listener)) {
-      throw Err.error('duplicate', `Expected listener to not be already registered for ${String(name)} event.`)
+      // The 'newListener' listener registered this very listener itself: it is active, so hand
+      // back its disposer rather than failing a registration that effectively succeeded.
+      return () => this.off(name, listener)
     }
-    // Announce before adding (like Node's EventEmitter): a 'newListener' listener must not be
-    // told about its own registration.
-    this.emit('newListener', name, listener as Listener)
     listeners.add(listener as Listener)
     const n = listeners.size
     if (n > errorLogThreshold) {
