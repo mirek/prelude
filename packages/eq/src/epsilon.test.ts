@@ -10,6 +10,13 @@ await test('epsilon equality is reflexive and inclusive', () => {
   assert.equal($.epsilon()(Infinity, Infinity), true)
 })
 
+await test('epsilon equality treats paired NaNs as equal', () => {
+  assert.equal($.epsilon(0)(NaN, NaN), true)
+  assert.equal($.epsilon()(NaN, NaN), true)
+  assert.equal($.epsilon()(NaN, 1), false)
+  assert.equal($.epsilon()(1, NaN), false)
+})
+
 await test('array equality does not skip holes', () => {
   const eq = $.array($.number)
   // eslint-disable-next-line no-sparse-arrays
