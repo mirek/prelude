@@ -14,7 +14,7 @@
  * @template T - The type of values in the async iterable
  * @param n - The number of values to skip; must be a non-negative safe integer or `Infinity`
  * @returns A transformer function that skips the first n values and yields the rest
- * @throws {RangeError} If n is negative or not a safe integer
+ * @throws {RangeError} If n is negative, or neither a safe integer nor `Infinity`
  *
  * @example
  * ```ts
