@@ -1,14 +1,13 @@
 test:
 	pnpm tsc
 	pnpm oxlint --type-aware src
-	pnpm tsx --test src/**/*.test.ts
+	pnpm tsx --test 'src/**/*.test.ts'
 
 clean:
 	rm -Rf mjs test/*.js
 
 build-mjs:
-	rm -Rf mjs
-	pnpm exec tsc -p tsconfig.mjs.json
+	node ../../scripts/build-package.mjs
 
 build: build-mjs
 

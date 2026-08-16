@@ -5,8 +5,7 @@ clean:
 	rm -Rf mjs
 
 build-mjs:
-	rm -Rf mjs
-	pnpm exec tsc -p tsconfig.lib.json -d --sourceMap --outDir mjs --rootDir src
+	node ../../scripts/build-package.mjs
 
 build: build-mjs
 

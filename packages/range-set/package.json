@@ -5,7 +5,7 @@
   "type": "module",
   "module": "./mjs/index.js",
   "scripts": {
-    "test": "NODE_OPTIONS='--no-warnings --experimental-vm-modules' pnpm tsx --test src/**/*.test.ts",
+    "test": "NODE_OPTIONS='--no-warnings --experimental-vm-modules' pnpm tsx --test \"src/**/*.test.ts\"",
     "prepack": "node ../../scripts/build-package.mjs"
   },
   "keywords": [

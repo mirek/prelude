@@ -5,8 +5,7 @@ clean:
 	rm -Rf mjs test/*.js
 
 build-mjs:
-	rm -Rf mjs
-	pnpm tsc -p tsconfig.lib.json -d -t es2022 --sourceMap --outDir mjs --rootDir src
+	node ../../scripts/build-package.mjs
 
 build: build-mjs
 

@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "pnpm oxlint --type-aware src && pnpm tsx --test src/**/*.test.ts --coverage",
+    "test": "pnpm oxlint --type-aware src && pnpm tsx --test \"src/**/*.test.ts\" --coverage",
     "prepack": "node ../../scripts/build-package.mjs"
   },
   "keywords": [
