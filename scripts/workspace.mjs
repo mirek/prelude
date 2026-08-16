@@ -12,6 +12,13 @@ const dependencyFields = [
   'peerDependencies'
 ]
 
+// A directory left behind by a removed package holds only its node_modules
+// (git never tracks it, and pnpm does not delete it on install); ignore it
+// rather than force every developer to clean it by hand after switching branches.
+function isLeftoverNodeModules(directory) {
+  return readdirSync(directory).every(name => name === 'node_modules')
+}
+
 /**
  * Every directory under packages/, sorted. Throws when a directory has no
  * package.json: pnpm, the build, typecheck and pack scripts all discover
@@ -22,6 +29,7 @@ export function packageDirectories(parent = packagesDirectory) {
   const directories = readdirSync(parent, { withFileTypes: true })
     .filter(entry => entry.isDirectory())
     .map(entry => path.join(parent, entry.name))
+    .filter(directory => existsSync(path.join(directory, 'package.json')) || !isLeftoverNodeModules(directory))
     .sort()
   const orphans = directories.filter(directory => !existsSync(path.join(directory, 'package.json')))
   if (orphans.length > 0) {
