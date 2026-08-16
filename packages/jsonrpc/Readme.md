@@ -44,7 +44,7 @@ const detach = Jsonrpc.handle(socket, {
 
 The handler accepts omitted, positional, or named params and string, numeric, or null IDs. It emits standard Parse Error, Invalid Request, Method Not Found, Invalid Params, and Internal Error objects. Mixed batches and notification-only batches follow JSON-RPC 2.0 response rules.
 
-`processMessage()` exposes the protocol layer without a transport, which is useful for HTTP endpoints and tests.
+`processMessage()` exposes the protocol layer without a transport, which is useful for HTTP endpoints and tests; `processMessageText()` returns the same response already serialised, so it can be written to the wire without a second `JSON.stringify` pass over handler results.
 
 ## Correlated client
 

@@ -1,6 +1,7 @@
 import payloadText from './payload.js'
-import { ErrorCode, processMessage, standardError } from './protocol.js'
+import { ErrorCode, processMessageText, standardError } from './protocol.js'
 import sendJson from './send-json.js'
+import sendString from './send-string.js'
 import type { EventTransport, HandleOptions } from './prelude.js'
 
 export async function handlePayload(
@@ -20,9 +21,9 @@ export async function handlePayload(
     return
   }
 
-  const response = await processMessage(value, options)
-  if (response !== undefined) {
-    await sendJson(transport, response)
+  const text = await processMessageText(value, options)
+  if (text !== undefined) {
+    await sendString(transport, text)
   }
 }
 

@@ -144,31 +144,32 @@ export function standardError(
 }
 
 /**
- * A response that JSON cannot serialise (a bigint result, an error `data` holding a
- * function, …) would make the transport write throw after processing, dropping this
- * response and every other one in the same batch. Replace it with an internal error.
+ * Serialises a response exactly once. Getters and `toJSON` therefore run a single time and
+ * the text on the wire is what they produced. A response JSON cannot serialise (a bigint
+ * result, an error `data` holding a function, …) would otherwise make the transport write
+ * throw after processing, dropping this response and every other one in the same batch;
+ * it is replaced with an internal error.
  */
-function serialisable(response: Response, options: HandleOptions): Response {
+function serialise(response: Response, options: HandleOptions): string {
   try {
-    JSON.stringify(response)
-    return response
+    return JSON.stringify(response)
   } catch (error: unknown) {
     options.exception?.(error)
-    return standardError(ErrorCode.internalError, response.id)
+    return JSON.stringify(standardError(ErrorCode.internalError, response.id))
   }
 }
 
-async function processRequest(request: Request, options: HandleOptions): Promise<Response> {
+async function processRequest(request: Request, options: HandleOptions): Promise<string> {
   if (!options.call) {
-    return standardError(ErrorCode.methodNotFound, request.id)
+    return serialise(standardError(ErrorCode.methodNotFound, request.id), options)
   }
 
   try {
     const result = await options.call(request.method, request.params, request)
     // JSON drops undefined members and a response must carry `result` (or `error`); use null like sendResult.
-    return serialisable({ jsonrpc: '2.0', id: request.id, result: result === undefined ? null : result }, options)
+    return serialise({ jsonrpc: '2.0', id: request.id, result: result === undefined ? null : result }, options)
   } catch (error: unknown) {
-    return serialisable(errorResponse(request.id, error), options)
+    return serialise(errorResponse(request.id, error), options)
   }
 }
 
@@ -183,7 +184,7 @@ async function processNotification(notification: Notification, options: HandleOp
   }
 }
 
-async function processElement(value: unknown, options: HandleOptions): Promise<Response | undefined> {
+async function processElement(value: unknown, options: HandleOptions): Promise<string | undefined> {
   if (isRequest(value)) {
     return processRequest(value, options)
   }
@@ -207,24 +208,41 @@ async function processElement(value: unknown, options: HandleOptions): Promise<R
     }
     return
   }
-  return standardError(ErrorCode.invalidRequest)
+  return serialise(standardError(ErrorCode.invalidRequest), options)
 }
 
-/** Processes an already-parsed JSON-RPC value. */
-export async function processMessage(
+/**
+ * Processes an already-parsed JSON-RPC value and returns the response text ready for
+ * the wire (`undefined` when nothing is to be sent, e.g. for notifications). Each response
+ * is serialised exactly once; a batch is assembled from the per-response texts.
+ */
+export async function processMessageText(
   value: unknown,
   options: HandleOptions = {}
-): Promise<Response | Response[] | undefined> {
+): Promise<string | undefined> {
   if (!Array.isArray(value)) {
     return processElement(value, options)
   }
   if (value.length === 0) {
-    return standardError(ErrorCode.invalidRequest)
+    return serialise(standardError(ErrorCode.invalidRequest), options)
   }
 
-  const responses = (await Promise.all(
+  const texts = (await Promise.all(
     value.map(element => processElement(element, options))
-  )).filter((response): response is Response => response !== undefined)
+  )).filter((text): text is string => text !== undefined)
 
-  return responses.length === 0 ? undefined : responses
+  return texts.length === 0 ? undefined : `[${texts.join(',')}]`
+}
+
+/**
+ * Processes an already-parsed JSON-RPC value. The returned response is plain JSON data
+ * (the parse of the once-serialised text), so handler results are not re-evaluated when
+ * the caller serialises it again.
+ */
+export async function processMessage(
+  value: unknown,
+  options: HandleOptions = {}
+): Promise<Response | Response[] | undefined> {
+  const text = await processMessageText(value, options)
+  return text === undefined ? undefined : JSON.parse(text) as Response | Response[]
 }

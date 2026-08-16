@@ -16,6 +16,7 @@ import {
   isRequest,
   isSuccessResponse,
   processMessage,
+  processMessageText,
   standardError
 } from './protocol.js'
 import sendCall from './send-call.js'
@@ -47,6 +48,7 @@ export {
   kind,
   payloadText,
   processMessage,
+  processMessageText,
   sendCall,
   sendError,
   sendJson,
