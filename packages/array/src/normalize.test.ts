@@ -18,3 +18,22 @@ await test('normalize scales in place', () => {
   A.normalize(zero)
   assert.deepEqual(zero, [ 0, 0 ])
 })
+
+await test('normalized does not mistake tiny or huge vectors for the zero vector', () => {
+  // Squaring 1e-200 underflows to 0 and squaring 1e200 overflows to Infinity, so a naive
+  // sum-of-squares magnitude cannot tell these apart from the zero vector.
+  assert.deepEqual(A.normalized([ 1e-200, 0 ]), [ 1, 0 ])
+  assert.deepEqual(A.normalized([ 1e200, 0 ]), [ 1, 0 ])
+  assert.deepEqual(A.normalized([ 0, -1e200 ]), [ 0, -1 ])
+  assert.ok(Math.abs(A.magnitude(A.normalized([ 1e-160, 3e-160 ])) - 1) < 1e-12)
+  assert.ok(Math.abs(A.magnitude(A.normalized([ 1e160, 3e160 ])) - 1) < 1e-12)
+})
+
+await test('normalize does not mistake tiny or huge vectors for the zero vector', () => {
+  const tiny = [ 1e-200, 0 ]
+  A.normalize(tiny)
+  assert.deepEqual(tiny, [ 1, 0 ])
+  const huge = [ 1e200, 0 ]
+  A.normalize(huge)
+  assert.deepEqual(huge, [ 1, 0 ])
+})
