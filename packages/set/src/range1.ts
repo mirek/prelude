@@ -14,7 +14,9 @@ const range1 =
     // accumulating `i += step` could also stall forever once `step` fell below the ulp of `i`.
     // The tolerance is a few ulps of the endpoints, so it only absorbs rounding error and can
     // never span the interval.
-    const tolerance = 4 * Number.EPSILON * Math.max(Math.abs(min), Math.abs(max))
+    // Capped below half the step and half the interval, so a narrow interval at a large magnitude
+    // (e.g. `range(1e16, 1e16 + 2, 1)`) can never have distinct values collapsed onto the bound.
+    const tolerance = Math.min(4 * Number.EPSILON * Math.max(Math.abs(min), Math.abs(max)), step / 2, (max - min) / 2)
     for (let k = 0; ; k++) {
       const value = min + (k * step)
       // Compare distances rather than `max + tolerance`, which can overflow to Infinity.

@@ -31,7 +31,15 @@ export const range =
     // drift and the documented inclusive end is reached (e.g. 0, 0.1, 0.2, 0.3). The tolerance is a
     // few ulps of the endpoints, so it only absorbs rounding error and can never span the interval;
     // an infinite end is never reached and gets none, so `range(0, Infinity)` keeps counting.
-    const tolerance = Number.isFinite(end) ? 4 * Number.EPSILON * Math.max(Math.abs(start), Math.abs(end)) : 0
+    // Capped below half the step and half the interval, so a narrow interval at a large magnitude
+    // (e.g. `range(1e16, 1e16 + 2, 1)`) can never have distinct values collapsed onto the end.
+    const tolerance = Number.isFinite(end) ?
+      Math.min(
+        4 * Number.EPSILON * Math.max(Math.abs(start), Math.abs(end)),
+        Math.abs(step_) / 2,
+        Math.abs(end - start) / 2
+      ) :
+      0
     for (let i = 0; ; i++) {
       const value = start + (i * step_)
       // Compare distances rather than `end + tolerance`, which can overflow to Infinity.

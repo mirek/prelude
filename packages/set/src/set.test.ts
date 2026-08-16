@@ -110,6 +110,9 @@ await test('range tolerance is ulp-scale, stays below the interval and never ove
   assert.deepEqual([ ...S.range(0, 1.0000000005, 1) ], [ 0, 1 ])
   assert.deepEqual([ ...S.range(0, 0.9999999995, 1) ], [ 0 ])
   assert.deepEqual([ ...S.range1(0, 1.0000000005, 1) ], [ 0, 1 ])
+  // A narrow interval at a large magnitude keeps its start (ulp-scale tolerance is capped by step and width).
+  assert.deepEqual([ ...S.range(1e16, 1e16 + 2, 2) ], [ 1e16 ])
+  assert.deepEqual([ ...S.range1(1e16, 1e16 + 2, 2) ], [ 1e16, 1e16 + 2 ])
   assert.deepEqual([ ...S.range1(0, 0.9999999995, 1) ], [ 0 ])
   // ...but rounding error of a few ulps still counts as reaching the end (3 * 0.7 = 2.0999999999999996).
   assert.deepEqual([ ...S.range(0, 2.1, 0.7) ], [ 0, 0.7, 1.4 ])

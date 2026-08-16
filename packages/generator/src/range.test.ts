@@ -49,6 +49,9 @@ await test('tolerance is ulp-scale, stays below the interval and never overflows
   assert.deepEqual([ ...G.range(0, 1.0000000005, 1) ], [ 0, 1 ])
   // ...but rounding error of a few ulps still reaches the inclusive end (3 * 0.7 = 2.0999999999999996).
   assert.deepEqual([ ...G.range(0, 2.1, 0.7) ], [ 0, 0.7, 1.4, 2.1 ])
+  // A narrow interval at a large magnitude keeps its start (ulp-scale tolerance is capped by step and width).
+  assert.deepEqual([ ...G.range(1e16, 1e16 + 2, 1) ].slice(0, 1), [ 1e16 ])
+  assert.deepEqual([ ...G.range(1e16, 1e16 + 2, 2) ], [ 1e16, 1e16 + 2 ])
   // `end + tolerance` must not overflow to Infinity, which made this loop forever.
   assert.deepEqual(G.pipe(G.range(0, Number.MAX_VALUE, Number.MAX_VALUE), G.take(5), G.array), [ 0, Number.MAX_VALUE ])
   // An infinite end gets no tolerance, so values are not snapped onto it.
