@@ -1,9 +1,7 @@
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { packageDirectories, root } from './workspace.mjs'
 
-const root = fileURLToPath(new URL('..', import.meta.url))
-const packagesDirectory = path.join(root, 'packages')
 const write = process.argv.includes('--write')
 
 const files = [
@@ -158,14 +156,8 @@ function updateJson(filePath, normalize, changed) {
   }
 }
 
-const packageDirectories = readdirSync(packagesDirectory, { withFileTypes: true })
-  .filter(entry => entry.isDirectory())
-  .map(entry => path.join(packagesDirectory, entry.name))
-  .filter(directory => existsSync(path.join(directory, 'package.json')))
-  .sort()
-
 const changed = []
-for (const directory of packageDirectories) {
+for (const directory of packageDirectories()) {
   const manifestPath = path.join(directory, 'package.json')
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
 
