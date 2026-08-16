@@ -128,3 +128,16 @@ await test('select rejects when a selected channel has failed', async () => {
   lateRead.fail(new Error('later read'))
   await assert.rejects(pendingRead, /later read/)
 })
+
+await test('a pending write attempt rejects when the channel fails with a falsy reason', async () => {
+  for (const reason of [ undefined, null, false, 0 ]) {
+    const ch = Ch.of<number>()
+    const pending = Ch.selectNext(ch.writeAttempt(1, value => ({ done: false, value })))
+    ch.fail(reason)
+    await assert.rejects(pending, err => err === reason, `fail(${String(reason)})`)
+  }
+  const ch = Ch.of<number>()
+  const pending = Ch.selectNext(ch.writeAttempt(1, value => ({ done: false, value })))
+  ch.fail(new Error('real'))
+  await assert.rejects(pending, /real/)
+})

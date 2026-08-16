@@ -190,8 +190,8 @@ export class Channel<T> implements AsyncIterableIterator<T> {
   }
 
   /**
-   * Fails the channel: closes it for reading and writing, settles pending writes with `err`
-   * and rejects pending and subsequent reads with `err`.
+   * Fails the channel: closes it for reading and writing, rejects pending writes with `err`
+   * (even when `err` is falsy) and rejects pending and subsequent reads with `err`.
    *
    * Unlike {@link close}, which completes readers normally, this propagates a producer error
    * to consumers (`next()`, `read()`, `maybeRead()` and `for await` reject with `err`).
@@ -305,14 +305,20 @@ export class Channel<T> implements AsyncIterableIterator<T> {
       }
       this.#writes.push({
         value,
-        enqueued(err: unknown) {
-          if (err) {
+        // A failed channel rejects its blocked writer whatever the reason is, even a falsy one;
+        // a clean close (`closeWriting()` / `close()` without a reason) resolves it.
+        enqueued: (err: unknown) => {
+          if (this.#failure) {
+            // Prefer the recorded reason: a `onceDoneWriting` callback draining the channel between
+            // `fail()` recording it and `closeWriting()` settling the writes calls this without one.
+            reject(this.#failure.error)
+          } else if (err) {
             reject(err)
           } else {
             resolve(undefined)
           }
         }
-       })
+      })
     })
   }
 
