@@ -1,6 +1,7 @@
-const gte =
-  (than: number) =>
-    (value: unknown): value is number =>
-      typeof value === 'number' && value >= than
+import * as V from '@prelude/validation'
+import { predicating } from './core.js'
+import type Predicate from './predicate.js'
+
+const gte = (than: number): Predicate<number> => predicating(V.gte(than))
 
 export default gte

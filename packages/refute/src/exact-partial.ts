@@ -1,42 +1,13 @@
-import { ok, fail, refail, failed, type Primitive, type Refute, type Result, type Lifted } from './prelude.js'
-import lift from './lift.js'
+import * as V from '@prelude/validation'
+import { toValidator, refuting, type Refute, type Primitive, type Lifted } from './prelude.js'
 
-/**
- * Refute combinator over an exact, partial object.
- *
- * @see object
- * @see partial
- * @see exact
- */
-const exactPartial =
-  <T extends Record<string, Primitive | Refute<unknown>>>(kvs: T) =>
-    (value: unknown): Result<{ [k in keyof T]?: undefined | Lifted<T[k]> }> => {
-      if (typeof value !== 'object' || value === null) {
-        return fail(value, 'expected object')
-      }
-      for (const k in kvs) {
-        const v = value[k as keyof typeof value]
-
-        // Skip partial.
-        if (v === undefined) {
-          continue
-        }
-
-        const r = lift(kvs[k])(v)
-        if (failed(r)) {
-          return refail(r, `at key ${k}`)
-        }
-      }
-
-      // Confirm exactness.
-      for (const key of Object.keys(value)) {
-        if (Object.hasOwn(kvs, key)) {
-          continue
-        }
-        return fail(value, `unexpected key ${key}`)
-      }
-
-      return ok(value as { [k in keyof T]?: undefined | Lifted<T[k]> })
-    }
+/** Like `partial` (own properties only), and no other own key may be present. */
+const exactPartial = <T extends Record<string, Primitive | Refute<unknown>>>(kvs: T): Refute<{ [k in keyof T]?: undefined | Lifted<T[k]> }> => {
+  const validators: Record<string, V.Validator<unknown>> = Object.create(null)
+  for (const k in kvs) {
+    validators[k] = toValidator(kvs[k])
+  }
+  return refuting(V.exactPartial(validators) as V.Validator<{ [k in keyof T]?: undefined | Lifted<T[k]> }>)
+}
 
 export default exactPartial

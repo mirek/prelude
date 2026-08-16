@@ -1,5 +1,7 @@
-const safeInteger =
-  (value: unknown): value is number =>
-    Number.isSafeInteger(value)
+import * as V from '@prelude/validation'
+import { predicating } from './core.js'
+import type Predicate from './predicate.js'
+
+const safeInteger: Predicate<number> = predicating(V.safeInteger)
 
 export default safeInteger

@@ -1,15 +1,6 @@
-import { AssertionError, type Assert } from './prelude.js'
+import * as V from '@prelude/validation'
+import { asserting, type Assert } from './prelude.js'
 
-/** Asserts `value` is a number greater than `than`. */
-const gt =
-  (than: number): Assert<number> => {
-    const expected = `a number greater than ${than}`
-    return value => {
-      if (typeof value === 'number' && value > than) {
-        return value
-      }
-      throw new AssertionError({ expected, value })
-    }
-  }
+const gt = (than: number): Assert<number> => asserting(V.gt(than))
 
 export default gt

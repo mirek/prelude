@@ -1,10 +1,6 @@
-import { ok, fail, type Result } from './prelude.js'
+import * as V from '@prelude/validation'
+import { refuting, type Refute } from './prelude.js'
 
-/** @returns failure if `value` is not a finite number. */
-const finite =
-  (value: unknown): Result<number> =>
-    typeof value !== 'number' || !Number.isFinite(value) ?
-      fail(value, 'expected finite number') :
-      ok(value)
+const finite: Refute<number> = refuting(V.finite)
 
 export default finite

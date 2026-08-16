@@ -1,21 +1,7 @@
+import * as V from '@prelude/validation'
+import { toValidator, predicating } from './core.js'
 import type Predicate from './predicate.js'
-import unknown from './unknown.js'
 
-const array =
-  <T>(a: Predicate<T>) =>
-    (value: unknown): value is T[] => {
-      if (!Array.isArray(value)) {
-        return false
-      }
-      if (a && a !== unknown) {
-        let i = 0
-        for (const _ of value) {
-          if (!a(value[i++])) {
-            return false
-          }
-        }
-      }
-      return true
-    }
+const array = <T>(a: Predicate<T>): Predicate<T[]> => predicating(V.array(toValidator(a)))
 
 export default array

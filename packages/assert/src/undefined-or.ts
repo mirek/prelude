@@ -1,23 +1,6 @@
-import { AssertionError, type Assert } from './prelude.js'
+import * as V from '@prelude/validation'
+import { toValidator, asserting, type Assert } from './prelude.js'
 
-/** Asserts `value` is `undefined` or satisfies `a`. */
-const undefinedOr =
-  <T>(a: Assert<T>): Assert<undefined | T> =>
-    value => {
-      if (value === undefined) {
-        return undefined
-      }
-      try {
-        return a(value)
-      } catch (err) {
-        if (err instanceof AssertionError && !err.cause) {
-          throw new AssertionError({
-            expected: `${err.expected} or undefined`,
-            value
-          })
-        }
-        throw err
-      }
-    }
+const undefinedOr = <T>(a: Assert<T>): Assert<undefined | T> => asserting(V.undefinedOr(toValidator(a) as V.Validator<T>))
 
 export default undefinedOr

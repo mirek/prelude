@@ -1,12 +1,6 @@
-import { AssertionError, type Assert } from './prelude.js'
+import * as V from '@prelude/validation'
+import { asserting, type Assert } from './prelude.js'
 
-/** Asserts `value` is a safe integer. */
-const safeInteger: Assert<number> =
-  value => {
-    if (typeof value === 'number' && Number.isSafeInteger(value)) {
-      return value
-    }
-    throw new AssertionError({ expected: 'a safe integer', value })
-  }
+const safeInteger: Assert<number> = asserting(V.safeInteger)
 
 export default safeInteger

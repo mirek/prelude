@@ -28,11 +28,13 @@ message({ method: 'add', params: ['x', 'y'] })
 
 # API
 
-Primitives and matchers: `bigint`, `boolean`, `defined`, `false`, `finite`, `null`, `number`, `positive`, `safeInteger`, `string`, `symbol`, `true`, `undefined`, `unknown`, `eq`, `is`, `between`, `gt`, `gte`, `lt`, `lte`, `regexp`, `instance`, `oneOf`.
+Primitives and matchers: `bigint`, `boolean`, `defined`, `false`, `finite`, `null`, `nullish`, `number`, `positive`, `safeInteger`, `string`, `nonBlankString`, `symbol`, `true`, `undefined`, `unknown`, `eq`, `is`, `between`, `gt`, `gte`, `lt`, `lte`, `regexp`, `instance`, `oneOf`, `strftime`, `calendarDate`.
 
 Containers: `array`, `tuple`, `object`, `partial`, `exact`, `exactPartial`, `record`, `unique`.
 
 Combinators: `and`, `or`, `nullOr`, `undefinedOr`, `nullishOr`, `lift`, `predicate` (turns an assert into a type guard), `wrap` and `fail` for custom asserts.
+
+Every check is implemented once in [`@prelude/validation`](../validation) and shared with `@prelude/predicate` and `@prelude/refute`; this package renders its structured failures as `AssertionError`s (`Expected .path to be <what>, got <value>.`). Built-in asserts carry their core validator, so containers compose structurally; a hand-written `Assert` is adapted by catching its `AssertionError`.
 
 # License
 

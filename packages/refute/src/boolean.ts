@@ -1,10 +1,6 @@
-import { ok, fail, type Refute } from './prelude.js'
+import * as V from '@prelude/validation'
+import { refuting, type Refute } from './prelude.js'
 
-/** @returns refute for `boolean` type. */
-const boolean_: Refute<boolean> =
-  (value: unknown) =>
-    typeof value === 'boolean' ?
-      ok(value) :
-      fail(value, 'expected boolean')
+const boolean_: Refute<boolean> = refuting(V.boolean)
 
 export default boolean_

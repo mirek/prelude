@@ -1,37 +1,13 @@
-import { ok, fail, refail, failed, type Primitive, type Refute, type Result, type Lifted } from './prelude.js'
-import lift from './lift.js'
+import * as V from '@prelude/validation'
+import { toValidator, refuting, type Refute, type Primitive, type Lifted } from './prelude.js'
 
-/**
- * Refute combinator over an exact object.
- *
- * @see object
- * @see partial
- * @see exactPartial
- */
-const exact =
-  <T extends Record<string, Primitive | Refute<unknown>>>(kvs: T) =>
-    (value: unknown): Result<{ [k in keyof T]: Lifted<T[k]> }> => {
-      if (typeof value !== 'object' || value === null) {
-        return fail(value, 'expected object')
-      }
-      for (const k in kvs) {
-        const v = value[k as keyof typeof value]
-        const r = lift(kvs[k])(v)
-        if (failed(r)) {
-          return refail(r, `at key ${k}`)
-        }
-      }
-
-      // Confirm exactness.
-      const keys = Object
-        .keys(value as object)
-        .filter(_ => !Object.hasOwn(kvs, _)) // `in` would accept inherited names such as `constructor`
-      if (keys.length > 0) {
-        const keys_ = keys.length === 1 ? 'key' : 'keys'
-        return fail(value, `has unexpected extra ${keys_} ${keys.map(String).join(', ')}`)
-      }
-
-      return ok(value as { [k in keyof T]: Lifted<T[k]> })
-    }
+/** Like `object` (own properties only), and no other own key may be present. */
+const exact = <T extends Record<string, Primitive | Refute<unknown>>>(kvs: T): Refute<{ [k in keyof T]: Lifted<T[k]> }> => {
+  const validators: Record<string, V.Validator<unknown>> = Object.create(null)
+  for (const k in kvs) {
+    validators[k] = toValidator(kvs[k])
+  }
+  return refuting(V.exact(validators) as V.Validator<{ [k in keyof T]: Lifted<T[k]> }>)
+}
 
 export default exact

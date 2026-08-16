@@ -1,7 +1,6 @@
-import type { Assert } from './prelude.js'
+import * as V from '@prelude/validation'
+import { asserting, type Assert } from './prelude.js'
 
-/** Always passes — accepts any value. */
-const unknown_: Assert<unknown> =
-  value => value
+const unknown_: Assert<unknown> = asserting(V.unknown)
 
 export default unknown_

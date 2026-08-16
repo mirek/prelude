@@ -1,12 +1,6 @@
-import { AssertionError, type Assert } from './prelude.js'
+import * as V from '@prelude/validation'
+import { asserting, type Assert } from './prelude.js'
 
-/** Asserts `value` is `true`. */
-const true_: Assert<true> =
-  value => {
-    if (value === true) {
-      return true as const
-    }
-    throw new AssertionError({ expected: 'true', value })
-  }
+const true_: Assert<true> = asserting(V.true_)
 
 export default true_

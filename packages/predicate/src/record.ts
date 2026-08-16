@@ -1,19 +1,9 @@
+import * as V from '@prelude/validation'
+import { toValidator, predicating } from './core.js'
 import type Predicate from './predicate.js'
-import string_ from './string.js'
 
-const record =
-  <V, K extends symbol | number | string = string>(v: Predicate<V>, k?: Predicate<K>) =>
-    (value: unknown): value is Record<K, V> => {
-      if (typeof value !== 'object' || value === null) {
-        return false
-      }
-      const k_ = k ?? string_
-      for (const key in value) {
-        if (!k_(key) || !v(value[key as keyof typeof value])) {
-          return false
-        }
-      }
-      return true
-    }
+/** A record whose values satisfy `v` and whose keys satisfy `k` (strings by default). */
+const record = <V_, K extends symbol | number | string = string>(v: Predicate<V_>, k?: Predicate<K>): Predicate<Record<K, V_>> =>
+  predicating(V.record(k ? toValidator(k) : V.string as V.Validator<K>, toValidator(v)))
 
 export default record

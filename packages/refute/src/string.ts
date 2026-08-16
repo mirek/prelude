@@ -1,10 +1,6 @@
-import { ok, fail, type Refute } from './prelude.js'
+import * as V from '@prelude/validation'
+import { refuting, type Refute } from './prelude.js'
 
-/** @returns refute for `string` type. */
-const string_: Refute<string> =
-  (value: unknown) =>
-    typeof value === 'string' ?
-      ok(value) :
-      fail(value, 'expected string')
+const string_: Refute<string> = refuting(V.string)
 
 export default string_

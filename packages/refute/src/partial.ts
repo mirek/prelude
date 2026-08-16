@@ -1,32 +1,13 @@
-import { ok, fail, refail, failed, type Primitive, type Refute, type Result, type Lifted } from './prelude.js'
-import lift from './lift.js'
+import * as V from '@prelude/validation'
+import { toValidator, refuting, type Refute, type Primitive, type Lifted } from './prelude.js'
 
-/**
- * Creates a refute function that validates if a value is an object with properties that optionally satisfy the provided refute functions.
- * Properties can be missing or undefined, and the validation will still pass.
- * @param kvs - An object mapping property names to refute functions or primitive values
- * @returns A refute function that validates if an object's properties satisfy the specified refute functions where present
- */
-const partial =
-  <T extends Record<string, Primitive | Refute<unknown>>>(kvs: T) =>
-    (value: unknown): Result<{ [k in keyof T]?: undefined | Lifted<T[k]> }> => {
-      if (typeof value !== 'object' || value === null) {
-        return fail(value, 'expected object')
-      }
-      for (const k in kvs) {
-        const v = value[k as keyof typeof value]
-
-        // Maybe skip partial.
-        if (v === undefined) {
-          continue
-        }
-
-        const r = lift(kvs[k])(v)
-        if (failed(r)) {
-          return refail(r, `at key ${k}`)
-        }
-      }
-      return ok(value as { [k in keyof T]?: undefined | Lifted<T[k]> })
-    }
+/** Like `object`, but a declared property that is `undefined` is skipped. */
+const partial = <T extends Record<string, Primitive | Refute<unknown>>>(kvs: T): Refute<{ [k in keyof T]?: undefined | Lifted<T[k]> }> => {
+  const validators: Record<string, V.Validator<unknown>> = Object.create(null)
+  for (const k in kvs) {
+    validators[k] = toValidator(kvs[k])
+  }
+  return refuting(V.partial(validators) as V.Validator<{ [k in keyof T]?: undefined | Lifted<T[k]> }>)
+}
 
 export default partial

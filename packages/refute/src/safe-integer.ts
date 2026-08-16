@@ -1,10 +1,6 @@
-import { ok, fail, type Refute } from './prelude.js'
+import * as V from '@prelude/validation'
+import { refuting, type Refute } from './prelude.js'
 
-/** @returns confirms safe integer. */
-const safeInteger: Refute<number> =
-  (value: unknown) =>
-    typeof value === 'number' && Number.isSafeInteger(value) ?
-      ok(value) :
-      fail(value, 'expected safe integer')
+const safeInteger: Refute<number> = refuting(V.safeInteger)
 
 export default safeInteger

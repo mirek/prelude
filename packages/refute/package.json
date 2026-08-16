@@ -1,7 +1,7 @@
 {
   "name": "@prelude/refute",
   "version": "1.0.1",
-  "description": "Validators that return ok/refuted results with a reason instead of throwing, with predicate and assertion interpreters.",
+  "description": "Validators that return ok/refuted results with a reason instead of throwing, with predicate and assertion interpreters; built on @prelude/validation.",
   "type": "module",
   "module": "./mjs/index.js",
   "directories": {
@@ -26,6 +26,8 @@
   "author": "Mirek Rusin (https://github.com/mirek)",
   "license": "CC0-1.0",
   "devDependencies": {
+    "@prelude/assert": "workspace:*",
+    "@prelude/predicate": "workspace:*",
     "@prelude/tsconfig": "workspace:*"
   },
   "exports": {
@@ -55,5 +57,8 @@
     "directory": "packages/refute"
   },
   "homepage": "https://github.com/mirek/prelude/tree/main/packages/refute#readme",
-  "bugs": "https://github.com/mirek/prelude/issues"
+  "bugs": "https://github.com/mirek/prelude/issues",
+  "dependencies": {
+    "@prelude/validation": "workspace:*"
+  }
 }

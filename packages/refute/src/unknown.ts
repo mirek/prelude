@@ -1,13 +1,6 @@
-import { ok } from './prelude.js'
+import * as V from '@prelude/validation'
+import { refuting, type Refute } from './prelude.js'
 
-/**
- * A refute function that accepts any value and returns a success result.
- * This is useful as a base case or when you want to accept any value.
- * @param value - Any value
- * @returns A success result containing the provided value
- */
-const unknown_ =
-  (value: unknown) =>
-    ok(value)
+const unknown_: Refute<unknown> = refuting(V.unknown)
 
 export default unknown_

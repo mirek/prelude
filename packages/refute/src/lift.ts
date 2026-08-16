@@ -1,39 +1,8 @@
-import type { Refute, Primitive, Lifted } from './prelude.js'
-import eq from './eq.js'
-import null_ from './null.js'
-import regexp from './regexp.js'
+import * as V from '@prelude/validation'
+import { refuting, type Refute, type Primitive, type Lifted } from './prelude.js'
 
-/**
- * Lifts a primitive value or refute function to a refute function.
- * For primitive values, creates an equality check refute;
- * For refute functions, passes them through unchanged.
- * @param a - The primitive value or refute function to lift
- * @returns A refute function that validates against the provided value or using the provided function
- */
-const lift =
-  <T extends Primitive | Refute<unknown>>(a: T): Refute<Lifted<T>> => {
-    switch (typeof a) {
-      case 'function':
-        return a as Refute<Lifted<T>>
-      case 'string':
-      case 'number':
-      case 'boolean':
-      case 'undefined':
-      case 'bigint':
-      case 'symbol':
-        return eq(a) as Refute<Lifted<T>>
-      case 'object': {
-        if (a === null) {
-          return null_ as Refute<Lifted<T>>
-        }
-        if (a instanceof RegExp) {
-          return regexp(a) as Refute<Lifted<T>>
-        }
-        throw new TypeError(`Can't lift ${String(a)}.`)
-      }
-      default:
-        throw new TypeError(`Can't lift ${String(a)}.`)
-    }
-  }
+/** A primitive becomes an equality refute (a RegExp a match, `null` the null refute); refutes pass through. */
+const lift = <T extends Primitive | Refute<unknown>>(a: T): Refute<Lifted<T>> =>
+  typeof a === 'function' ? a as Refute<Lifted<T>> : refuting(V.lift(a) as V.Validator<Lifted<T>>)
 
 export default lift

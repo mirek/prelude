@@ -1,12 +1,6 @@
-import { AssertionError, type Assert } from './prelude.js'
+import * as V from '@prelude/validation'
+import { asserting, type Assert } from './prelude.js'
 
-/** Asserts `value` is a positive number (> 0). */
-const positive: Assert<number> =
-  value => {
-    if (typeof value === 'number' && value > 0) {
-      return value
-    }
-    throw new AssertionError({ expected: 'a positive number', value })
-  }
+const positive: Assert<number> = asserting(V.positive)
 
 export default positive

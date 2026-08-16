@@ -1,41 +1,13 @@
-import { AssertionError, type Assert, type Lifted, type Primitive } from './prelude.js'
-import lift from './lift.js'
+import * as V from '@prelude/validation'
+import { toValidator, asserting, type Assert, type Primitive, type Lifted } from './prelude.js'
 
-/**
- * Asserts `value` is an object where each entry from `kvs` is either missing,
- * `undefined`, or satisfies the matching assert.
- */
-const partial =
-  <T extends Record<string, Primitive | Assert<unknown>>>(kvs: T): Assert<{ [k in keyof T]?: undefined | Lifted<T[k]> }> => {
-    const asserts: Record<string, Assert<unknown>> = {}
-    for (const k in kvs) {
-      asserts[k] = lift(kvs[k])
-    }
-    return value => {
-      if (typeof value !== 'object' || value === null) {
-        throw new AssertionError({ expected: 'an object', value })
-      }
-      for (const k in asserts) {
-        const v = (value as Record<string, unknown>)[k]
-        if (v === undefined) {
-          continue
-        }
-        try {
-          asserts[k]!(v)
-        } catch (err) {
-          if (err instanceof AssertionError) {
-            throw new AssertionError({
-              expected: err.expected,
-              value: err.value,
-              key: k,
-              cause: err
-            })
-          }
-          throw err
-        }
-      }
-      return value as { [k in keyof T]?: undefined | Lifted<T[k]> }
-    }
+/** Like `object`, but a declared property that is `undefined` is skipped. */
+const partial = <T extends Record<string, Primitive | Assert<unknown>>>(kvs: T): Assert<{ [k in keyof T]?: undefined | Lifted<T[k]> }> => {
+  const validators: Record<string, V.Validator<unknown>> = Object.create(null)
+  for (const k in kvs) {
+    validators[k] = toValidator(kvs[k])
   }
+  return asserting(V.partial(validators) as V.Validator<{ [k in keyof T]?: undefined | Lifted<T[k]> }>)
+}
 
 export default partial

@@ -88,7 +88,7 @@ Generated from the workspace manifests by `pnpm docs:write`; `pnpm docs:check` f
 | --- | --- | --- |
 | `packages/actor` | `@prelude/actor` | Actor module: stateful message processors with ask/reply, bounded mailboxes, failure directives and supervision hooks. |
 | `packages/array` | `@prelude/array` | Array utilities: safe indexing, sampling and shuffling, sorting and searching, grouping, swap-delete and vector helpers. |
-| `packages/assert` | `@prelude/assert` | Composable runtime assertions that narrow unknown values to typed ones and throw AssertionError with the failing path. |
+| `packages/assert` | `@prelude/assert` | Composable runtime assertions that narrow unknown values to typed ones and throw AssertionError with the failing path; built on @prelude/validation. |
 | `packages/async-generator` | `@prelude/async-generator` | Composable async iterable transforms: map, filter, batch, window, buffered and concurrent processing with backpressure. |
 | `packages/channel` | `@prelude/channel` | Go-style channels for async code: buffered or unbuffered, async-iterable, with select over reads and writes. |
 | `packages/cmp` | `@prelude/cmp` | Sound comparators: strict -1 | 0 | 1 results, composition, reversal and helpers for sorting and searching. |
@@ -102,13 +102,13 @@ Generated from the workspace manifests by `pnpm docs:write`; `pnpm docs:check` f
 | `packages/jsonrpc` | `@prelude/jsonrpc` | JSON-RPC 2.0 client and request handling over any message transport, with request timeouts, abort signals and typed payloads. |
 | `packages/log` | `@prelude/log` | Lightweight logger with severity levels, namespaces, pluggable targets and environment-variable level control. |
 | `packages/parser` | `@prelude/parser` | Parser combinators over string readers with location-aware failures, plus an RFC 8259 JSON grammar. |
-| `packages/predicate` | `@prelude/predicate` | Predicate combinators. |
+| `packages/predicate` | `@prelude/predicate` | Type-guard combinators for primitives, objects, arrays, tuples, records and unions; built on @prelude/validation. |
 | `packages/prelude` | `@prelude/prelude` | Low-level primitives shared by @prelude/* packages: pipe and common utility types. |
 | `packages/progress` | `@prelude/progress` | Terminal progress display for Node.js: multi-worker progress bars, spinners and percentages on stdout. |
 | `packages/radix-trie` | `@prelude/radix-trie` | Radix (compressed prefix) trie for string sets: insert, membership and shortest/longest prefix matching. |
 | `packages/range-set` | `@prelude/range-set` | Sets of value-carrying ranges over ordered keys with union, intersection and difference under pluggable value merges. |
 | `packages/rb-tree` | `@prelude/rb-tree` | Persistent red-black tree with duplicate counts, range counting and Bag/Map wrappers, with exported invariant checks. |
-| `packages/refute` | `@prelude/refute` | Validators that return ok/refuted results with a reason instead of throwing, with predicate and assertion interpreters. |
+| `packages/refute` | `@prelude/refute` | Validators that return ok/refuted results with a reason instead of throwing, with predicate and assertion interpreters; built on @prelude/validation. |
 | `packages/remote-actor` | `@prelude/remote-actor` | Remote actor module: send/ask to an actor over any message transport (MessagePort, workers, sockets). |
 | `packages/remote-clock` | `@prelude/remote-clock` | Clock synchronisation against a remote time source: offset estimation, remote now/date and mid-second ticks. |
 | `packages/repl` | `@prelude/repl` | Node.js REPL helpers: run code snippets extracted from Markdown in a sandbox with builtin modules and globals. |
@@ -120,6 +120,7 @@ Generated from the workspace manifests by `pnpm docs:write`; `pnpm docs:check` f
 | `packages/supervisor` | `@prelude/supervisor` | Supervisor module: restart strategies (one-for-one, all-for-one, rest-for-one) and restart limits for @prelude/actor. |
 | `packages/testing` | `@prelude/testing` (private) | Workspace-internal test helpers: seeded pseudo-random generation and trace-based model checking with shrinking. |
 | `packages/tsconfig` | `@prelude/tsconfig` | Shared TypeScript configurations for the prelude monorepo. |
+| `packages/validation` | `@prelude/validation` | Shared validator core behind @prelude/assert, @prelude/predicate and @prelude/refute: one implementation of the primitive, container and combinator checks producing structured, path-carrying failures. |
 | `packages/wait-group` | `@prelude/wait-group` | Go-style WaitGroup: count outstanding work and await completion, with invalid-counter protection. |
 | `packages/xml` | `@prelude/xml` | XML 1.0 parser with namespace processing, precise error locations and JSON conversion helpers; no DTD processing or external resources. |
 <!-- package-index:end -->

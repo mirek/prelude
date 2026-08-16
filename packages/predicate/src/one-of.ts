@@ -1,6 +1,7 @@
-const oneOf =
-  <T extends undefined | null | boolean | number | string | symbol>(...values: readonly T[]) =>
-    (value: unknown): value is T =>
-      values.includes(value as T)
+import * as V from '@prelude/validation'
+import { predicating } from './core.js'
+import type Predicate from './predicate.js'
+
+const oneOf = <T extends undefined | null | boolean | number | string | symbol>(...values: readonly T[]): Predicate<T> => predicating(V.oneOf(...values))
 
 export default oneOf
