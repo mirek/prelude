@@ -11,7 +11,7 @@
     "typecheck": "node scripts/typecheck.mjs",
     "test:check": "node scripts/check-tests.mjs",
     "test:r": "pnpm -r test",
-    "test": "tsx --test 'packages/*/src/**/*.test.ts'",
+    "test": "tsx --test \"packages/*/src/**/*.test.ts\"",
     "test:scripts": "node --test scripts/*.test.mjs",
     "build": "node scripts/build.mjs",
     "manifests:check": "node scripts/normalize-package-manifests.mjs --check",

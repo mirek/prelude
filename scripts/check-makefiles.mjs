@@ -18,12 +18,21 @@ function hasUnquotedRecursiveGlob(command) {
   return /\*\*/.test(command.replace(/'[^']*'|"[^"]*"/g, ''))
 }
 
-function checkCommand(command, location, failures) {
+// package.json scripts also run under cmd.exe on Windows, where a single quote is an
+// ordinary character: `'src/**/*.test.ts'` reaches the runner literally and matches nothing.
+function hasSingleQuotedRecursiveGlob(command) {
+  return /'[^']*\*\*[^']*'/.test(command)
+}
+
+function checkCommand(command, location, failures, { manifest = false } = {}) {
   if (directTypeScriptBuild.test(command)) {
     failures.push(`${location}: builds with tsc directly, delegate to \`node ../../scripts/build-package.mjs\``)
   }
   if (hasUnquotedRecursiveGlob(command)) {
     failures.push(`${location}: unquoted \`**\` glob, quote it so the test runner expands it`)
+  }
+  if (manifest && hasSingleQuotedRecursiveGlob(command)) {
+    failures.push(`${location}: single-quoted \`**\` glob, use escaped double quotes so cmd.exe passes it through too`)
   }
 }
 
@@ -39,11 +48,12 @@ function checkMakefile(filePath, failures) {
 function checkManifest(filePath, failures) {
   const scripts = JSON.parse(readFileSync(filePath, 'utf8')).scripts ?? {}
   for (const [name, command] of Object.entries(scripts)) {
-    checkCommand(command, `${path.relative(root, filePath)} scripts.${name}`, failures)
+    checkCommand(command, `${path.relative(root, filePath)} scripts.${name}`, failures, { manifest: true })
   }
 }
 
 const failures = []
+checkManifest(path.join(root, 'package.json'), failures)
 for (const entry of readdirSync(packagesDirectory, { withFileTypes: true })) {
   if (!entry.isDirectory()) {
     continue

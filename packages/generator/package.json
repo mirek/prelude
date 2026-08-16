@@ -18,7 +18,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "pnpm tsx --test 'src/**/*.test.ts' --coverage",
+    "test": "pnpm tsx --test \"src/**/*.test.ts\" --coverage",
     "prepack": "node ../../scripts/build-package.mjs"
   },
   "keywords": [
