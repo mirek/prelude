@@ -401,6 +401,9 @@ class Parser {
     if (doubleDash !== -1) {
       this.#fail('"--" is not allowed inside a comment', start + 4 + doubleDash)
     }
+    if (value.endsWith('-')) {
+      this.#fail('A comment cannot end with "-" ("--->")', start + 4 + value.length - 1)
+    }
     return { type: 'Comment', value }
   }
 
@@ -431,7 +434,11 @@ class Parser {
         this.#pos += 6
         this.#requireSpace('the system identifier')
       }
+      const offset = this.#pos
       systemId = this.#quoted('the system identifier', false)
+      if (systemId.includes('#')) {
+        this.#fail('A system identifier cannot contain a fragment identifier ("#")', offset + 1 + systemId.indexOf('#'))
+      }
       this.#space()
     }
     if (this.#startsWith('[')) {
@@ -447,13 +454,16 @@ class Parser {
   }
 
   /**
-   * Skips to the "]" that ends the internal subset, stepping over quoted
-   * literals, comments and processing instructions so a "]" inside them is
-   * not mistaken for the end. The text is kept verbatim and never interpreted.
+   * intSubset ::= (markupdecl | DeclSep)* — checked structurally: each item
+   * must be an ELEMENT/ATTLIST/ENTITY/NOTATION declaration (scanned to its
+   * ">" with quoted literals stepped over), a comment, a processing
+   * instruction, a parameter-entity reference or white space. The
+   * declarations themselves are kept verbatim and never interpreted.
    */
   #internalSubset(start: number): string {
     const from = this.#pos
     while (true) {
+      this.#space()
       if (this.#eof()) {
         this.#fail('Unterminated internal subset', start)
       }
@@ -464,16 +474,54 @@ class Parser {
         this.#pos++
         return value
       }
-      if (code === 0x22 || code === 0x27) {
-        const end = this.#input.indexOf(String.fromCharCode(code), this.#pos + 1)
-        if (end === -1) {
-          this.#fail('Unterminated literal in the internal subset')
-        }
-        this.#pos = end + 1
-      } else if (this.#startsWith('<!--')) {
+      if (this.#startsWith('<!--')) {
         this.#comment()
       } else if (this.#startsWith('<?')) {
         this.#processingInstruction()
+      } else if (this.#startsWith('<!')) {
+        this.#markupDeclaration()
+      } else if (code === 0x25) { // %
+        const offset = this.#pos
+        this.#pos++
+        this.#ncName('a parameter entity name')
+        if (this.#peekCode() !== 0x3b) {
+          this.#fail('Expected ";" after the parameter entity name', offset)
+        }
+        this.#pos++
+      } else {
+        this.#fail('Expected a markup declaration, comment, processing instruction or parameter entity reference in the internal subset')
+      }
+    }
+  }
+
+  /** `<!ELEMENT ...>`, `<!ATTLIST ...>`, `<!ENTITY ...>` or `<!NOTATION ...>`, scanned to its ">" (literals may contain ">"). */
+  #markupDeclaration(): void {
+    const start = this.#pos
+    const keyword = [ 'ELEMENT', 'ATTLIST', 'ENTITY', 'NOTATION' ].find(name => this.#input.startsWith(name, this.#pos + 2))
+    if (keyword === undefined) {
+      this.#fail('Expected ELEMENT, ATTLIST, ENTITY or NOTATION after "<!" in the internal subset')
+    }
+    this.#pos += 2 + keyword.length
+    this.#requireSpace(`the ${keyword} declaration content`)
+    while (true) {
+      if (this.#eof()) {
+        this.#fail(`Unterminated ${keyword} declaration`, start)
+      }
+      const code = this.#peekCode()
+      if (code === 0x3e) { // >
+        this.#pos++
+        return
+      }
+      if (code === 0x22 || code === 0x27) {
+        const end = this.#input.indexOf(String.fromCharCode(code), this.#pos + 1)
+        if (end === -1) {
+          this.#fail(`Unterminated literal in the ${keyword} declaration`)
+        }
+        this.#pos = end + 1
+      } else if (code === 0x3c) { // <
+        this.#fail(`"<" is not allowed inside the ${keyword} declaration`)
+      } else if (code === 0x5d) { // ] — the subset ended before the declaration did
+        this.#fail(`Unterminated ${keyword} declaration`, start)
       } else {
         this.#pos += code > 0xffff ? 2 : 1
       }
@@ -572,6 +620,7 @@ class Parser {
     this.#pos++ // <
     const name = this.#qName('an element name')
     const rawAttributes: Array<{ prefix: string, local: string, qualified: string, value: string, offset: number }> = []
+    const qualifiedNames = new Set<string>()
     let bindings: Map<string, string> | undefined
     let empty = false
     while (true) {
@@ -596,9 +645,10 @@ class Parser {
       this.#expect('=', `"=" after attribute name "${attribute.qualified}"`)
       this.#space()
       const value = this.#quoted(`attribute "${attribute.qualified}"`, true)
-      if (rawAttributes.some(other => other.qualified === attribute.qualified)) {
+      if (qualifiedNames.has(attribute.qualified)) {
         this.#fail(`Duplicate attribute "${attribute.qualified}"`, attribute.offset)
       }
+      qualifiedNames.add(attribute.qualified)
       // Namespace declarations bind for this element and its descendants (including its own name).
       if (attribute.qualified === 'xmlns' || attribute.prefix === 'xmlns') {
         bindings ??= new Map(parentBindings)
@@ -646,15 +696,18 @@ class Parser {
       value: attribute.value
     }))
     // Two attributes may not resolve to the same expanded name through different prefixes.
-    for (let i = 0; i < attributes.length; i++) {
-      for (let j = 0; j < i; j++) {
-        const a = attributes[i].name
-        const b = attributes[j].name
-        if (a.namespace !== undefined && a.namespace === b.namespace && a.local === b.local) {
-          this.#fail(`Attributes "${rawAttributes[j].qualified}" and "${rawAttributes[i].qualified}" both resolve to {${a.namespace}}${a.local}`, rawAttributes[i].offset)
-        }
+    const expandedNames = new Map<string, number>()
+    attributes.forEach((attribute, i) => {
+      if (attribute.name.namespace === undefined) {
+        return
       }
-    }
+      const key = `{${attribute.name.namespace}}${attribute.name.local}`
+      const previous = expandedNames.get(key)
+      if (previous !== undefined) {
+        this.#fail(`Attributes "${rawAttributes[previous].qualified}" and "${rawAttributes[i].qualified}" both resolve to ${key}`, rawAttributes[i].offset)
+      }
+      expandedNames.set(key, i)
+    })
     const element: Ast.Element = {
       type: 'Element',
       name: {

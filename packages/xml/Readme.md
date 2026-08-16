@@ -38,7 +38,7 @@ try {
 `parse` implements XML 1.0 (Fifth Edition) well-formedness for documents without DTD processing, plus Namespaces in XML 1.0:
 
 - the XML declaration (`version`, `encoding`, `standalone` — validated, encoding is informational: input is already a string), comments, processing instructions;
-- one document type declaration with an optional public/system identifier and internal subset — kept verbatim in the AST (`internalSubset`), never interpreted;
+- one document type declaration with an optional public/system identifier (no fragment identifier) and internal subset — checked structurally (ELEMENT/ATTLIST/ENTITY/NOTATION declarations, comments, processing instructions, parameter-entity references), kept verbatim in the AST (`internalSubset`), never interpreted;
 - elements, attributes (unique, no `<` in values, values normalized: literal white space becomes a space), empty-element tags, matched end tags, unbounded nesting (iterative, no recursion);
 - character data with the five predefined entities (`&lt; &gt; &amp; &apos; &quot;`) and decimal/hexadecimal character references decoded; `]]>` rejected in text; adjacent character data forms one `Text` node; CDATA sections kept verbatim;
 - Unicode names per the XML 1.0 `NameStartChar`/`NameChar` productions and the `Char` production for content (control characters and lone surrogates are rejected);
@@ -48,7 +48,7 @@ try {
 ## Not supported, by design
 
 - **DTD processing.** Entity declarations, attribute defaults and validation are not applied. A reference to any entity other than the predefined five is an error (`Reference to undeclared entity "e"`), even when the internal subset declares it — use a character reference or CDATA instead. Consequently there is no entity expansion and no "billion laughs".
-- **External resources.** Nothing is ever fetched: system identifiers and external entities are recorded as text at most. Parsing is linear in the input size.
+- **External resources.** Nothing is ever fetched: system identifiers and external entities are recorded as text at most. Parsing is linear in the input size (attribute uniqueness is checked with sets, nesting with an explicit stack).
 - **XML 1.1**, which is accepted only as a version number.
 
 `XmlError` is thrown at the first problem with `offset` (UTF-16 code units into the line-end normalized text), `line` and `column` (both one-based).

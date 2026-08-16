@@ -68,7 +68,7 @@ await test('doctypes with external identifiers and an internal subset that is ke
   assert.deepEqual(external, { type: 'Doctype', name: 'html', publicId: '-//W3C//DTD XHTML 1.0//EN', systemId: 'http://www.w3.org/TR/xhtml1/DTD/xhtml1.dtd', internalSubset: undefined })
   const system = Xml.parse('<!DOCTYPE note SYSTEM \'note.dtd\'><note/>').prelude[0]
   assert.deepEqual(system, { type: 'Doctype', name: 'note', publicId: undefined, systemId: 'note.dtd', internalSubset: undefined })
-  const subset = '<!ELEMENT note (#PCDATA)>\n<!ENTITY tricky "]>"> <!-- ] --> <?pi ] ?>\n'
+  const subset = '<!ELEMENT note (#PCDATA)>\n<!ATTLIST note id ID #IMPLIED>\n<!ENTITY tricky "]>"> <!ENTITY % pe SYSTEM "x.ent"> %pe; <!NOTATION n PUBLIC "p"> <!-- ] --> <?pi ] ?>\n'
   const internal = Xml.parse(`<!DOCTYPE note [${subset}]>\n<note/>`).prelude[0]
   assert.deepEqual(internal, { type: 'Doctype', name: 'note', publicId: undefined, systemId: undefined, internalSubset: subset })
   // Declared entities are not applied: the internal subset is data, not instructions.
@@ -191,6 +191,7 @@ await test('malformed markup fails at a stable location', () => {
   rejects('<a>\u0001</a>', /Invalid character U\+0001/, 1, 4)
   rejects('<a x="\u0007"/>', /Invalid character U\+0007/, 1, 7)
   rejects('<a><!-- a -- b --></a>', /"--" is not allowed inside a comment/, 1, 11)
+  rejects('<a><!--x---></a>', /cannot end with "-"/, 1, 9)
   rejects('<a><!-- x</a>', /Unterminated comment/, 1, 4)
   rejects('<a><![CDATA[x</a>', /Unterminated CDATA section/, 1, 4)
   rejects('<a><!ELEMENT a ANY></a>', /Expected a comment or CDATA section after "<!"/, 1, 4)
@@ -216,7 +217,13 @@ await test('malformed prolog fails at a stable location', () => {
   rejects('<?xml version="1.0"?><!DOCTYPE a><!DOCTYPE a><a/>', /Only one document type declaration/, 1, 34)
   rejects('<!DOCTYPE><a/>', /Expected whitespace before the document type name/, 1, 10)
   rejects('<!DOCTYPE a [<!ELEMENT a ANY>', /Unterminated internal subset/, 1, 1)
-  rejects('<!DOCTYPE a [ "unterminated ]><a/>', /Unterminated literal in the internal subset/, 1, 15)
+  rejects('<!DOCTYPE a [<!ENTITY e "unterminated ]><a/>', /Unterminated literal in the ENTITY declaration/, 1, 25)
+  rejects('<!DOCTYPE a [garbage]><a/>', /Expected a markup declaration/, 1, 14)
+  rejects('<!DOCTYPE a [<!FOO x>]><a/>', /Expected ELEMENT, ATTLIST, ENTITY or NOTATION/, 1, 14)
+  rejects('<!DOCTYPE a [<!ELEMENT a (#PCDATA)]><a/>', /Unterminated ELEMENT declaration/, 1, 14)
+  rejects('<!DOCTYPE a [<!ELEMENT a <b>>]><a/>', /"<" is not allowed inside the ELEMENT declaration/, 1, 26)
+  rejects('<!DOCTYPE a [%pe]><a/>', /Expected ";" after the parameter entity name/, 1, 14)
+  rejects('<!DOCTYPE a SYSTEM "a.dtd#x"><a/>', /cannot contain a fragment identifier/, 1, 26)
   rejects('<!DOCTYPE a PUBLIC "x"><a/>', /Expected whitespace before the system identifier/, 1, 23)
   rejects('<!DOCTYPE a PUBLIC "é" "x"><a/>', /Invalid character in the public identifier/, 1, 20)
   rejects('<!DOCTYPE a SYSTEM x><a/>', /Expected a quoted value in the system identifier/, 1, 20)
