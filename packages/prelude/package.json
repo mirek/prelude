@@ -1,6 +1,6 @@
 {
   "name": "@prelude/prelude",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Low-level primitives shared by @prelude/* packages: pipe and common utility types.",
   "type": "module",
   "directories": {

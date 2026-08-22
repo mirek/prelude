@@ -1,6 +1,6 @@
 {
   "name": "@prelude/emitter",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Type-safe event emitter with once, predicate-filtered listeners and promise-based waits with timeouts.",
   "type": "module",
   "packageManager": "pnpm@10.6.3",

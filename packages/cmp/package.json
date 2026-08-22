@@ -1,6 +1,6 @@
 {
   "name": "@prelude/cmp",
-  "version": "4.2.0",
+  "version": "5.0.0",
   "description": "Sound comparators: strict -1 | 0 | 1 results, composition, reversal and helpers for sorting and searching.",
   "type": "module",
   "module": "./mjs/index.js",

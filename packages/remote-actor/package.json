@@ -1,6 +1,6 @@
 {
   "name": "@prelude/remote-actor",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Remote actor module: send/ask to an actor over any message transport (MessagePort, workers, sockets).",
   "type": "module",
   "files": [

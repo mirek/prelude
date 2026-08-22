@@ -1,6 +1,6 @@
 {
   "name": "@prelude/err",
-  "version": "0.2.1",
+  "version": "1.0.0",
   "description": "Errors with a severity and a code, plus helpers to create, inspect and rethrow them consistently.",
   "type": "module",
   "directories": {

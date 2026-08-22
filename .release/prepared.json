@@ -1,0 +1,405 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-08-22T17:38:35.681Z",
+  "plans": [
+    {
+      "file": "major-bump-all.json",
+      "summary": "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+    }
+  ],
+  "packages": [
+    {
+      "name": "@prelude/cmp",
+      "previousVersion": "4.2.0",
+      "version": "5.0.0",
+      "tag": "@prelude/cmp@5.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/eq",
+      "previousVersion": "0.0.5",
+      "version": "1.0.0",
+      "tag": "@prelude/eq@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/err",
+      "previousVersion": "0.2.1",
+      "version": "1.0.0",
+      "tag": "@prelude/err@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/log",
+      "previousVersion": "1.0.0",
+      "version": "2.0.0",
+      "tag": "@prelude/log@2.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/prelude",
+      "previousVersion": "1.0.1",
+      "version": "2.0.0",
+      "tag": "@prelude/prelude@2.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/progress",
+      "previousVersion": "0.0.1",
+      "version": "1.0.0",
+      "tag": "@prelude/progress@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/radix-trie",
+      "previousVersion": "0.1.1",
+      "version": "1.0.0",
+      "tag": "@prelude/radix-trie@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/range-set",
+      "previousVersion": "0.0.0",
+      "version": "1.0.0",
+      "tag": "@prelude/range-set@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/remote-clock",
+      "previousVersion": "0.1.0",
+      "version": "1.0.0",
+      "tag": "@prelude/remote-clock@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/repl",
+      "previousVersion": "1.0.0",
+      "version": "2.0.0",
+      "tag": "@prelude/repl@2.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/serial-queue",
+      "previousVersion": "0.1.0",
+      "version": "1.0.0",
+      "tag": "@prelude/serial-queue@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/string",
+      "previousVersion": "1.0.0",
+      "version": "2.0.0",
+      "tag": "@prelude/string@2.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/tsconfig",
+      "previousVersion": "0.0.1",
+      "version": "1.0.0",
+      "tag": "@prelude/tsconfig@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/validation",
+      "previousVersion": "0.0.0",
+      "version": "1.0.0",
+      "tag": "@prelude/validation@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/wait-group",
+      "previousVersion": "0.0.2",
+      "version": "1.0.0",
+      "tag": "@prelude/wait-group@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/xml",
+      "previousVersion": "0.0.0",
+      "version": "1.0.0",
+      "tag": "@prelude/xml@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {}
+    },
+    {
+      "name": "@prelude/array",
+      "previousVersion": "3.0.0",
+      "version": "4.0.0",
+      "tag": "@prelude/array@4.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/cmp": "5.0.0"
+      }
+    },
+    {
+      "name": "@prelude/assert",
+      "previousVersion": "0.0.1",
+      "version": "1.0.0",
+      "tag": "@prelude/assert@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/validation": "1.0.0"
+      }
+    },
+    {
+      "name": "@prelude/emitter",
+      "previousVersion": "2.0.0",
+      "version": "3.0.0",
+      "tag": "@prelude/emitter@3.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/err": "1.0.0",
+        "dependencies.@prelude/log": "2.0.0"
+      }
+    },
+    {
+      "name": "@prelude/fs",
+      "previousVersion": "1.0.0",
+      "version": "2.0.0",
+      "tag": "@prelude/fs@2.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/radix-trie": "1.0.0"
+      }
+    },
+    {
+      "name": "@prelude/function",
+      "previousVersion": "0.4.1",
+      "version": "1.0.0",
+      "tag": "@prelude/function@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/serial-queue": "1.0.0"
+      }
+    },
+    {
+      "name": "@prelude/generator",
+      "previousVersion": "9.0.0",
+      "version": "10.0.0",
+      "tag": "@prelude/generator@10.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/cmp": "5.0.0"
+      }
+    },
+    {
+      "name": "@prelude/parser",
+      "previousVersion": "7.1.0",
+      "version": "8.0.0",
+      "tag": "@prelude/parser@8.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/radix-trie": "1.0.0"
+      }
+    },
+    {
+      "name": "@prelude/predicate",
+      "previousVersion": "0.2.0",
+      "version": "1.0.0",
+      "tag": "@prelude/predicate@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/validation": "1.0.0"
+      }
+    },
+    {
+      "name": "@prelude/rb-tree",
+      "previousVersion": "0.3.0",
+      "version": "1.0.0",
+      "tag": "@prelude/rb-tree@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/cmp": "5.0.0"
+      }
+    },
+    {
+      "name": "@prelude/refute",
+      "previousVersion": "1.0.1",
+      "version": "2.0.0",
+      "tag": "@prelude/refute@2.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/validation": "1.0.0"
+      }
+    },
+    {
+      "name": "@prelude/sorted-array",
+      "previousVersion": "0.1.1",
+      "version": "1.0.0",
+      "tag": "@prelude/sorted-array@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/cmp": "5.0.0"
+      }
+    },
+    {
+      "name": "@prelude/channel",
+      "previousVersion": "1.0.0",
+      "version": "2.0.0",
+      "tag": "@prelude/channel@2.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/array": "4.0.0"
+      }
+    },
+    {
+      "name": "@prelude/jsonrpc",
+      "previousVersion": "0.1.0",
+      "version": "1.0.0",
+      "tag": "@prelude/jsonrpc@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/err": "1.0.0",
+        "dependencies.@prelude/predicate": "1.0.0"
+      }
+    },
+    {
+      "name": "@prelude/semver",
+      "previousVersion": "2.0.1",
+      "version": "3.0.0",
+      "tag": "@prelude/semver@3.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/cmp": "5.0.0",
+        "dependencies.@prelude/function": "1.0.0"
+      }
+    },
+    {
+      "name": "@prelude/set",
+      "previousVersion": "1.2.0",
+      "version": "2.0.0",
+      "tag": "@prelude/set@2.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/array": "4.0.0",
+        "dependencies.@prelude/cmp": "5.0.0"
+      }
+    },
+    {
+      "name": "@prelude/actor",
+      "previousVersion": "0.0.1",
+      "version": "1.0.0",
+      "tag": "@prelude/actor@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/channel": "2.0.0"
+      }
+    },
+    {
+      "name": "@prelude/async-generator",
+      "previousVersion": "1.0.1",
+      "version": "2.0.0",
+      "tag": "@prelude/async-generator@2.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/channel": "2.0.0",
+        "dependencies.@prelude/emitter": "3.0.0"
+      }
+    },
+    {
+      "name": "@prelude/remote-actor",
+      "previousVersion": "0.0.1",
+      "version": "1.0.0",
+      "tag": "@prelude/remote-actor@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/actor": "1.0.0"
+      }
+    },
+    {
+      "name": "@prelude/supervisor",
+      "previousVersion": "0.0.1",
+      "version": "1.0.0",
+      "tag": "@prelude/supervisor@1.0.0",
+      "reasons": [
+        "Major release of every package: the code has changed substantially since the last npm publish (three years ago); treat every package as a breaking release."
+      ],
+      "resolvedDependencies": {
+        "dependencies.@prelude/actor": "1.0.0"
+      }
+    }
+  ]
+}

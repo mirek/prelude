@@ -1,6 +1,6 @@
 {
   "name": "@prelude/tsconfig",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Shared TypeScript configurations for the prelude monorepo.",
   "license": "CC0-1.0",
   "author": "Mirek Rusin (https://github.com/mirek)",

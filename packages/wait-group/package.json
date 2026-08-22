@@ -1,6 +1,6 @@
 {
   "name": "@prelude/wait-group",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "Go-style WaitGroup: count outstanding work and await completion, with invalid-counter protection.",
   "type": "module",
   "files": [

@@ -1,6 +1,6 @@
 {
   "name": "@prelude/rb-tree",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Persistent red-black tree with duplicate counts, range counting and Bag/Map wrappers, with exported invariant checks.",
   "type": "module",
   "directories": {

@@ -1,6 +1,6 @@
 {
   "name": "@prelude/array",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Array utilities: safe indexing, sampling and shuffling, sorting and searching, grouping, swap-delete and vector helpers.",
   "type": "module",
   "scripts": {
