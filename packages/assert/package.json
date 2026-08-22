@@ -1,6 +1,6 @@
 {
   "name": "@prelude/assert",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Composable runtime assertions that narrow unknown values to typed ones and throw AssertionError with the failing path; built on @prelude/validation.",
   "type": "module",
   "module": "./mjs/index.js",

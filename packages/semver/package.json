@@ -1,6 +1,6 @@
 {
   "name": "@prelude/semver",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Semantic Versioning 2.0 parsing, comparison and precedence ordering.",
   "type": "module",
   "directories": {

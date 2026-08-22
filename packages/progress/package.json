@@ -1,6 +1,6 @@
 {
   "name": "@prelude/progress",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Terminal progress display for Node.js: multi-worker progress bars, spinners and percentages on stdout.",
   "type": "module",
   "files": [

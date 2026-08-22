@@ -1,6 +1,6 @@
 {
   "name": "@prelude/jsonrpc",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "JSON-RPC 2.0 client and request handling over any message transport, with request timeouts, abort signals and typed payloads.",
   "type": "module",
   "directories": {

@@ -1,6 +1,6 @@
 {
   "name": "@prelude/range-set",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Sets of value-carrying ranges over ordered keys with union, intersection and difference under pluggable value merges.",
   "type": "module",
   "module": "./mjs/index.js",

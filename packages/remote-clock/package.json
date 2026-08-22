@@ -1,6 +1,6 @@
 {
   "name": "@prelude/remote-clock",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Clock synchronisation against a remote time source: offset estimation, remote now/date and mid-second ticks.",
   "type": "module",
   "directories": {

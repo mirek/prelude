@@ -70,7 +70,7 @@ function buildDependencies(directory) {
     ) {
       continue
     }
-    console.log(`build ${path.basename(dependency)} (dependency of ${path.basename(directory)})`)
+    console.error(`build ${path.basename(dependency)} (dependency of ${path.basename(directory)})`)
     buildPackage(dependency)
   }
 }

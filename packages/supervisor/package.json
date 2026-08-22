@@ -1,6 +1,6 @@
 {
   "name": "@prelude/supervisor",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Supervisor module: restart strategies (one-for-one, all-for-one, rest-for-one) and restart limits for @prelude/actor.",
   "type": "module",
   "files": [
