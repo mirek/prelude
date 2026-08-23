@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import path from 'node:path'
-import { preparedPath, publishPrepared, readPackages, root } from './release-lib.mjs'
+import { preparedPath, provenanceArgs, publishPrepared, readPackages, root } from './release-lib.mjs'
 
 const pnpmCli = process.env.npm_execpath
 if (!pnpmCli) {
@@ -85,7 +85,7 @@ publishPrepared({
     pnpmCli,
     'publish',
     '--access', 'public',
-    '--provenance',
+    ...provenanceArgs(),
     '--no-git-checks'
   ], {
     cwd: entry.directory,

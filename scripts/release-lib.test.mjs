@@ -4,7 +4,7 @@ import path from 'node:path'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { assertTagsMatchHead, publishPrepared, readPlans } from './release-lib.mjs'
+import { assertTagsMatchHead, provenanceArgs, publishPrepared, readPlans } from './release-lib.mjs'
 
 function withPlansDirectory(run) {
   const directory = mkdtempSync(path.join(tmpdir(), 'release-plans-'))
@@ -130,4 +130,12 @@ test('publishPrepared publishes unpublished packages and returns the remote tag 
     ['@mirek/array@1.0.1', head],
     ['@mirek/map@2.0.0', undefined]
   ])
+})
+
+test('provenance is requested only on GitHub Actions unless overridden', () => {
+  assert.deepEqual(provenanceArgs({}), [])
+  assert.deepEqual(provenanceArgs({ GITHUB_ACTIONS: 'true' }), ['--provenance'])
+  assert.deepEqual(provenanceArgs({ GITHUB_ACTIONS: 'true', RELEASE_PROVENANCE: '0' }), ['--no-provenance'])
+  assert.deepEqual(provenanceArgs({ RELEASE_PROVENANCE: '1' }), ['--provenance'])
+  assert.deepEqual(provenanceArgs({ RELEASE_PROVENANCE: 'false' }), ['--no-provenance'])
 })

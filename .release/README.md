@@ -45,6 +45,8 @@ Preparation updates package versions and changelogs, removes consumed plan files
 
 Do not run `npm version` in individual packages. Packages contain no push or publish lifecycle hooks.
 
+npm provenance is requested automatically on GitHub Actions only; `pnpm publish --provenance` fails elsewhere. A bootstrap publish from a maintainer machine (needed before a trusted publisher can be configured for a brand-new package) just runs `pnpm release:publish` after `npm login`. Set `RELEASE_PROVENANCE=0` or `1` to override the default.
+
 ## 4. Publish the verified commit
 
 After the release-preparation pull request is merged, run the **Release** workflow on `main`. The `npm` GitHub environment should require approval and provide `NPM_TOKEN`.
