@@ -83,14 +83,19 @@ Private, not on npm: `@prelude/json` (tagged JSON coders) and `@prelude/testing`
   Only `@prelude/log` and `@prelude/wait-group` are used via their default export.
 - **Public entrypoints only**: the package root, or a documented subpath
   `@prelude/<name>/<file>.js`. Never import `src/`, `dist/` or `mjs/` paths.
-- **Cancellation is one convention**: anything that can wait takes an optional
-  `AbortSignal` — usually in a trailing options object (`sleep(ms, { signal })`,
+- **Cancellation is one convention**: operations that *accept* a `signal`
+  (`function`, `emitter`, `channel`, `serial-queue`, `progress`, `remote-clock`,
+  `async-generator`, `actor`/`remote-actor` `ask`, `jsonrpc` `call` — the
+  repository README lists them) take it as an optional `AbortSignal` — usually in a trailing options object (`sleep(ms, { signal })`,
   `ch.read({ signal })`, `map(f, { concurrency, signal })`), and as the *first*
   argument for `select({ signal }, ...)`. An already-aborted signal rejects
   immediately; aborting rejects with `signal.reason` unchanged (no wrapping);
   settled operations detach. In-flight user code is **not** interrupted — pass
   the same signal into it. Prefer the iterator protocol (`break`, `return()`)
   for a graceful stop from the inside; use a signal to stop from the outside.
+  Not everything waits cancellably: `WaitGroup.wait()` takes no signal (use
+  `reject(error)` to release waiters), and `supervisor.stop()`/`actor.stop()`
+  drain rather than abort (`kill` aborts).
 - **Comparators are `Cmp<T> = (a, b) => -1 | 0 | 1`**, never `a - b`. Use
   `Cmp.number`, `Cmp.string`, `Cmp.chain(...)`, `Cmp.map(cmp, f)`,
   `Cmp.reversed(cmp)` wherever a package asks for a comparator (`sorted-array`,
@@ -143,8 +148,10 @@ await supervisor.stop()     // children stop in reverse start order
 
 **Stream processing.** `async-generator` is the pipeline layer; `channel` is
 the coordination layer. Convert with `Ch.ofAsyncIterable` / `for await` on a
-channel. `G.map(f, { concurrency })` preserves order by default; use
-`withIndex`/`unwrapIndexed` when you want completion order.
+channel. `G.map(f, { concurrency })` preserves input order by default (a slow
+item holds back later ones); pass `{ preserveOrder: false }` to receive results
+as they complete. `withIndex`/`unwrapIndexed` go the other way — they restore
+index order after an unordered stage.
 
 ```ts
 import * as G from '@prelude/async-generator'
