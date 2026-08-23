@@ -42,6 +42,10 @@ pnpm verify
 10. `pnpm build` — rebuilds every package with a `tsconfig.lib.json` from clean source.
 11. `pnpm pack:check` — packs every public package and installs the tarballs into an isolated consumer project.
 
+### Release a change
+
+Every pull request adds a changeset (`pnpm changeset`, or `pnpm changeset --empty` when nothing publishable changed); CI rejects pull requests without one. Merged changesets accumulate in an automated `chore(release): version packages` pull request; merging it bumps versions and changelogs, and the **Publish** workflow then publishes every not-yet-published version to npm with provenance and tags it `<package>@<version>`. See `.changeset/README.md`.
+
 Concurrency tests use explicit barriers, fake schedulers, and awaited task settlement rather than random sleeps or eventual polling. Optional randomized stress coverage must use a reproducible seed.
 
 The data structures with the largest state spaces (`rb-tree` and its `Bag`/`Map`, `radix-trie`, `range-set`, `sorted-array`, `set`, `channel`, `serial-queue`) also have model-based property tests (`packages/*/src/model.test.ts`, `laws.test.ts`) built on the private `@prelude/testing` package: `checkTrace` generates operation traces from a seed, replays them against the structure and a naive reference model with every invariant checked after each step, and on failure shrinks the trace and reports `seed`, `trial` and the minimal operation sequence. The default suite runs a bounded number of trials; `SLOW_TESTS=<factor>` multiplies them, which the weekly `Stress` workflow (`.github/workflows/stress.yml`, also runnable by hand) does with a factor of 20.

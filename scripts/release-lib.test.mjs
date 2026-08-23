@@ -1,134 +1,99 @@
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import path from 'node:path'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { assertTagsMatchHead, provenanceArgs, publishPrepared, readPlans } from './release-lib.mjs'
-
-function withPlansDirectory(run) {
-  const directory = mkdtempSync(path.join(tmpdir(), 'release-plans-'))
-  try {
-    return run(directory)
-  } finally {
-    rmSync(directory, { recursive: true, force: true })
-  }
-}
-
-test('readPlans keeps plan file paths inside the plans directory', () => {
-  withPlansDirectory(directory => {
-    writeFileSync(path.join(directory, 'a.json'), JSON.stringify({
-      summary: 'Ship it',
-      packages: { '@mirek/array': 'patch' },
-      file: 'elsewhere.json',
-      filePath: '/elsewhere/package.json'
-    }))
-
-    const [plan] = readPlans(directory)
-    assert.equal(plan.file, 'a.json')
-    assert.equal(plan.filePath, path.join(directory, 'a.json'))
-    assert.deepEqual(plan, {
-      file: 'a.json',
-      filePath: path.join(directory, 'a.json'),
-      summary: 'Ship it',
-      packages: { '@mirek/array': 'patch' }
-    })
-  })
-})
-
-test('readPlans returns an empty list for a missing directory', () => {
-  withPlansDirectory(directory => {
-    assert.deepEqual(readPlans(path.join(directory, 'missing')), [])
-  })
-})
-
-test('readPlans rejects plans without a summary or a packages object', () => {
-  withPlansDirectory(directory => {
-    writeFileSync(path.join(directory, 'a.json'), JSON.stringify({ packages: {} }))
-    assert.throws(() => readPlans(directory), /a\.json must contain a non-empty summary/)
-  })
-  withPlansDirectory(directory => {
-    writeFileSync(path.join(directory, 'a.json'), JSON.stringify({ summary: 'x', packages: [] }))
-    assert.throws(() => readPlans(directory), /a\.json must contain a packages object/)
-  })
-})
-
-test('readPlans ignores non-json files and sorts plans by name', () => {
-  withPlansDirectory(directory => {
-    mkdirSync(path.join(directory, 'nested'))
-    writeFileSync(path.join(directory, 'b.json'), JSON.stringify({ summary: 'b', packages: {} }))
-    writeFileSync(path.join(directory, 'a.json'), JSON.stringify({ summary: 'a', packages: {} }))
-    writeFileSync(path.join(directory, 'notes.md'), 'ignored')
-    assert.deepEqual(readPlans(directory).map(plan => plan.file), ['a.json', 'b.json'])
-  })
-})
+import { orderPackages, planPublish, provenanceArgs, runPublish } from './release-lib.mjs'
 
 const head = 'a'.repeat(40)
 const other = 'b'.repeat(40)
-const prepared = {
-  schemaVersion: 1,
-  packages: [
-    { name: '@mirek/array', version: '1.0.1', tag: '@mirek/array@1.0.1' },
-    { name: '@mirek/map', version: '2.0.0', tag: '@mirek/map@2.0.0' }
-  ]
+
+function workspace(manifests) {
+  return new Map(manifests.map(manifest => [manifest.name, {
+    directory: `/packages/${manifest.name}`,
+    manifest
+  }]))
 }
 
-test('assertTagsMatchHead throws when a remote tag points at another commit', () => {
-  const remote = new Map([['@mirek/map@2.0.0', other]])
-  assert.throws(
-    () => assertTagsMatchHead(prepared, head, tag => remote.get(tag)),
-    { message: `Remote tag @mirek/map@2.0.0 points at ${other}, expected ${head}` }
-  )
+const packages = workspace([
+  { name: '@mirek/set', version: '2.0.0', dependencies: { '@mirek/array': 'workspace:*' } },
+  { name: '@mirek/array', version: '1.0.1', dependencies: { '@mirek/cmp': 'workspace:*' } },
+  { name: '@mirek/cmp', version: '5.0.0' },
+  { name: '@mirek/eq', version: '1.0.0', peerDependencies: { '@mirek/cmp': 'workspace:*' } }
+])
+
+test('orderPackages publishes workspace dependencies before their dependents', () => {
+  assert.deepEqual(orderPackages(packages), ['@mirek/cmp', '@mirek/array', '@mirek/eq', '@mirek/set'])
 })
 
-test('assertTagsMatchHead returns the remote commit for every prepared tag', () => {
-  const remote = new Map([['@mirek/array@1.0.1', head]])
-  const commits = assertTagsMatchHead(prepared, head, tag => remote.get(tag))
-  assert.deepEqual([...commits], [
-    ['@mirek/array@1.0.1', head],
-    ['@mirek/map@2.0.0', undefined]
+test('orderPackages still orders cyclic workspace dependencies', () => {
+  const cyclic = workspace([
+    { name: '@mirek/a', version: '1.0.0', dependencies: { '@mirek/b': 'workspace:*' } },
+    { name: '@mirek/b', version: '1.0.0', dependencies: { '@mirek/a': 'workspace:*' } }
+  ])
+  assert.deepEqual(orderPackages(cyclic), ['@mirek/a', '@mirek/b'])
+})
+
+test('planPublish publishes unpublished versions and never tags versions it did not publish', () => {
+  const remote = new Map([['@mirek/cmp@5.0.0', other]])
+  const published = new Set(['@mirek/cmp@5.0.0', '@mirek/array@1.0.1'])
+  const plan = planPublish({
+    packages,
+    head,
+    remoteTagCommit: tag => remote.get(tag),
+    isPublished: (name, version) => published.has(`${name}@${version}`)
+  })
+  assert.deepEqual(plan.map(({ directory, ...item }) => item), [
+    { name: '@mirek/cmp', version: '5.0.0', tag: '@mirek/cmp@5.0.0', publish: false, createTag: false, missingTag: false },
+    { name: '@mirek/array', version: '1.0.1', tag: '@mirek/array@1.0.1', publish: false, createTag: false, missingTag: true },
+    { name: '@mirek/eq', version: '1.0.0', tag: '@mirek/eq@1.0.0', publish: true, createTag: true, missingTag: false },
+    { name: '@mirek/set', version: '2.0.0', tag: '@mirek/set@2.0.0', publish: true, createTag: true, missingTag: false }
   ])
 })
 
-test('publishPrepared validates every tag before publishing anything', () => {
-  const remote = new Map([['@mirek/map@2.0.0', other]])
-  const published = []
-  const packages = new Map(prepared.packages.map(item => [item.name, {
-    directory: `/packages/${item.name}`,
-    manifest: { name: item.name, version: item.version }
-  }]))
-  assert.throws(() => publishPrepared({
-    prepared,
-    packages,
-    head,
-    remoteTagCommit: tag => remote.get(tag),
-    isPublished: () => false,
-    publish: entry => published.push(entry.manifest.name),
-    log: () => {}
-  }), /Remote tag @mirek\/map@2\.0\.0 points at/)
-  assert.deepEqual(published, [])
+test('planPublish rejects an unpublished version whose tag points at another commit', () => {
+  const remote = new Map([['@mirek/set@2.0.0', other]])
+  assert.throws(
+    () => planPublish({ packages, head, remoteTagCommit: tag => remote.get(tag), isPublished: () => false }),
+    { message: `Remote tag @mirek/set@2.0.0 points at ${other}, expected ${head}` }
+  )
 })
 
-test('publishPrepared publishes unpublished packages and returns the remote tag commits', () => {
-  const remote = new Map([['@mirek/array@1.0.1', head]])
-  const published = []
-  const packages = new Map(prepared.packages.map(item => [item.name, {
-    directory: `/packages/${item.name}`,
-    manifest: { name: item.name, version: item.version }
-  }]))
-  const commits = publishPrepared({
-    prepared,
-    packages,
-    head,
-    remoteTagCommit: tag => remote.get(tag),
-    isPublished: name => name === '@mirek/array',
-    publish: entry => published.push(entry.manifest.name),
-    log: () => {}
+test('planPublish accepts an unpublished version whose tag already points at head', () => {
+  const remote = new Map([['@mirek/cmp@5.0.0', head]])
+  const plan = planPublish({ packages, head, remoteTagCommit: tag => remote.get(tag), isPublished: () => false })
+  assert.deepEqual(plan.find(item => item.name === '@mirek/cmp'), {
+    name: '@mirek/cmp',
+    version: '5.0.0',
+    tag: '@mirek/cmp@5.0.0',
+    directory: '/packages/@mirek/cmp',
+    publish: true,
+    createTag: false,
+    missingTag: false
   })
-  assert.deepEqual(published, ['@mirek/map'])
-  assert.deepEqual([...commits], [
-    ['@mirek/array@1.0.1', head],
-    ['@mirek/map@2.0.0', undefined]
+})
+
+test('runPublish tags each package right after publishing it and warns about untagged published versions', () => {
+  const plan = [
+    { tag: 'a@1', publish: false, createTag: false, missingTag: false },
+    { tag: 'b@1', publish: false, createTag: false, missingTag: true },
+    { tag: 'c@1', publish: true, createTag: true, missingTag: false },
+    { tag: 'd@1', publish: true, createTag: false, missingTag: false },
+    { tag: 'e@1', publish: true, createTag: true, missingTag: false }
+  ]
+  const events = []
+  const count = runPublish(plan, {
+    publish: item => events.push(`publish ${item.tag}`),
+    tag: item => events.push(`tag ${item.tag}`),
+    log: () => {},
+    warn: message => events.push(message)
+  })
+  assert.equal(count, 3)
+  assert.deepEqual(events, [
+    'warning: b@1 is on npm but has no tag; tag the commit it was published from by hand',
+    'publish c@1',
+    'tag c@1',
+    'publish d@1',
+    'publish e@1',
+    'tag e@1'
   ])
 })
 

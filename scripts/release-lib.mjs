@@ -4,42 +4,12 @@ import path from 'node:path'
 
 export const root = fileURLToPath(new URL('..', import.meta.url))
 export const packagesDirectory = path.join(root, 'packages')
-export const plansDirectory = path.join(root, '.release', 'plans')
-export const preparedPath = path.join(root, '.release', 'prepared.json')
-
-const bumpRank = new Map([
-  ['patch', 1],
-  ['minor', 2],
-  ['major', 3]
-])
 
 const dependencyFields = [
   'dependencies',
   'optionalDependencies',
   'peerDependencies'
 ]
-
-function parseVersion(version) {
-  const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(version)
-  if (!match) {
-    throw new Error(`Release automation only supports stable x.y.z versions, got ${version}`)
-  }
-  return match.slice(1).map(Number)
-}
-
-function bumpVersion(version, bump) {
-  const [major, minor, patch] = parseVersion(version)
-  switch (bump) {
-    case 'major': return `${major + 1}.0.0`
-    case 'minor': return `${major}.${minor + 1}.0`
-    case 'patch': return `${major}.${minor}.${patch + 1}`
-    default: throw new Error(`Unsupported bump ${bump}`)
-  }
-}
-
-function highestBump(left, right) {
-  return (bumpRank.get(left) ?? 0) >= (bumpRank.get(right) ?? 0) ? left : right
-}
 
 export function readPackages() {
   const packages = readdirSync(packagesDirectory, { withFileTypes: true })
@@ -56,29 +26,6 @@ export function readPackages() {
   return new Map(packages.map(entry => [entry.manifest.name, entry]))
 }
 
-export function readPlans(directory = plansDirectory) {
-  if (!existsSync(directory)) {
-    return []
-  }
-
-  return readdirSync(directory)
-    .filter(file => file.endsWith('.json'))
-    .sort()
-    .map(file => {
-      const filePath = path.join(directory, file)
-      const plan = JSON.parse(readFileSync(filePath, 'utf8'))
-      if (typeof plan.summary !== 'string' || plan.summary.trim() === '') {
-        throw new Error(`${file} must contain a non-empty summary`)
-      }
-      if (!plan.packages || typeof plan.packages !== 'object' || Array.isArray(plan.packages)) {
-        throw new Error(`${file} must contain a packages object`)
-      }
-      // Copy only the schema fields so plan data can never override the
-      // internal paths that release:prepare later removes.
-      return { file, filePath, summary: plan.summary, packages: plan.packages }
-    })
-}
-
 function packageDependencies(entry, packageNames) {
   const dependencies = new Set()
   for (const field of dependencyFields) {
@@ -91,9 +38,10 @@ function packageDependencies(entry, packageNames) {
   return dependencies
 }
 
-function orderPackages(selected, packages) {
+/** Orders package names so that every workspace dependency precedes its dependents. */
+export function orderPackages(packages) {
   const packageNames = new Set(packages.keys())
-  const remaining = new Set(selected)
+  const remaining = new Set(packageNames)
   const ordered = []
 
   while (remaining.size > 0) {
@@ -118,136 +66,66 @@ function orderPackages(selected, packages) {
   return ordered
 }
 
-function resolvedDependencies(entry, versions) {
-  const result = {}
-  for (const field of dependencyFields) {
-    for (const [name, range] of Object.entries(entry.manifest[field] ?? {})) {
-      if (typeof range === 'string' && range.startsWith('workspace:') && versions.has(name)) {
-        result[`${field}.${name}`] = versions.get(name)
-      }
+/**
+ * Decides, from the workspace manifests alone, what a publish run at `head` has to do.
+ * Every registry and remote tag check runs before anything is published because npm
+ * versions are immutable.
+ *
+ * - A version already on npm is skipped. It is never tagged by this run, even if its tag is
+ *   missing: `head` is not necessarily the commit it was published from, so a tag is only
+ *   ever created for a version this run publishes. A missing tag is reported instead.
+ * - A version not on npm is published and then tagged at `head`, unless its tag already
+ *   exists on the remote pointing at another commit, which aborts the whole run.
+ */
+export function planPublish({ packages, head, remoteTagCommit, isPublished }) {
+  const plan = []
+  for (const name of orderPackages(packages)) {
+    const entry = packages.get(name)
+    const version = entry.manifest.version
+    const tag = `${name}@${version}`
+    const remoteCommit = remoteTagCommit(tag)
+    const published = isPublished(name, version)
+    if (!published && remoteCommit && remoteCommit !== head) {
+      throw new Error(`Remote tag ${tag} points at ${remoteCommit}, expected ${head}`)
     }
-  }
-  return result
-}
-
-export function createRelease() {
-  const packages = readPackages()
-  const plans = readPlans()
-  if (plans.length === 0) {
-    throw new Error(`No release plans found in ${path.relative(root, plansDirectory)}`)
-  }
-
-  const bumps = new Map()
-  const reasons = new Map()
-
-  for (const plan of plans) {
-    for (const [name, bump] of Object.entries(plan.packages)) {
-      if (!packages.has(name)) {
-        throw new Error(`${plan.file} references unknown package ${name}`)
-      }
-      if (!bumpRank.has(bump)) {
-        throw new Error(`${plan.file} has invalid bump ${bump} for ${name}`)
-      }
-      bumps.set(name, highestBump(bumps.get(name), bump))
-      const packageReasons = reasons.get(name) ?? []
-      packageReasons.push(plan.summary.trim())
-      reasons.set(name, packageReasons)
-    }
-  }
-
-  // Publish workspace dependents with at least a patch bump so their packed
-  // dependency ranges point at the newly released dependency versions.
-  let changed = true
-  while (changed) {
-    changed = false
-    for (const [name, entry] of packages) {
-      if (bumps.has(name)) {
-        continue
-      }
-      const dependency = [...packageDependencies(entry, new Set(packages.keys()))]
-        .find(candidate => bumps.has(candidate))
-      if (!dependency) {
-        continue
-      }
-      bumps.set(name, 'patch')
-      reasons.set(name, [`Republish for updated workspace dependency ${dependency}.`])
-      changed = true
-    }
-  }
-
-  const versions = new Map([...packages].map(([name, entry]) => [name, entry.manifest.version]))
-  for (const [name, bump] of bumps) {
-    versions.set(name, bumpVersion(packages.get(name).manifest.version, bump))
-  }
-
-  const order = orderPackages(new Set(bumps.keys()), packages)
-  return {
-    packages,
-    plans,
-    releases: order.map(name => {
-      const entry = packages.get(name)
-      const version = versions.get(name)
-      return {
-        name,
-        directory: entry.directory,
-        manifestPath: entry.manifestPath,
-        previousVersion: entry.manifest.version,
-        version,
-        bump: bumps.get(name),
-        tag: `${name}@${version}`,
-        reasons: reasons.get(name) ?? [],
-        resolvedDependencies: resolvedDependencies(entry, versions)
-      }
+    plan.push({
+      name,
+      version,
+      tag,
+      directory: entry.directory,
+      publish: !published,
+      createTag: !published && !remoteCommit,
+      missingTag: published && !remoteCommit
     })
   }
+  return plan
 }
 
 /**
- * Checks every prepared tag against the remote before anything is published:
- * a tag that already exists must point at `head`. Returns the remote commit
- * (or `undefined`) for each prepared tag so the tagging step can reuse it.
+ * Runs a publish plan in dependency order. Each package is tagged right after it is
+ * published so that a run dying midway leaves at most one published-but-untagged version.
  */
-export function assertTagsMatchHead(prepared, head, remoteTagCommit) {
-  const commits = new Map()
-  for (const item of prepared.packages) {
-    const remoteCommit = remoteTagCommit(item.tag)
-    if (remoteCommit && remoteCommit !== head) {
-      throw new Error(`Remote tag ${item.tag} points at ${remoteCommit}, expected ${head}`)
-    }
-    commits.set(item.tag, remoteCommit)
-  }
-  return commits
-}
-
-/**
- * Publishes the prepared packages. All manifest and remote tag checks run
- * before the first `publish` call because npm versions are immutable.
- * Returns the remote tag commits from `assertTagsMatchHead`.
- */
-export function publishPrepared({ prepared, packages, head, remoteTagCommit, isPublished, publish, log = console.log }) {
-  const entries = prepared.packages.map(item => {
-    const entry = packages.get(item.name)
-    if (!entry) {
-      throw new Error(`Prepared release references missing package ${item.name}`)
-    }
-    if (entry.manifest.version !== item.version) {
-      throw new Error(`${item.name} manifest is ${entry.manifest.version}, expected ${item.version}`)
-    }
-    return entry
-  })
-
-  const remoteCommits = assertTagsMatchHead(prepared, head, remoteTagCommit)
-
-  for (const [index, item] of prepared.packages.entries()) {
-    if (isPublished(item.name, item.version)) {
-      log(`skip published ${item.name}@${item.version}`)
+export function runPublish(plan, { publish, tag, log = console.log, warn = console.warn }) {
+  let published = 0
+  for (const item of plan) {
+    if (!item.publish) {
+      log(`skip published ${item.tag}`)
+      if (item.missingTag) {
+        warn(`warning: ${item.tag} is on npm but has no tag; tag the commit it was published from by hand`)
+      }
       continue
     }
-    log(`publish ${item.name}@${item.version}`)
-    publish(entries[index])
+    log(`publish ${item.tag}`)
+    publish(item)
+    published += 1
+    if (!item.createTag) {
+      log(`skip existing tag ${item.tag}`)
+      continue
+    }
+    tag(item)
+    log(`tagged ${item.tag}`)
   }
-
-  return remoteCommits
+  return published
 }
 
 // npm provenance needs a CI OIDC provider; pnpm refuses `--provenance` elsewhere. Default to

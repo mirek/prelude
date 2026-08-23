@@ -1,29 +1,40 @@
 name: Publish
 
-# npm auth is OIDC trusted publishing (id-token: write) — no npm token. Every @prelude package
-# has this repo + THIS WORKFLOW FILENAME (publish.yml) configured as a trusted publisher on
-# npmjs.com, so do not rename this file.
+# Changesets release automation. On every push to main:
+#   - pending .changeset/*.md files → opens/updates the
+#     `chore(release): version packages` PR (branch changeset-release/main);
+#   - no pending changesets → runs the full verification gate, then
+#     scripts/release-publish.mjs, which publishes every public package whose
+#     version is not on npm yet (in dependency order, with provenance) and
+#     tags it <package>@<version>. A no-op when everything is published.
+#
+# npm auth is OIDC trusted publishing (id-token: write) — no npm token.
+# Every @prelude package has this repo + THIS WORKFLOW FILENAME (publish.yml)
+# configured as a trusted publisher on npmjs.com, so do not rename this file.
+# First-time publishes of brand-new packages still need a manual
+# `pnpm release:publish` from a machine with npm auth (see .changeset/README.md).
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
-  contents: write
-  id-token: write
+  contents: write # push the changeset-release branch and the <package>@<version> tags
+  pull-requests: write # open/update the version packages PR
+  id-token: write # npm OIDC trusted publishing
 
 concurrency:
-  group: release
-  cancel-in-progress: false
+  group: publish-main
+  cancel-in-progress: false # never cancel a run that may be mid-publish
 
 jobs:
-  publish:
-    name: Publish prepared release
+  release:
     runs-on: ubuntu-latest
-    environment: npm
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
           fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
@@ -31,9 +42,37 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: pnpm
           registry-url: https://registry.npmjs.org
+          package-manager-cache: false # never use caching in release builds
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm verify
-      - run: pnpm release:publish
+
+      - name: Detect pending changesets
+        id: pending
+        run: |
+          if git ls-files '.changeset/*.md' | grep -v '^\.changeset/README\.md$' | grep -q .; then
+            echo "changesets=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changesets=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Publishing ships the exact checked-out commit, so it runs the complete
+      # verification and installed-tarball gate first, whatever CI said elsewhere.
+      - name: Verify before publishing
+        if: steps.pending.outputs.changesets == 'false'
+        run: pnpm verify
+
+      # Note: the version packages PR is opened with GITHUB_TOKEN, so CI does
+      # not run on it automatically (GitHub suppresses workflows for events
+      # created by the default token). Its diff is versions and changelogs
+      # only; CI runs on main after merge, and the publish path above verifies
+      # before anything ships.
+      - uses: changesets/action@v1
+        with:
+          version: pnpm version-packages
+          publish: pnpm release:publish
+          commit: 'chore(release): version packages'
+          title: 'chore(release): version packages'
+          createGithubReleases: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
