@@ -249,3 +249,13 @@ export function publishPrepared({ prepared, packages, head, remoteTagCommit, isP
 
   return remoteCommits
 }
+
+// npm provenance needs a CI OIDC provider; pnpm refuses `--provenance` elsewhere. Default to
+// provenance on GitHub Actions only, with RELEASE_PROVENANCE=0|1 as an explicit override for
+// bootstrap publishes from a maintainer machine.
+export function provenanceArgs(env = process.env) {
+  const override = env.RELEASE_PROVENANCE
+  if (override === '0' || override === 'false') return []
+  if (override === '1' || override === 'true') return ['--provenance']
+  return env.GITHUB_ACTIONS === 'true' ? ['--provenance'] : []
+}
