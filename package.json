@@ -25,6 +25,8 @@
     "pack:check": "node scripts/pack-check.mjs",
     "docs:check": "node scripts/check-docs.mjs",
     "docs:write": "node scripts/check-docs.mjs --write",
+    "site:build": "node scripts/build-site.mjs",
+    "site:preview": "node scripts/build-site.mjs --no-typedoc",
     "verify": "pnpm manifests:check && pnpm release-hooks:check && pnpm makefiles:check && pnpm docs:check && pnpm test:check && pnpm lint && pnpm typecheck && pnpm test && pnpm test:scripts && pnpm build && pnpm pack:check"
   },
   "keywords": [
@@ -43,9 +45,11 @@
     "@changesets/cli": "^3.0.1",
     "@swc/core": "^1.15.24",
     "@types/node": "^22.19.0",
+    "marked": "^18.0.10",
     "oxlint": "^1.60.0",
     "oxlint-tsgolint": "^0.20.0",
     "tsx": "^4.21.0",
+    "typedoc": "^0.28.20",
     "typescript": "^6.0.2"
   }
 }

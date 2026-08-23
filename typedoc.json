@@ -1,0 +1,19 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPointStrategy": "packages",
+  "packageOptions": {
+    "entryPoints": ["src/index.ts"],
+    "tsconfig": "tsconfig.lib.json",
+    "excludeInternal": true,
+    "excludePrivate": true,
+    "excludeExternals": true,
+    "blockTags": ["@typeparam"]
+  },
+  "tsconfig": "tsconfig.typedoc.json",
+  "readme": "none",
+  "includeVersion": false,
+  "skipErrorChecking": true,
+  "validation": { "notExported": false, "invalidLink": false, "notDocumented": false },
+  "logLevel": "Warn",
+  "hideGenerator": true
+}
