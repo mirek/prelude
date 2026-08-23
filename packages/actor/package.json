@@ -1,6 +1,6 @@
 {
   "name": "@prelude/actor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Actor module: stateful message processors with ask/reply, bounded mailboxes, failure directives and supervision hooks.",
   "type": "module",
   "files": [

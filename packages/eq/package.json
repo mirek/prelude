@@ -1,6 +1,6 @@
 {
   "name": "@prelude/eq",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Structural equality combinators for primitives, arrays, tuples, records and partial objects.",
   "type": "module",
   "directories": {

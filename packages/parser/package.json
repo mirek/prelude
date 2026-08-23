@@ -1,6 +1,6 @@
 {
   "name": "@prelude/parser",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "description": "Parser combinators over string readers with location-aware failures, plus an RFC 8259 JSON grammar.",
   "type": "module",
   "directories": {

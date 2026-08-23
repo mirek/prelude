@@ -1,6 +1,6 @@
 {
   "name": "@prelude/log",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Lightweight logger with severity levels, namespaces, pluggable targets and environment-variable level control.",
   "type": "module",
   "scripts": {

@@ -1,6 +1,6 @@
 {
   "name": "@prelude/async-generator",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Composable async iterable transforms: map, filter, batch, window, buffered and concurrent processing with backpressure.",
   "type": "module",
   "module": "./mjs/index.js",

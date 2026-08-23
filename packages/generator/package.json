@@ -1,6 +1,6 @@
 {
   "name": "@prelude/generator",
-  "version": "10.0.0",
+  "version": "10.0.1",
   "description": "Iterable and generator utilities: lazy map, filter, flatMap, batch, group, permutations, primes and other transforms over sync iterables.",
   "type": "module",
   "module": "./mjs/index.js",

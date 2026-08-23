@@ -1,6 +1,6 @@
 {
   "name": "@prelude/channel",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Go-style channels for async code: buffered or unbuffered, async-iterable, with select over reads and writes.",
   "type": "module",
   "files": [

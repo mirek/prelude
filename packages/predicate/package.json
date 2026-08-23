@@ -1,6 +1,6 @@
 {
   "name": "@prelude/predicate",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Type-guard combinators for primitives, objects, arrays, tuples, records and unions; built on @prelude/validation.",
   "type": "module",
   "directories": {
