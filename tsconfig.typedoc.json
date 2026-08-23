@@ -1,0 +1,9 @@
+{
+  "extends": "./packages/tsconfig/workspace-isomorphic.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "paths": { "@prelude/*": ["./packages/*/src/index.ts"] },
+    "noEmit": true
+  },
+  "include": ["packages/*/src/index.ts"]
+}

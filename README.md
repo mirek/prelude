@@ -160,6 +160,26 @@ This package is dedicated to the public domain under [CC0 1.0](./License.md).
 
 Package manifests get `repository`, `homepage`, `bugs`, `files`, `exports` and `types` from `pnpm manifests:write`, derived from the package directory, so they cannot drift from the repository layout.
 
+## Documentation site and AI agents
+
+The documentation site at <https://mirekrusin.com/prelude/> is built by `pnpm site:build` (`scripts/build-site.mjs`) from the Markdown already in this repository — this README, every `packages/*/Readme.md` and `CHANGELOG.md` — plus a TypeDoc API reference under `/api/`, and is deployed by the **Pages** workflow on every push to `main`. Nothing on the site is written twice: package pages *are* the package READMEs.
+
+For language models the site also publishes:
+
+- `/llms.txt` — an index of the guides, the API reference and the skill; `/llms-full.txt` is every guide in one file.
+- `/.well-known/agent-skills/index.json` — the agent-skills discovery index, with the SHA-256 digest of the skill file.
+- `/.well-known/agent-skills/prelude/SKILL.md` — the `prelude` skill: which `@prelude/*` package to reach for, how they compose, conventions and common mistakes. Its source is [`skills/prelude/SKILL.md`](./skills/prelude/SKILL.md) (the workspace's `.claude/skills/prelude` links to it) and the build copies it verbatim.
+
+Install the skill into an agent (Claude Code, Codex, Cursor and others supported by [`skills`](https://www.npmjs.com/package/skills)):
+
+```bash
+npx skills add mirek/prelude
+```
+
+The well-known index is published under the site's base path (`/prelude/.well-known/agent-skills/index.json`); origin-root discovery (`npx skills add https://<domain>`) needs the site on its own domain — set `SITE_URL` accordingly in the Pages workflow, nothing else changes.
+
+`pnpm site:preview` builds the site without the API reference (a few seconds instead of a minute) into `site/`, which is ignored by git.
+
 ## License
 
 The repository root is licensed under `CC0-1.0`. Individual packages may declare their own licenses in package-level files/manifests.
