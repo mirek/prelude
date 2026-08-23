@@ -1,14 +1,9 @@
-import { existsSync, readFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
-import path from 'node:path'
-import { preparedPath, provenanceArgs, publishPrepared, readPackages, root } from './release-lib.mjs'
+import { planPublish, provenanceArgs, readPackages, root, runPublish } from './release-lib.mjs'
 
 const pnpmCli = process.env.npm_execpath
 if (!pnpmCli) {
   throw new Error('release:publish must be run through pnpm')
-}
-if (!existsSync(preparedPath)) {
-  throw new Error('No prepared release exists')
 }
 
 function run(command, args, options = {}) {
@@ -70,49 +65,37 @@ if (head !== originMain) {
   throw new Error(`Release publication must run at the exact origin/main commit (${originMain}), got ${head}`)
 }
 
-const prepared = JSON.parse(readFileSync(preparedPath, 'utf8'))
-if (prepared.schemaVersion !== 1 || !Array.isArray(prepared.packages)) {
-  throw new Error('Unsupported prepared release format')
-}
+const plan = planPublish({ packages: readPackages(), head, remoteTagCommit, isPublished })
 
-publishPrepared({
-  prepared,
-  packages: readPackages(),
-  head,
-  remoteTagCommit,
-  isPublished,
-  publish: entry => requireSuccess(process.execPath, [
+const published = runPublish(plan, {
+  publish: item => requireSuccess(process.execPath, [
     pnpmCli,
     'publish',
     '--access', 'public',
     ...provenanceArgs(),
     '--no-git-checks'
   ], {
-    cwd: entry.directory,
+    cwd: item.directory,
     stdio: 'inherit',
     encoding: undefined
-  })
+  }),
+  tag: item => {
+    // Re-query rather than trust the plan: publishing can take a while and a tag created
+    // meanwhile must be reported, not overwritten.
+    const remoteCommit = remoteTagCommit(item.tag)
+    if (remoteCommit) {
+      if (remoteCommit !== head) {
+        throw new Error(`Remote tag ${item.tag} points at ${remoteCommit}, expected ${head}`)
+      }
+      return
+    }
+    const localTag = run('git', ['rev-parse', '-q', '--verify', `refs/tags/${item.tag}`])
+    if (localTag.status === 0) {
+      requireSuccess('git', ['tag', '-d', item.tag])
+    }
+    requireSuccess('git', ['tag', '-a', item.tag, '-m', `${item.name} ${item.version}`])
+    requireSuccess('git', ['push', 'origin', `refs/tags/${item.tag}`])
+  }
 })
 
-for (const item of prepared.packages) {
-  // Re-query rather than trust the preflight: publishing can take a while and a tag deleted or
-  // moved meanwhile must be re-created or reported, not silently skipped.
-  const remoteCommit = remoteTagCommit(item.tag)
-  if (remoteCommit) {
-    if (remoteCommit !== head) {
-      throw new Error(`Remote tag ${item.tag} points at ${remoteCommit}, expected ${head}`)
-    }
-    console.log(`skip existing tag ${item.tag}`)
-    continue
-  }
-
-  const localTag = run('git', ['rev-parse', '-q', '--verify', `refs/tags/${item.tag}`])
-  if (localTag.status === 0) {
-    requireSuccess('git', ['tag', '-d', item.tag])
-  }
-  requireSuccess('git', ['tag', '-a', item.tag, '-m', `${item.name} ${item.version}`])
-  requireSuccess('git', ['push', 'origin', `refs/tags/${item.tag}`])
-  console.log(`tagged ${item.tag}`)
-}
-
-console.log(`Published ${prepared.packages.length} prepared packages from ${path.relative(root, preparedPath)}.`)
+console.log(`Published ${published} of ${plan.length} public packages.`)

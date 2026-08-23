@@ -19,8 +19,8 @@
     "release-hooks:check": "node scripts/normalize-release-hooks.mjs --check",
     "release-hooks:write": "node scripts/normalize-release-hooks.mjs --write",
     "makefiles:check": "node scripts/check-makefiles.mjs",
-    "release:plan": "node scripts/release-plan.mjs",
-    "release:prepare": "node scripts/release-prepare.mjs",
+    "changeset": "changeset",
+    "version-packages": "changeset version && pnpm manifests:write",
     "release:publish": "node scripts/release-publish.mjs",
     "pack:check": "node scripts/pack-check.mjs",
     "docs:check": "node scripts/check-docs.mjs",
@@ -40,6 +40,7 @@
     "node": ">=22"
   },
   "devDependencies": {
+    "@changesets/cli": "^3.0.1",
     "@swc/core": "^1.15.24",
     "@types/node": "^22.19.0",
     "oxlint": "^1.60.0",
