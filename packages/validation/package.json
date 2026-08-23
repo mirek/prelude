@@ -1,6 +1,6 @@
 {
   "name": "@prelude/validation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shared validator core behind @prelude/assert, @prelude/predicate and @prelude/refute: one implementation of the primitive, container and combinator checks producing structured, path-carrying failures.",
   "type": "module",
   "scripts": {

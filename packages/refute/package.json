@@ -1,6 +1,6 @@
 {
   "name": "@prelude/refute",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Validators that return ok/refuted results with a reason instead of throwing, with predicate and assertion interpreters; built on @prelude/validation.",
   "type": "module",
   "module": "./mjs/index.js",

@@ -1,6 +1,6 @@
 {
   "name": "@prelude/xml",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "XML 1.0 parser with namespace processing, precise error locations and JSON conversion helpers; no DTD processing or external resources.",
   "type": "module",
   "scripts": {

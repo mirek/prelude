@@ -1,6 +1,6 @@
 {
   "name": "@prelude/serial-queue",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Promise-returning serial task queue: pushed work runs one at a time, in order, with bulk rejection.",
   "type": "module",
   "directories": {

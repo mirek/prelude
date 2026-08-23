@@ -1,6 +1,6 @@
 {
   "name": "@prelude/set",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Set helpers over the native Set: union, intersection, difference, equality, numeric ranges and sorted/shuffled views.",
   "type": "module",
   "directories": {

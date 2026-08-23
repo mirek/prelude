@@ -1,6 +1,6 @@
 {
   "name": "@prelude/string",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "String utilities: blank checks, case conversion, indentation, truncation, line operations, search-replace and edit distance.",
   "type": "module",
   "directories": {

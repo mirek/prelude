@@ -1,6 +1,6 @@
 {
   "name": "@prelude/radix-trie",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Radix (compressed prefix) trie for string sets: insert, membership and shortest/longest prefix matching.",
   "type": "module",
   "directories": {
