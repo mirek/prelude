@@ -255,7 +255,7 @@ export function publishPrepared({ prepared, packages, head, remoteTagCommit, isP
 // bootstrap publishes from a maintainer machine.
 export function provenanceArgs(env = process.env) {
   const override = env.RELEASE_PROVENANCE
-  if (override === '0' || override === 'false') return []
+  if (override === '0' || override === 'false') return ['--no-provenance']
   if (override === '1' || override === 'true') return ['--provenance']
   return env.GITHUB_ACTIONS === 'true' ? ['--provenance'] : []
 }

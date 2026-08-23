@@ -135,7 +135,7 @@ test('publishPrepared publishes unpublished packages and returns the remote tag 
 test('provenance is requested only on GitHub Actions unless overridden', () => {
   assert.deepEqual(provenanceArgs({}), [])
   assert.deepEqual(provenanceArgs({ GITHUB_ACTIONS: 'true' }), ['--provenance'])
-  assert.deepEqual(provenanceArgs({ GITHUB_ACTIONS: 'true', RELEASE_PROVENANCE: '0' }), [])
+  assert.deepEqual(provenanceArgs({ GITHUB_ACTIONS: 'true', RELEASE_PROVENANCE: '0' }), ['--no-provenance'])
   assert.deepEqual(provenanceArgs({ RELEASE_PROVENANCE: '1' }), ['--provenance'])
-  assert.deepEqual(provenanceArgs({ RELEASE_PROVENANCE: 'false' }), [])
+  assert.deepEqual(provenanceArgs({ RELEASE_PROVENANCE: 'false' }), ['--no-provenance'])
 })
