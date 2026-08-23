@@ -49,7 +49,7 @@ npm provenance is requested automatically on GitHub Actions only; `pnpm publish 
 
 ## 4. Publish the verified commit
 
-After the release-preparation pull request is merged, run the **Release** workflow on `main`. The `npm` GitHub environment should require approval and provide `NPM_TOKEN`.
+After the release-preparation pull request is merged, run the **Publish** workflow (`.github/workflows/publish.yml`) on `main`. It authenticates to npm through OIDC trusted publishing, so the workflow filename must stay `publish.yml`; the `npm` GitHub environment may require approval.
 
 The workflow:
 

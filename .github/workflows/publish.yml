@@ -1,4 +1,8 @@
-name: Release
+name: Publish
+
+# npm auth is OIDC trusted publishing (id-token: write) — no npm token. Every @prelude package
+# has this repo + THIS WORKFLOW FILENAME (publish.yml) configured as a trusted publisher on
+# npmjs.com, so do not rename this file.
 
 on:
   workflow_dispatch:
@@ -33,5 +37,3 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify
       - run: pnpm release:publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
