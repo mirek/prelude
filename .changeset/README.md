@@ -31,8 +31,8 @@ file, so that nothing is ever forgotten: run `pnpm changeset --empty`.
 2. Merging that pull request leaves `main` with no pending changesets, so the same workflow
    runs `pnpm verify` and then `pnpm release:publish`: every public package whose version is
    not yet on npm is published in dependency order with provenance, then tagged
-   `<package>@<version>`. Packages already on npm are skipped, so a failed run is simply
-   re-run.
+   `<package>@<version>` right away. Packages already on npm are skipped (and never tagged
+   by a later run, since `main` may have moved on), so a failed run is simply re-run.
 
 npm authentication is OIDC trusted publishing: every `@prelude/*` package lists this
 repository and the workflow file name `publish.yml` as its trusted publisher on npmjs.com, so

@@ -32,7 +32,7 @@ test('orderPackages still orders cyclic workspace dependencies', () => {
   assert.deepEqual(orderPackages(cyclic), ['@mirek/a', '@mirek/b'])
 })
 
-test('planPublish publishes unpublished versions and tags missing tags only', () => {
+test('planPublish publishes unpublished versions and never tags versions it did not publish', () => {
   const remote = new Map([['@mirek/cmp@5.0.0', other]])
   const published = new Set(['@mirek/cmp@5.0.0', '@mirek/array@1.0.1'])
   const plan = planPublish({
@@ -42,10 +42,10 @@ test('planPublish publishes unpublished versions and tags missing tags only', ()
     isPublished: (name, version) => published.has(`${name}@${version}`)
   })
   assert.deepEqual(plan.map(({ directory, ...item }) => item), [
-    { name: '@mirek/cmp', version: '5.0.0', tag: '@mirek/cmp@5.0.0', publish: false, createTag: false },
-    { name: '@mirek/array', version: '1.0.1', tag: '@mirek/array@1.0.1', publish: false, createTag: true },
-    { name: '@mirek/eq', version: '1.0.0', tag: '@mirek/eq@1.0.0', publish: true, createTag: true },
-    { name: '@mirek/set', version: '2.0.0', tag: '@mirek/set@2.0.0', publish: true, createTag: true }
+    { name: '@mirek/cmp', version: '5.0.0', tag: '@mirek/cmp@5.0.0', publish: false, createTag: false, missingTag: false },
+    { name: '@mirek/array', version: '1.0.1', tag: '@mirek/array@1.0.1', publish: false, createTag: false, missingTag: true },
+    { name: '@mirek/eq', version: '1.0.0', tag: '@mirek/eq@1.0.0', publish: true, createTag: true, missingTag: false },
+    { name: '@mirek/set', version: '2.0.0', tag: '@mirek/set@2.0.0', publish: true, createTag: true, missingTag: false }
   ])
 })
 
@@ -66,24 +66,35 @@ test('planPublish accepts an unpublished version whose tag already points at hea
     tag: '@mirek/cmp@5.0.0',
     directory: '/packages/@mirek/cmp',
     publish: true,
-    createTag: false
+    createTag: false,
+    missingTag: false
   })
 })
 
-test('runPublish publishes everything before tagging anything and reports the count', () => {
+test('runPublish tags each package right after publishing it and warns about untagged published versions', () => {
   const plan = [
-    { tag: 'a@1', publish: false, createTag: false },
-    { tag: 'b@1', publish: false, createTag: true },
-    { tag: 'c@1', publish: true, createTag: true }
+    { tag: 'a@1', publish: false, createTag: false, missingTag: false },
+    { tag: 'b@1', publish: false, createTag: false, missingTag: true },
+    { tag: 'c@1', publish: true, createTag: true, missingTag: false },
+    { tag: 'd@1', publish: true, createTag: false, missingTag: false },
+    { tag: 'e@1', publish: true, createTag: true, missingTag: false }
   ]
   const events = []
   const count = runPublish(plan, {
     publish: item => events.push(`publish ${item.tag}`),
     tag: item => events.push(`tag ${item.tag}`),
-    log: () => {}
+    log: () => {},
+    warn: message => events.push(message)
   })
-  assert.equal(count, 1)
-  assert.deepEqual(events, ['publish c@1', 'tag b@1', 'tag c@1'])
+  assert.equal(count, 3)
+  assert.deepEqual(events, [
+    'warning: b@1 is on npm but has no tag; tag the commit it was published from by hand',
+    'publish c@1',
+    'tag c@1',
+    'publish d@1',
+    'publish e@1',
+    'tag e@1'
+  ])
 })
 
 test('provenance is requested only on GitHub Actions unless overridden', () => {

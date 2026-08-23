@@ -71,10 +71,11 @@ export function orderPackages(packages) {
  * Every registry and remote tag check runs before anything is published because npm
  * versions are immutable.
  *
- * - A version already on npm is skipped; it is tagged only if its tag does not exist yet
- *   (a previous run that died between publishing and tagging).
- * - A version not on npm is published and tagged, unless its tag already exists on the
- *   remote pointing at another commit, which aborts the whole run.
+ * - A version already on npm is skipped. It is never tagged by this run, even if its tag is
+ *   missing: `head` is not necessarily the commit it was published from, so a tag is only
+ *   ever created for a version this run publishes. A missing tag is reported instead.
+ * - A version not on npm is published and then tagged at `head`, unless its tag already
+ *   exists on the remote pointing at another commit, which aborts the whole run.
  */
 export function planPublish({ packages, head, remoteTagCommit, isPublished }) {
   const plan = []
@@ -93,23 +94,30 @@ export function planPublish({ packages, head, remoteTagCommit, isPublished }) {
       tag,
       directory: entry.directory,
       publish: !published,
-      createTag: !remoteCommit
+      createTag: !published && !remoteCommit,
+      missingTag: published && !remoteCommit
     })
   }
   return plan
 }
 
-/** Runs a publish plan: publishes every pending package first, then creates the missing tags. */
-export function runPublish(plan, { publish, tag, log = console.log }) {
+/**
+ * Runs a publish plan in dependency order. Each package is tagged right after it is
+ * published so that a run dying midway leaves at most one published-but-untagged version.
+ */
+export function runPublish(plan, { publish, tag, log = console.log, warn = console.warn }) {
+  let published = 0
   for (const item of plan) {
     if (!item.publish) {
       log(`skip published ${item.tag}`)
+      if (item.missingTag) {
+        warn(`warning: ${item.tag} is on npm but has no tag; tag the commit it was published from by hand`)
+      }
       continue
     }
     log(`publish ${item.tag}`)
     publish(item)
-  }
-  for (const item of plan) {
+    published += 1
     if (!item.createTag) {
       log(`skip existing tag ${item.tag}`)
       continue
@@ -117,7 +125,7 @@ export function runPublish(plan, { publish, tag, log = console.log }) {
     tag(item)
     log(`tagged ${item.tag}`)
   }
-  return plan.filter(item => item.publish).length
+  return published
 }
 
 // npm provenance needs a CI OIDC provider; pnpm refuses `--provenance` elsewhere. Default to
